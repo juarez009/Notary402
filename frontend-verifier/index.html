@@ -111,7 +111,7 @@
             transition: all 0.15s ease;
             cursor: pointer;
             display: flex;
-            items-center: center;
+            align-items: center;
             gap: 0.5rem;
         }
         .nav-tab:hover { color: #00f0ff; }
@@ -141,6 +141,12 @@
         @keyframes pulse-slow { 0%,100%{opacity:.4;transform:scale(.95)} 50%{opacity:1;transform:scale(1.05)} }
         .dot-pulse { animation: pulse-slow 2s infinite ease-in-out; }
 
+        .highlight-step {
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.4) !important;
+            border-color: #00f0ff !important;
+            transition: all 0.4s ease;
+        }
+
         *:focus-visible { outline: 2px solid #00f0ff !important; outline-offset: 2px; }
     </style>
 </head>
@@ -155,7 +161,7 @@
             </div>
             <div class="flex items-center space-x-2">
                 <span class="text-base font-bold text-white font-sans tracking-wide">NOTARY402</span>
-                <span class="text-[10px] bg-purple-950 text-purple-300 px-2 py-0.5 rounded border border-purple-500/30 hidden sm:inline">CONSOLE v0.6.0</span>
+                <span class="text-[10px] bg-purple-950 text-purple-300 px-2 py-0.5 rounded border border-purple-500/30 hidden sm:inline">CONSOLE v0.6.1</span>
             </div>
         </div>
         <div class="flex items-center space-x-2 text-[11px]">
@@ -176,6 +182,55 @@
     </div>
 </header>
 
+<!-- MODAL PRESENTACIÓN INTERACTIVA E2E -->
+<div id="e2e-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-cyan-500/40 rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl relative">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-2">
+                <div class="p-2 bg-cyan-500/10 text-cyan-400 rounded-lg border border-cyan-500/30">
+                    <i data-lucide="play-circle" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 id="t-modal-title" class="font-sans font-bold text-white text-base">Modo Presentación Notarial Agéntico (E2E)</h3>
+                    <p id="t-modal-sub" class="text-xs text-slate-400 font-mono">Explicación paso a paso del ciclo notarial guiado</p>
+                </div>
+            </div>
+            <button onclick="stopE2EFlow()" class="text-slate-500 hover:text-white text-xs font-mono p-1">✕ Cerrar</button>
+        </div>
+
+        <!-- Indicador de Progreso (Steps) -->
+        <div class="grid grid-cols-6 gap-1 font-mono text-[10px] text-center" id="e2e-steps-indicator">
+            <div id="step-dot-1" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500">1. Intención</div>
+            <div id="step-dot-2" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500">2. Solicitud</div>
+            <div id="step-dot-3" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500">3. QVAC LLM</div>
+            <div id="step-dot-4" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500">4. Billetera</div>
+            <div id="step-dot-5" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500">5. Pago L402</div>
+            <div id="step-dot-6" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500">6. Atestación</div>
+        </div>
+
+        <!-- Cuerpo Explicativo del Paso Actual -->
+        <div id="e2e-step-content" class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2 font-mono min-h-[140px]">
+            <div class="flex items-center justify-between text-xs text-cyan-400 font-bold">
+                <span id="e2e-step-title">Paso 1: Registro de Intención Legal</span>
+                <span id="e2e-step-endpoint" class="text-slate-500 text-[10px]">POST /v1/legal-intent</span>
+            </div>
+            <p id="e2e-step-desc" class="text-xs text-slate-300 leading-relaxed">
+                El Agente de IA (`hermes-legal-agent`) inicia la transacción definiendo las partes y el propósito contractual.
+            </p>
+            <div id="e2e-step-output" class="text-[11px] text-amber-300 pt-2 border-t border-slate-900"></div>
+        </div>
+
+        <!-- Botones de Control de la Presentación -->
+        <div class="flex items-center justify-between pt-2 font-mono text-xs">
+            <span id="e2e-timer-label" class="text-slate-500 text-[11px]">Auto-avanzando en 3.5s...</span>
+            <div class="flex items-center gap-2">
+                <button onclick="pauseResumeE2E()" id="e2e-pause-btn" class="btn-secondary py-1.5 px-3 text-xs">⏸ Pausar</button>
+                <button onclick="nextE2EStep()" id="e2e-next-btn" class="btn-primary py-1.5 px-4 text-xs">Siguiente Paso ➔</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
 <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
 
@@ -188,8 +243,8 @@
             </p>
         </div>
         <div class="flex items-center gap-2 w-full md:w-auto">
-            <button onclick="runFullE2EFlow()" id="e2e-btn" class="btn-primary text-xs w-full md:w-auto flex items-center justify-center gap-2 py-2.5">
-                <i data-lucide="play-circle" class="w-4 h-4"></i> <span id="t-e2e-btn">Ejecutar Flujo E2E Completo</span>
+            <button onclick="startGuidedE2EFlow()" id="e2e-btn" class="btn-primary text-xs w-full md:w-auto flex items-center justify-center gap-2 py-2.5">
+                <i data-lucide="play-circle" class="w-4 h-4"></i> <span id="t-e2e-btn">Ver Demo Guiada E2E (Explicada)</span>
             </button>
         </div>
     </section>
@@ -292,7 +347,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             <!-- Step 1: POST /v1/legal-intent -->
-            <div class="v-card p-5 space-y-4">
+            <div id="card-step-1" class="v-card p-5 space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                     <h3 class="text-sm font-bold text-cyan-400 font-mono flex items-center gap-2">
                         <span class="w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center text-xs">1</span>
@@ -325,7 +380,7 @@
             </div>
 
             <!-- Step 2: POST /v1/signature/request -->
-            <div class="v-card p-5 space-y-4">
+            <div id="card-step-2" class="v-card p-5 space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                     <h3 class="text-sm font-bold text-amber-400 font-mono flex items-center gap-2">
                         <span class="w-5 h-5 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center text-xs">2</span>
@@ -361,7 +416,7 @@
             </div>
 
             <!-- Step 3: POST /v1/signature/validate (QVAC) -->
-            <div class="v-card p-5 space-y-4">
+            <div id="card-step-3" class="v-card p-5 space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                     <h3 class="text-sm font-bold text-emerald-400 font-mono flex items-center gap-2">
                         <span class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-xs">3</span>
@@ -397,7 +452,7 @@
             <!-- Wallet EIP-191 & L402 Payment -->
             <div class="space-y-6">
                 <!-- POST /v1/wallets/verify-signature -->
-                <div class="v-card p-5 space-y-4">
+                <div id="card-step-4" class="v-card p-5 space-y-4">
                     <h3 class="text-sm font-bold text-cyan-400 font-mono flex items-center gap-2 border-b border-slate-800 pb-2">
                         <i data-lucide="wallet" class="w-4 h-4"></i> POST /v1/wallets/verify-signature (EIP-191)
                     </h3>
@@ -424,7 +479,7 @@
                 </div>
 
                 <!-- POST /v1/payments/l402/verify -->
-                <div class="v-card p-5 space-y-4">
+                <div id="card-step-5" class="v-card p-5 space-y-4">
                     <h3 class="text-sm font-bold text-amber-400 font-mono flex items-center gap-2 border-b border-slate-800 pb-2">
                         <i data-lucide="zap" class="w-4 h-4"></i> POST /v1/payments/l402/verify (Lightning)
                     </h3>
@@ -465,7 +520,7 @@
                 </div>
 
                 <!-- POST /v1/attestations (Emisión) -->
-                <div class="v-card p-5 space-y-4 border-emerald-500/30">
+                <div id="card-step-6" class="v-card p-5 space-y-4 border-emerald-500/30">
                     <h3 class="text-sm font-bold text-emerald-400 font-mono flex items-center gap-2 border-b border-slate-800 pb-2">
                         <i data-lucide="award" class="w-4 h-4"></i> POST /v1/attestations (Emitir Atestación)
                     </h3>
@@ -561,7 +616,7 @@
             Notary402 demonstrates jurisdiction-aware legal workflow automation and cryptographic attestations. When local law requires a licensed notary or human legal professional, the system escalates rather than replacing that role.
         </p>
         <div class="flex flex-col sm:flex-row items-center justify-between text-[10px] text-slate-600 font-mono">
-            <span>Notary402 v0.6.0 — Agentic Operations Console</span>
+            <span>Notary402 v0.6.1 — Agentic Operations Console</span>
             <span>El Salvador • L402 Lightning • Bitcoin Native</span>
         </div>
     </div>
@@ -592,7 +647,7 @@ const I18N = {
     es: {
         heroTitle: "Notary402 Consola de Operaciones Agénticas",
         heroDesc: "Plataforma de pruebas e interacción completa para los 14 endpoints del Protocolo Notarial Agéntico L402.",
-        e2eBtn: "Ejecutar Flujo E2E Completo",
+        e2eBtn: "Ver Demo Guiada E2E (Explicada)",
         modVerify: "1. Verificador Público",
         modIntent: "2. Registro e Intención",
         modProofs: "3. Pruebas y Pagos",
@@ -621,7 +676,7 @@ const I18N = {
     en: {
         heroTitle: "Notary402 Agentic Operations Console",
         heroDesc: "Complete testing and interaction console for all 14 endpoints of the L402 Agentic Notary Protocol.",
-        e2eBtn: "Run Full E2E Flow",
+        e2eBtn: "Watch Guided E2E Demo",
         modVerify: "1. Public Verifier",
         modIntent: "2. Intent & Registration",
         modProofs: "3. Proofs & Payments",
@@ -648,6 +703,62 @@ const I18N = {
         notFound: "Attestation not found: "
     }
 };
+
+const E2E_STEPS_DATA = [
+    {
+        step: 1,
+        title: "Paso 1: Registro de Intención Legal",
+        endpoint: "POST /v1/legal-intent",
+        desc: "El Agente de IA (`hermes-legal-agent`) inicia la transacción definiendo el tipo de acuerdo (Contrato de Servicios) y las obligaciones bajo las leyes de El Salvador.",
+        action: async () => { switchModule('intent'); highlightCard('card-step-1'); await submitLegalIntent(); },
+        output: () => `Intención Registrada -> ID: ${currentFlowState.legal_intent_id}`
+    },
+    {
+        step: 2,
+        title: "Paso 2: Solicitud de Firma Notarial",
+        endpoint: "POST /v1/signature/request",
+        desc: "El agente solicita el Nivel 3 de Firma (Firma Electrónica según Ley de El Salvador) y genera el Hash SHA-256 inmutable del documento.",
+        action: async () => { highlightCard('card-step-2'); await submitSignatureRequest(); },
+        output: () => `Solicitud Creada -> ID: ${currentFlowState.signature_request_id}`
+    },
+    {
+        step: 3,
+        title: "Paso 3: Evaluación Legal QVAC (LLM)",
+        endpoint: "POST /v1/signature/validate",
+        desc: "El modelo local Ollama/Llama3 (QVAC) audita las cláusulas del contrato, valida el cumplimiento de los Art. 15-22 y confirma riesgo bajo (0.05).",
+        action: async () => { highlightCard('card-step-3'); await submitQVACValidate(); },
+        output: () => `Análisis QVAC -> Status: Valid (Risk Score: 0.05)`
+    },
+    {
+        step: 4,
+        title: "Paso 4: Verificación de Billetera (EIP-191)",
+        endpoint: "POST /v1/wallets/verify-signature",
+        desc: "Se autentica el control criptográfico de la billetera del agente en Polygon Amoy (Chain 80002) mediante una firma de mensaje EIP-191.",
+        action: async () => { switchModule('proofs'); highlightCard('card-step-4'); await submitWalletVerify(); },
+        output: () => `Firma Billetera -> Proof ID: ${currentFlowState.wallet_proof_id}`
+    },
+    {
+        step: 5,
+        title: "Paso 5: Pago de Tarifas Notariales L402",
+        endpoint: "POST /v1/payments/l402/verify",
+        desc: "Se liquida el pago en satoshis vía Lightning Network mediante el protocolo HTTP 402 (Macaroon:Preimage) registrando 150 mSats pagados.",
+        action: async () => { highlightCard('card-step-5'); await submitL402Verify(); },
+        output: () => `Pago L402 -> Proof ID: ${currentFlowState.payment_proof_id}`
+    },
+    {
+        step: 6,
+        title: "Paso 6: Emisión y Verificación de Atestación",
+        endpoint: "POST /v1/attestations & POST /v1/verify",
+        desc: "Con todas las pruebas validadas, Notary402 emite la Atestación Notarial oficial y la despliega en el Verificador Público con QR escaneable.",
+        action: async () => { highlightCard('card-step-6'); await submitIssueAttestation(); },
+        output: () => `Atestación Emitida -> Lista para Verificación Pública`
+    }
+];
+
+let e2eCurrentStep = 0;
+let e2eTimer = null;
+let e2eIsPaused = false;
+let e2eCountdown = 4;
 
 const SIG_LEVELS = {
     0:{name:'Hash Attestation',icon:'hash',color:'text-slate-400',bg:'bg-slate-900',border:'border-slate-700'},
@@ -726,6 +837,91 @@ function applyTranslations() {
     document.getElementById('t-download-qr').innerText = t.downloadQr;
     document.getElementById('t-footer-disclaimer').innerText = t.footerDisclaimer;
     lucide.createIcons();
+}
+
+// ─── PRESENTACIÓN GUIADA E2E ──────────────────────────────
+function startGuidedE2EFlow() {
+    e2eCurrentStep = 0;
+    e2eIsPaused = false;
+    document.getElementById('e2e-modal').classList.remove('hidden');
+    executeE2EStep(0);
+}
+
+function stopE2EFlow() {
+    clearInterval(e2eTimer);
+    document.getElementById('e2e-modal').classList.add('hidden');
+    clearHighlights();
+}
+
+function pauseResumeE2E() {
+    e2eIsPaused = !e2eIsPaused;
+    document.getElementById('e2e-pause-btn').innerText = e2eIsPaused ? '▶ Continuar' : '⏸ Pausar';
+}
+
+async function nextE2EStep() {
+    clearInterval(e2eTimer);
+    if (e2eCurrentStep < E2E_STEPS_DATA.length - 1) {
+        e2eCurrentStep++;
+        executeE2EStep(e2eCurrentStep);
+    } else {
+        // Al terminar el último paso, llevar al verificador público
+        stopE2EFlow();
+        switchModule('verify');
+        const lastAttId = currentFlowState.attestation_id || 'att_402_9921_sv';
+        fillAndVerify(lastAttId);
+    }
+}
+
+async function executeE2EStep(index) {
+    const stepData = E2E_STEPS_DATA[index];
+    
+    // Actualizar UI del Modal
+    document.getElementById('e2e-step-title').innerText = stepData.title;
+    document.getElementById('e2e-step-endpoint').innerText = stepData.endpoint;
+    document.getElementById('e2e-step-desc').innerText = stepData.desc;
+    document.getElementById('e2e-step-output').innerHTML = '<span class="animate-pulse">Ejecutando endpoint...</span>';
+
+    // Actualizar indicador de pasos
+    for (let i = 1; i <= 6; i++) {
+        const dot = document.getElementById(`step-dot-${i}`);
+        if (i === index + 1) {
+            dot.className = 'p-1.5 rounded bg-cyan-950 border border-cyan-500 text-cyan-300 font-bold';
+        } else if (i < index + 1) {
+            dot.className = 'p-1.5 rounded bg-emerald-950 border border-emerald-500/50 text-emerald-400';
+        } else {
+            dot.className = 'p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500';
+        }
+    }
+
+    // Ejecutar la acción del paso en la consola
+    await stepData.action();
+    document.getElementById('e2e-step-output').innerText = '✓ ' + stepData.output();
+
+    // Iniciar temporizador de 4 segundos
+    e2eCountdown = 4;
+    clearInterval(e2eTimer);
+    e2eTimer = setInterval(() => {
+        if (!e2eIsPaused) {
+            e2eCountdown--;
+            document.getElementById('e2e-timer-label').innerText = `Auto-avanzando en ${e2eCountdown}s...`;
+            if (e2eCountdown <= 0) {
+                nextE2EStep();
+            }
+        }
+    }, 1000);
+}
+
+function highlightCard(cardId) {
+    clearHighlights();
+    const el = document.getElementById(cardId);
+    if (el) {
+        el.classList.add('highlight-step');
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function clearHighlights() {
+    document.querySelectorAll('.highlight-step').forEach(el => el.classList.remove('highlight-step'));
 }
 
 // ─── MÓDULO 1: VERIFICADOR PÚBLICO ───────────────────────
@@ -837,8 +1033,7 @@ async function submitLegalIntent() {
     const out = document.getElementById('res-intent');
     out.classList.remove('hidden');
     out.innerHTML = `<span class="text-emerald-400 font-bold">✓ Intención Registrada</span>
-                     <div>ID: <code class="text-cyan-300">${res.legal_intent_id}</code></div>
-                     <div class="text-[10px] text-slate-500">Auto-cargado en Solicitud de Firma (Paso 2)</div>`;
+                     <div>ID: <code class="text-cyan-300">${res.legal_intent_id}</code></div>`;
     showToast('Intención Legal Creada');
 }
 
@@ -868,8 +1063,7 @@ async function submitSignatureRequest() {
     const out = document.getElementById('res-sig-req');
     out.classList.remove('hidden');
     out.innerHTML = `<span class="text-amber-400 font-bold">✓ Solicitud de Firma Creada</span>
-                     <div>ID: <code class="text-amber-300">${res.signature_request_id}</code></div>
-                     <div class="text-[10px] text-slate-500">Auto-cargado en QVAC (Paso 3) y L402 (Módulo 3)</div>`;
+                     <div>ID: <code class="text-amber-300">${res.signature_request_id}</code></div>`;
     showToast('Solicitud de Firma Creada');
 }
 
@@ -886,15 +1080,14 @@ async function submitQVACValidate() {
     });
 
     if (!res || res.__error) {
-        res = { analysis_id: 'qvac_' + Math.random().toString(36).substr(2, 9), status: 'valid', risk_score: 0.1, __demo: true };
+        res = { analysis_id: 'qvac_' + Math.random().toString(36).substr(2, 9), status: 'valid', risk_score: 0.05, __demo: true };
     }
 
     btn.disabled = false;
     const out = document.getElementById('res-qvac');
     out.classList.remove('hidden');
     out.innerHTML = `<span class="text-emerald-400 font-bold">✓ Análisis QVAC Completado</span>
-                     <div>Status: <code class="text-emerald-300">${res.status || 'valid'}</code></div>
-                     <div>Risk Score: <code class="text-slate-300">${res.risk_score ?? 0.05}</code></div>`;
+                     <div>Status: <code class="text-emerald-300">${res.status || 'valid'}</code></div>`;
     showToast('Validación QVAC Ejecutada');
 }
 
@@ -974,11 +1167,9 @@ async function submitAmoyVerify() {
     out.classList.remove('hidden');
 
     if (res && res.status === 503) {
-        out.innerHTML = `<span class="text-amber-400 font-bold">⚠️ HTTP 503 AMOY_RPC_NOT_CONFIGURED</span>
-                         <div class="text-[10px] text-slate-400">RPC de Polygon Amoy no configurado en servidor. Modo fallback activo.</div>`;
+        out.innerHTML = `<span class="text-amber-400 font-bold">⚠️ HTTP 503 AMOY_RPC_NOT_CONFIGURED</span>`;
     } else {
-        out.innerHTML = `<span class="text-purple-400 font-bold">✓ Consulta Amoy RPC Ejecutada</span>
-                         <div>Tx Hash: <code class="text-purple-300">${tx_hash.substr(0,16)}...</code></div>`;
+        out.innerHTML = `<span class="text-purple-400 font-bold">✓ Consulta Amoy RPC Ejecutada</span>`;
     }
 }
 
@@ -1002,11 +1193,11 @@ async function submitIssueAttestation() {
     }
 
     btn.disabled = false;
+    currentFlowState.attestation_id = res.attestation_id;
     const out = document.getElementById('res-issue-att');
     out.classList.remove('hidden');
     out.innerHTML = `<span class="text-emerald-400 font-bold">✓ Atestación Emitida Exitosamente</span>
-                     <div>ID: <code class="text-cyan-300">${res.attestation_id}</code></div>
-                     <button onclick="fillAndVerify('${res.attestation_id}'); switchModule('verify');" class="text-cyan-400 underline mt-1 block">Ver en Verificador Público ➔</button>`;
+                     <div>ID: <code class="text-cyan-300">${res.attestation_id}</code></div>`;
     showToast('Atestación Emitida');
 }
 
@@ -1044,8 +1235,7 @@ async function submitZavuEscalate() {
     btn.disabled = false;
     const out = document.getElementById('res-zavu-test');
     out.classList.remove('hidden');
-    out.innerHTML = `<span class="text-pink-400 font-bold">✓ Escalación WhatsApp Notario Notificada</span>
-                     <div>Canal: <code class="text-slate-300">${res.channel || 'WhatsApp'}</code></div>`;
+    out.innerHTML = `<span class="text-pink-400 font-bold">✓ Escalación WhatsApp Notificada</span>`;
     showToast('Escalación Notario Humano Enviada');
 }
 
@@ -1064,36 +1254,6 @@ async function loadDataMCP() {
                 ${(data.tables || []).map(t => `<span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-cyan-300 text-[10px]">${t}</span>`).join('')}
             </div>
         </div>`;
-}
-
-// ─── FLUJO E2E AUTOMÁTICO ────────────────────────────────
-async function runFullE2EFlow() {
-    const btn = document.getElementById('e2e-btn');
-    btn.disabled = true;
-    showToast('Iniciando Flujo Notarial Agéntico E2E...');
-
-    switchModule('intent');
-    await new Promise(r => setTimeout(r, 400));
-    await submitLegalIntent();
-
-    await new Promise(r => setTimeout(r, 400));
-    await submitSignatureRequest();
-
-    await new Promise(r => setTimeout(r, 400));
-    await submitQVACValidate();
-
-    switchModule('proofs');
-    await new Promise(r => setTimeout(r, 400));
-    await submitWalletVerify();
-
-    await new Promise(r => setTimeout(r, 400));
-    await submitL402Verify();
-
-    await new Promise(r => setTimeout(r, 400));
-    await submitIssueAttestation();
-
-    btn.disabled = false;
-    showToast('✓ Flujo E2E Completado Exitosamente');
 }
 
 // ─── UTILS & TIMELINE ────────────────────────────────────
