@@ -1,0 +1,23 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Notary402 API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": { "get": { "summary": "Service health", "responses": { "200": { "description": "Healthy" } } } },
+    "/v1/legal-intent": { "post": { "summary": "Create a legal intent audit record", "responses": { "201": { "description": "Legal intent created" }, "400": { "description": "Invalid request" } } } },
+    "/v1/signature/request": { "post": { "summary": "Create a signature request", "responses": { "201": { "description": "Signature request created" }, "400": { "description": "Invalid request" } } } },
+    "/v1/wallets/verify-signature": { "post": { "summary": "Verify an EIP-191 Amoy wallet signature", "responses": { "200": { "description": "Wallet proof" }, "400": { "description": "Invalid signature" } } } },
+    "/v1/payments/l402/verify": { "post": { "summary": "Register an Aperture-validated L402 receipt", "responses": { "201": { "description": "Payment proof recorded" }, "404": { "description": "Signature request not found" } } } },
+    "/v1/payments/amoy/verify": { "post": { "summary": "Verify a Polygon Amoy transaction proof", "responses": { "200": { "description": "Amoy proof valid" }, "400": { "description": "Amoy proof invalid" }, "503": { "description": "Amoy RPC not configured" } } } },
+    "/v1/signature/validate": { "post": { "summary": "Run legal signature analysis", "responses": { "200": { "description": "Legal analysis" }, "404": { "description": "Signature request not found" } } } },
+    "/v1/attestations": { "post": { "summary": "Issue an attestation", "responses": { "201": { "description": "Attestation issued" }, "400": { "description": "Missing proof" }, "404": { "description": "Signature request not found" } } } },
+    "/v1/attestations/{id}": { "get": { "summary": "Get an attestation", "responses": { "200": { "description": "Attestation" }, "404": { "description": "Attestation not found" } } } },
+    "/v1/verify": { "post": { "summary": "Verify an issued attestation", "responses": { "200": { "description": "Verification result" }, "404": { "description": "Attestation not found" } } } },
+    "/v1/zavu/escalate": { "post": { "summary": "Escalate to a human notary through Zavu", "responses": { "200": { "description": "Escalation status" } } } },
+    "/v1/integrations/datamcp": { "get": { "summary": "Describe the DataMCP integration plan", "responses": { "200": { "description": "DataMCP configuration status" } } } },
+    "/v1/live/status": { "get": { "summary": "Report redacted live integration configuration status", "responses": { "200": { "description": "Live status" } } } },
+    "/openapi.json": { "get": { "summary": "OpenAPI contract", "responses": { "200": { "description": "OpenAPI document" } } } }
+  }
+}

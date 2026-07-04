@@ -2,9 +2,11 @@ import Fastify, { type FastifyServerOptions } from "fastify";
 import {
   analyzeLegalSignature,
   createAttestation,
+  createLegalIntent,
   createSignatureRequest,
   verifyAttestation,
   verifyWalletSignature,
+  type CreateLegalIntentInput,
   type CreateSignatureRequestInput,
   type VerifyWalletSignatureInput,
 } from "../../../packages/core/src/index.ts";
@@ -17,6 +19,7 @@ import {
   attestationCreateBodySchema,
   errorResponseSchema,
   l402VerifyBodySchema,
+  legalIntentBodySchema,
   signatureRequestBodySchema,
   signatureValidateBodySchema,
   verifyBodySchema,
@@ -25,6 +28,7 @@ import {
 } from "./schemas.ts";
 import { createDataMcpFlowPlan, readDataMcpConfig, type DataMcpConfig } from "./datamcp.ts";
 import { createAuditStoreFromEnv, type AuditStore } from "./audit-store.ts";
+import { notary402OpenApi } from "./openapi.ts";
 
 export interface BuildAppOptions extends FastifyServerOptions {
   datamcp?: DataMcpConfig;
@@ -32,19 +36,28 @@ export interface BuildAppOptions extends FastifyServerOptions {
   zavuClient?: ZavuClient;
   amoyVerifier?: AmoyVerifier;
   auditStore?: AuditStore;
+  env?: NodeJS.ProcessEnv;
 }
 
 export function buildApp(options: BuildAppOptions = {}) {
-  const { datamcp, legalAnalyzer, zavuClient, amoyVerifier, auditStore, ...fastifyOptions } = options;
+  const { datamcp, legalAnalyzer, zavuClient, amoyVerifier, auditStore, env, ...fastifyOptions } = options;
+  const appEnv = env ?? process.env;
   const app = Fastify({
     logger: true,
     ...fastifyOptions,
   });
-  const store = auditStore ?? createAuditStoreFromEnv();
-  const dataMcpConfig = datamcp ?? readDataMcpConfig();
+  const store = auditStore ?? createAuditStoreFromEnv(appEnv);
+  const dataMcpConfig = datamcp ?? readDataMcpConfig(appEnv);
   const analyzeSignature = legalAnalyzer ?? createSafeLegalAnalyzer(createQvacLegalAnalyzer());
-  const zavu = zavuClient ?? createZavuClientFromEnv();
-  const amoy = amoyVerifier ?? createAmoyVerifier();
+  const zavu = zavuClient ?? createZavuClientFromEnv(appEnv);
+  const amoy = amoyVerifier ?? createAmoyVerifier({ rpcUrl: appEnv.AMOY_RPC_URL });
+
+  app.addHook("onRequest", async (request, reply) => {
+    applyCorsHeaders(request.headers.origin, reply);
+    if (request.method === "OPTIONS") {
+      reply.code(204).send();
+    }
+  });
 
   app.addHook("onClose", async () => {
     await store.close();
@@ -79,6 +92,27 @@ export function buildApp(options: BuildAppOptions = {}) {
   }));
 
   app.get("/v1/integrations/datamcp", async () => createDataMcpFlowPlan(dataMcpConfig));
+
+  app.get("/openapi.json", async () => notary402OpenApi);
+
+  app.get("/v1/live/status", async () => createLiveStatus(appEnv, dataMcpConfig));
+
+  app.post<{ Body: CreateLegalIntentInput }>("/v1/legal-intent", {
+    schema: {
+      body: legalIntentBodySchema,
+      response: { 400: errorResponseSchema },
+    },
+  }, async (request, reply) => {
+    const legalIntent = createLegalIntent(request.body);
+    await store.saveAgentProfile({
+      agent_id: request.body.agent_id,
+      runtime: "agentic_mvp",
+      created_at: new Date(0).toISOString(),
+    });
+    await store.saveLegalIntent(legalIntent);
+    reply.code(201);
+    return legalIntent;
+  });
 
   app.post<{ Body: CreateSignatureRequestInput }>("/v1/signature/request", {
     schema: {
@@ -291,4 +325,71 @@ function createSafeLegalAnalyzer(analyzer: LegalAnalyzer): LegalAnalyzer {
       return analyzeLegalSignature();
     }
   };
+}
+
+function applyCorsHeaders(origin: string | undefined, reply: { header(name: string, value: string): unknown }) {
+  const allowedOrigins = new Set([
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+  ]);
+  if (origin && allowedOrigins.has(origin)) {
+    reply.header("access-control-allow-origin", origin);
+    reply.header("vary", "Origin");
+  }
+  reply.header("access-control-allow-methods", "GET,POST,OPTIONS");
+  reply.header("access-control-allow-headers", "content-type,authorization");
+  reply.header("access-control-max-age", "86400");
+}
+
+function createLiveStatus(env: NodeJS.ProcessEnv, dataMcpConfig: DataMcpConfig) {
+  const zavuUrl = env.ZAVU_ESCALATE_URL ?? env.ZAVU_BASE_URL;
+  return {
+    mode: "live",
+    postgres: {
+      configured: Boolean(env.POSTGRES_URL),
+      url: redactUrl(env.POSTGRES_URL),
+    },
+    datamcp: {
+      configured: Boolean(dataMcpConfig.mcpUrl && dataMcpConfig.apiKey),
+      mcp_url: redactUrl(dataMcpConfig.mcpUrl),
+      permission_preset: dataMcpConfig.permissionPreset ?? "read-only",
+    },
+    amoy_rpc: {
+      configured: Boolean(env.AMOY_RPC_URL),
+      chain_id: Number(env.AMOY_CHAIN_ID ?? 80002),
+      url: redactUrl(env.AMOY_RPC_URL),
+    },
+    zavu: {
+      configured: Boolean(zavuUrl),
+      endpoint: redactUrl(zavuUrl),
+      channel: env.ZAVU_DEFAULT_CHANNEL ?? "whatsapp",
+    },
+    aperture: {
+      configured: Boolean(env.APERTURE_BASE_URL),
+      base_url: env.APERTURE_BASE_URL ?? null,
+    },
+    n8n: {
+      configured: Boolean(env.N8N_WEBHOOK_NOTARY402),
+      webhook_url: redactUrl(env.N8N_WEBHOOK_NOTARY402),
+    },
+  };
+}
+
+function redactUrl(value: string | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+  try {
+    const url = new URL(value);
+    if (url.username || url.password) {
+      url.username = "***";
+      url.password = "***";
+    }
+    for (const key of [...url.searchParams.keys()]) {
+      url.searchParams.set(key, "***");
+    }
+    return url.toString();
+  } catch {
+    return value.length <= 8 ? "***" : `${value.slice(0, 4)}...${value.slice(-4)}`;
+  }
 }

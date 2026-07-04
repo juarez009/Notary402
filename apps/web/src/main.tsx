@@ -43,6 +43,15 @@ interface DataMcpStatus {
   mcp_url: string | null;
 }
 
+interface LiveStatus {
+  postgres: { configured: boolean };
+  datamcp: { configured: boolean; permission_preset: string };
+  amoy_rpc: { configured: boolean; chain_id: number };
+  zavu: { configured: boolean; channel: string };
+  aperture: { configured: boolean; base_url: string | null };
+  n8n: { configured: boolean };
+}
+
 const API_BASE_URL = import.meta.env.VITE_NOTARY402_API_BASE_URL ?? "";
 
 function App() {
@@ -50,6 +59,7 @@ function App() {
   const [attestation, setAttestation] = useState<Attestation | null>(null);
   const [verification, setVerification] = useState<VerificationResult | null>(null);
   const [dataMcp, setDataMcp] = useState<DataMcpStatus | null>(null);
+  const [liveStatus, setLiveStatus] = useState<LiveStatus | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -63,7 +73,7 @@ function App() {
     setVerification(null);
 
     try {
-      const [attestationResponse, verificationResponse, dataMcpResponse] = await Promise.all([
+      const [attestationResponse, verificationResponse, dataMcpResponse, liveStatusResponse] = await Promise.all([
         fetch(`${API_BASE_URL}/v1/attestations/${encodeURIComponent(attestationId)}`),
         fetch(`${API_BASE_URL}/v1/verify`, {
           method: "POST",
@@ -71,15 +81,19 @@ function App() {
           body: JSON.stringify({ attestation_id: attestationId }),
         }),
         fetch(`${API_BASE_URL}/v1/integrations/datamcp`),
+        fetch(`${API_BASE_URL}/v1/live/status`),
       ]);
 
       if (!attestationResponse.ok || !verificationResponse.ok) {
-        throw new Error("Attestation not found or not verifiable.");
+        throw new Error(`Attestation not found or not verifiable from ${API_BASE_URL || "same-origin API"}. Check API server and CORS.`);
       }
 
       setAttestation(await attestationResponse.json() as Attestation);
       setVerification(await verificationResponse.json() as VerificationResult);
       setDataMcp(await dataMcpResponse.json() as DataMcpStatus);
+      if (liveStatusResponse.ok) {
+        setLiveStatus(await liveStatusResponse.json() as LiveStatus);
+      }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Verification failed.");
     } finally {
@@ -111,6 +125,11 @@ function App() {
           </button>
         </div>
         {error ? <p className="error">{error}</p> : null}
+        {attestation ? (
+          <button className="secondary" type="button" onClick={() => navigator.clipboard.writeText(attestation.attestation_id)}>
+            Copy attestation id
+          </button>
+        ) : null}
       </form>
 
       <section className="grid">
@@ -166,6 +185,26 @@ function App() {
             </div>
           ) : (
             <p className="muted">QVAC/ElSalvadorNotaryAgent output appears here.</p>
+          )}
+        </article>
+
+        <article className="panel">
+          <h2>Live status</h2>
+          {liveStatus ? (
+            <dl>
+              <dt>Postgres</dt>
+              <dd className={liveStatus.postgres.configured ? "good" : "bad"}>{liveStatus.postgres.configured ? "configured" : "missing"}</dd>
+              <dt>Amoy RPC</dt>
+              <dd>{liveStatus.amoy_rpc.configured ? `chain ${liveStatus.amoy_rpc.chain_id}` : "missing"}</dd>
+              <dt>Aperture</dt>
+              <dd>{liveStatus.aperture.base_url ?? "missing"}</dd>
+              <dt>Zavu</dt>
+              <dd>{liveStatus.zavu.configured ? liveStatus.zavu.channel : "missing"}</dd>
+              <dt>n8n</dt>
+              <dd>{liveStatus.n8n.configured ? "configured" : "missing"}</dd>
+            </dl>
+          ) : (
+            <p className="muted">Live integration status appears after verification.</p>
           )}
         </article>
 

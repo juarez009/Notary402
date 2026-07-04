@@ -116,6 +116,94 @@ test("GET /v1/integrations/datamcp describes the DataMCP audit integration witho
   await app.close();
 });
 
+test("POST /v1/legal-intent creates a legal intent and agent profile", async () => {
+  const app = buildApp({ logger: false });
+  await app.ready();
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/v1/legal-intent",
+    payload: {
+      agent_id: "codex-agent",
+      jurisdiction: "SV",
+      input: "Authorize a services agreement signature.",
+      document_type: "services_agreement",
+      parties: ["Notary402", "Client"],
+      obligations: ["sign", "archive"],
+      risk_flags: ["remote_signature"],
+    },
+  });
+
+  assert.equal(response.statusCode, 201);
+  assert.match(response.json().legal_intent_id, /^lintent_/);
+  assert.equal(response.json().agent_id, "codex-agent");
+  assert.equal(response.json().jurisdiction, "SV");
+  assert.deepEqual(response.json().parties, ["Notary402", "Client"]);
+  await app.close();
+});
+
+test("GET /v1/live/status reports redacted live configuration and never leaks secrets", async () => {
+  const app = buildApp({
+    logger: false,
+    datamcp: {
+      mcpUrl: "https://api.datamcp.app/api/mcp/conn_live?key=secret_key",
+      apiKey: "sk_live_secret",
+      permissionPreset: "read-only",
+    },
+    env: {
+      POSTGRES_URL: "postgres://user:pass@localhost:5432/notary402",
+      AMOY_RPC_URL: "https://polygon-amoy.example/rpc/secret",
+      ZAVU_ESCALATE_URL: "https://zavu.example/escalate",
+      APERTURE_BASE_URL: "http://localhost:8080",
+    },
+  });
+  await app.ready();
+
+  const response = await app.inject({ method: "GET", url: "/v1/live/status" });
+
+  assert.equal(response.statusCode, 200);
+  const bodyText = response.body;
+  const body = response.json();
+  assert.equal(body.postgres.configured, true);
+  assert.equal(body.datamcp.configured, true);
+  assert.equal(body.amoy_rpc.configured, true);
+  assert.equal(body.aperture.base_url, "http://localhost:8080");
+  assert.equal(bodyText.includes("sk_live_secret"), false);
+  assert.equal(bodyText.includes("secret_key"), false);
+  assert.equal(bodyText.includes("user:pass"), false);
+  await app.close();
+});
+
+test("API allows the web verifier origin through CORS preflight", async () => {
+  const app = buildApp({ logger: false });
+  await app.ready();
+
+  const response = await app.inject({
+    method: "OPTIONS",
+    url: "/v1/verify",
+    headers: {
+      origin: "http://localhost:3000",
+      "access-control-request-method": "POST",
+    },
+  });
+
+  assert.equal(response.statusCode, 204);
+  assert.equal(response.headers["access-control-allow-origin"], "http://localhost:3000");
+  await app.close();
+});
+
+test("GET /openapi.json serves the Notary402 OpenAPI contract", async () => {
+  const app = buildApp({ logger: false });
+  await app.ready();
+
+  const response = await app.inject({ method: "GET", url: "/openapi.json" });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.json().openapi, "3.0.3");
+  assert.ok(response.json().paths["/v1/legal-intent"]);
+  await app.close();
+});
+
 test("POST /v1/signature/validate uses the configured legal analyzer", async () => {
   const app = buildApp({
     logger: false,

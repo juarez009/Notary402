@@ -3,12 +3,31 @@ import { test } from "node:test";
 import { privateKeyToAccount } from "viem/accounts";
 import {
   createAttestation,
+  createLegalIntent,
   createSignatureRequest,
   verifyAttestation,
   verifyWalletSignature,
 } from "./index.ts";
 
-test("createSignatureRequest binds agent, jurisdiction, document hash, and requested level into a stable request hash", () => {
+test("createLegalIntent creates a stable audit intent id with normalized arrays", () => {
+  const input = {
+    agent_id: "codex-agent",
+    jurisdiction: "SV",
+    input: "Authorize a services agreement signature.",
+    document_type: "services_agreement",
+  } as const;
+
+  const first = createLegalIntent(input);
+  const second = createLegalIntent(input);
+
+  assert.equal(first.legal_intent_id, second.legal_intent_id);
+  assert.match(first.legal_intent_id, /^lintent_[a-f0-9]{12}$/);
+  assert.deepEqual(first.parties, []);
+  assert.deepEqual(first.obligations, []);
+  assert.deepEqual(first.risk_flags, []);
+});
+
+test("createSignatureRequest binds agent, jurisdiction, document hash, requested level into stable request hash", () => {
   const input = {
     agent_id: "codex-agent",
     jurisdiction: "SV",
@@ -25,7 +44,7 @@ test("createSignatureRequest binds agent, jurisdiction, document hash, and reque
   assert.match(first.request_hash, /^0x[a-f0-9]{64}$/);
 });
 
-test("verifyWalletSignature accepts an EIP-191 signature from the matching Amoy wallet", async () => {
+test("verifyWalletSignature accepts EIP-191 signature from matching Amoy wallet", async () => {
   const account = privateKeyToAccount("0x59c6995e998f97a5a0044966f094538a95dcf2e87c1e3bdf5d7f4b4626fef330");
   const message = "Notary402 request 0xabc123";
   const signature = await account.signMessage({ message });
@@ -43,7 +62,7 @@ test("verifyWalletSignature accepts an EIP-191 signature from the matching Amoy 
   assert.equal(result.chain_id, 80002);
 });
 
-test("createAttestation issues an immutable JSON attestation that verifyAttestation can validate", () => {
+test("createAttestation issues immutable JSON attestation verifyAttestation can validate", () => {
   const request = createSignatureRequest({
     agent_id: "codex-agent",
     jurisdiction: "SV",
@@ -54,7 +73,7 @@ test("createAttestation issues an immutable JSON attestation that verifyAttestat
   const attestation = createAttestation({
     signature_request: request,
     wallet_proof_id: "walletproof_001",
-    l402_receipt: "l402_receipt_demo",
+    l402_receipt: "l402_receipt_001",
     agent_wallet: "0x0000000000000000000000000000000000000001",
     legal_analysis: {
       notary_agent: "ElSalvadorNotaryAgent",

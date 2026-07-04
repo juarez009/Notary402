@@ -14,7 +14,15 @@
     "dev:web": "vite apps/web --host 0.0.0.0 --port 3000",
     "build:web": "vite build apps/web",
     "test": "node --test \"packages/**/*.test.ts\" \"apps/**/*.test.ts\"",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "check:live-config": "node scripts/check-live-config.ts",
+    "db:migrate": "node scripts/db-migrate.ts",
+    "smoke:postgres": "node scripts/smoke-postgres.ts",
+    "smoke:datamcp": "node scripts/smoke-datamcp.ts",
+    "smoke:amoy": "node scripts/smoke-amoy.ts",
+    "smoke:zavu": "node scripts/smoke-zavu.ts",
+    "smoke:aperture": "node scripts/smoke-aperture.ts",
+    "smoke:e2e-live": "node scripts/smoke-e2e-live.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.4",

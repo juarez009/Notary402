@@ -1,4 +1,4 @@
-import type { Attestation, LegalAnalysis, PaymentProof, SignatureRequest, WalletProof } from "../../../packages/core/src/index.ts";
+import type { AgentProfile, Attestation, LegalAnalysis, LegalIntent, PaymentProof, SignatureRequest, WalletProof } from "../../../packages/core/src/index.ts";
 import { Pool, type QueryResultRow } from "pg";
 
 export interface StoredWalletProof extends WalletProof {
@@ -21,6 +21,10 @@ export interface HumanEscalationRecord {
 }
 
 export interface AuditStore {
+  saveAgentProfile(agentProfile: AgentProfile): Promise<void>;
+  getAgentProfile(agentId: string): Promise<AgentProfile | undefined>;
+  saveLegalIntent(legalIntent: LegalIntent): Promise<void>;
+  getLegalIntent(id: string): Promise<LegalIntent | undefined>;
   saveSignatureRequest(signatureRequest: SignatureRequest): Promise<void>;
   getSignatureRequest(id: string): Promise<SignatureRequest | undefined>;
   saveWalletProof(walletProof: StoredWalletProof): Promise<void>;
@@ -36,6 +40,8 @@ export interface AuditStore {
 }
 
 export function createMemoryAuditStore(): AuditStore {
+  const agentProfiles = new Map<string, AgentProfile>();
+  const legalIntents = new Map<string, LegalIntent>();
   const signatureRequests = new Map<string, SignatureRequest>();
   const walletProofs = new Map<string, StoredWalletProof>();
   const paymentProofs = new Map<string, PaymentProof>();
@@ -44,6 +50,18 @@ export function createMemoryAuditStore(): AuditStore {
   const humanEscalations = new Map<string, HumanEscalationRecord>();
 
   return {
+    async saveAgentProfile(agentProfile) {
+      agentProfiles.set(agentProfile.agent_id, agentProfile);
+    },
+    async getAgentProfile(agentId) {
+      return agentProfiles.get(agentId);
+    },
+    async saveLegalIntent(legalIntent) {
+      legalIntents.set(legalIntent.legal_intent_id, legalIntent);
+    },
+    async getLegalIntent(id) {
+      return legalIntents.get(id);
+    },
     async saveSignatureRequest(signatureRequest) {
       signatureRequests.set(signatureRequest.signature_request_id, signatureRequest);
     },
@@ -92,6 +110,40 @@ export function createPostgresAuditStore(connectionString: string): AuditStore {
   const pool = new Pool({ connectionString });
 
   return {
+    async saveAgentProfile(agentProfile) {
+      await pool.query(
+        `insert into agent_profiles (agent_id, runtime, amoy_wallet, created_at)
+         values ($1,$2,$3,$4)
+         on conflict (agent_id) do update set runtime = excluded.runtime, amoy_wallet = excluded.amoy_wallet`,
+        [agentProfile.agent_id, agentProfile.runtime, agentProfile.amoy_wallet ?? null, agentProfile.created_at],
+      );
+    },
+    async getAgentProfile(agentId) {
+      const result = await pool.query<AgentProfileRow>("select * from agent_profiles where agent_id = $1", [agentId]);
+      return result.rows[0] ? agentProfileFromRow(result.rows[0]) : undefined;
+    },
+    async saveLegalIntent(legalIntent) {
+      await pool.query(
+        `insert into legal_intents (legal_intent_id, agent_id, jurisdiction, input, document_type, parties, obligations, risk_flags, created_at)
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+         on conflict (legal_intent_id) do update set input = excluded.input`,
+        [
+          legalIntent.legal_intent_id,
+          legalIntent.agent_id,
+          legalIntent.jurisdiction,
+          legalIntent.input,
+          legalIntent.document_type ?? null,
+          JSON.stringify(legalIntent.parties),
+          JSON.stringify(legalIntent.obligations),
+          JSON.stringify(legalIntent.risk_flags),
+          legalIntent.created_at,
+        ],
+      );
+    },
+    async getLegalIntent(id) {
+      const result = await pool.query<LegalIntentRow>("select * from legal_intents where legal_intent_id = $1", [id]);
+      return result.rows[0] ? legalIntentFromRow(result.rows[0]) : undefined;
+    },
     async saveSignatureRequest(signatureRequest) {
       await pool.query(
         `insert into signature_requests (signature_request_id, agent_id, jurisdiction, document_hash, request_hash, legal_intent_id, requested_signature_level, status, created_at)
@@ -219,6 +271,25 @@ export function createPostgresAuditStore(connectionString: string): AuditStore {
   };
 }
 
+interface AgentProfileRow extends QueryResultRow {
+  agent_id: string;
+  runtime: string;
+  amoy_wallet: `0x${string}` | null;
+  created_at: Date | string;
+}
+
+interface LegalIntentRow extends QueryResultRow {
+  legal_intent_id: string;
+  agent_id: string;
+  jurisdiction: "SV";
+  input: string;
+  document_type: string | null;
+  parties: string[] | string;
+  obligations: string[] | string;
+  risk_flags: string[] | string;
+  created_at: Date | string;
+}
+
 interface SignatureRequestRow extends QueryResultRow {
   signature_request_id: string;
   agent_id: string;
@@ -278,6 +349,29 @@ function signatureRequestFromRow(row: SignatureRequestRow): SignatureRequest {
     legal_intent_id: row.legal_intent_id ?? undefined,
     requested_signature_level: row.requested_signature_level,
     status: row.status,
+    created_at: dateString(row.created_at),
+  };
+}
+
+function agentProfileFromRow(row: AgentProfileRow): AgentProfile {
+  return {
+    agent_id: row.agent_id,
+    runtime: row.runtime,
+    amoy_wallet: row.amoy_wallet ?? undefined,
+    created_at: dateString(row.created_at),
+  };
+}
+
+function legalIntentFromRow(row: LegalIntentRow): LegalIntent {
+  return {
+    legal_intent_id: row.legal_intent_id,
+    agent_id: row.agent_id,
+    jurisdiction: row.jurisdiction,
+    input: row.input,
+    document_type: row.document_type ?? undefined,
+    parties: parseJsonArray(row.parties),
+    obligations: parseJsonArray(row.obligations),
+    risk_flags: parseJsonArray(row.risk_flags),
     created_at: dateString(row.created_at),
   };
 }

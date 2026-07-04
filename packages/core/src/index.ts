@@ -4,7 +4,10 @@ import { fallbackLegalAnalysis } from "./legal-analysis.ts";
 import type {
   Attestation,
   CreateAttestationInput,
+  CreateLegalIntentInput,
   CreateSignatureRequestInput,
+  AgentProfile,
+  LegalIntent,
   LegalAnalysis,
   PaymentProof,
   SignatureRequest,
@@ -16,6 +19,9 @@ import type {
 export type {
   Attestation,
   CreateAttestationInput,
+  CreateLegalIntentInput,
+  LegalIntent,
+  AgentProfile,
   CreateSignatureRequestInput,
   LegalAnalysis,
   PaymentProof,
@@ -24,6 +30,30 @@ export type {
   VerifyWalletSignatureInput,
   WalletProof,
 } from "./types.ts";
+
+export function createLegalIntent(input: CreateLegalIntentInput): LegalIntent {
+  const parties = input.parties ?? [];
+  const obligations = input.obligations ?? [];
+  const risk_flags = input.risk_flags ?? [];
+  const intentHash = sha256Hex({
+    agent_id: input.agent_id,
+    jurisdiction: input.jurisdiction,
+    input: input.input,
+    document_type: input.document_type,
+    parties,
+    obligations,
+    risk_flags,
+  });
+
+  return {
+    ...input,
+    parties,
+    obligations,
+    risk_flags,
+    legal_intent_id: `lintent_${intentHash.slice(2, 14)}`,
+    created_at: new Date(0).toISOString(),
+  };
+}
 
 export function createSignatureRequest(input: CreateSignatureRequestInput): SignatureRequest {
   const request_hash = sha256Hex({

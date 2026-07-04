@@ -102,6 +102,11 @@ button {
   padding: 14px 18px;
 }
 
+.secondary {
+  margin-top: 12px;
+  background: #fffdf6;
+}
+
 button:disabled {
   cursor: not-allowed;
   opacity: 0.5;

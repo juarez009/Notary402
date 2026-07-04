@@ -2,6 +2,7 @@ export interface ZavuEscalationInput {
   signature_request_id: string;
   jurisdiction: "SV";
   reason: string;
+  test?: boolean;
 }
 
 export interface ZavuEscalationResult {

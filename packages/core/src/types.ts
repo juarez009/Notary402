@@ -2,6 +2,31 @@ export type Jurisdiction = "SV";
 
 export type SignatureRequestStatus = "awaiting_payment" | "ready_for_analysis" | "issued";
 
+export interface CreateLegalIntentInput {
+  agent_id: string;
+  jurisdiction: Jurisdiction;
+  input: string;
+  document_type?: string;
+  parties?: string[];
+  obligations?: string[];
+  risk_flags?: string[];
+}
+
+export interface LegalIntent extends CreateLegalIntentInput {
+  legal_intent_id: string;
+  parties: string[];
+  obligations: string[];
+  risk_flags: string[];
+  created_at: string;
+}
+
+export interface AgentProfile {
+  agent_id: string;
+  runtime: string;
+  amoy_wallet?: `0x${string}`;
+  created_at: string;
+}
+
 export interface CreateSignatureRequestInput {
   agent_id: string;
   jurisdiction: Jurisdiction;

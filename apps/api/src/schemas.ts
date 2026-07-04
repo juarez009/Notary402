@@ -21,6 +21,21 @@ export const signatureRequestBodySchema = {
   additionalProperties: false,
 } as const;
 
+export const legalIntentBodySchema = {
+  type: "object",
+  properties: {
+    agent_id: { type: "string", minLength: 1 },
+    jurisdiction: { type: "string", enum: ["SV"] },
+    input: { type: "string", minLength: 1 },
+    document_type: { type: "string" },
+    parties: { type: "array", items: { type: "string" } },
+    obligations: { type: "array", items: { type: "string" } },
+    risk_flags: { type: "array", items: { type: "string" } },
+  },
+  required: ["agent_id", "jurisdiction", "input"],
+  additionalProperties: false,
+} as const;
+
 export const walletVerifyBodySchema = {
   type: "object",
   properties: {
@@ -89,6 +104,7 @@ export const zavuEscalateBodySchema = {
     signature_request_id: { type: "string", minLength: 1 },
     jurisdiction: { type: "string", enum: ["SV"] },
     reason: { type: "string", minLength: 1 },
+    test: { type: "boolean" },
   },
   required: ["signature_request_id", "jurisdiction", "reason"],
   additionalProperties: false,
