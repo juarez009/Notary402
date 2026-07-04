@@ -142,7 +142,7 @@
         .dot-pulse { animation: pulse-slow 2s infinite ease-in-out; }
 
         .highlight-step {
-            box-shadow: 0 0 25px rgba(0, 240, 255, 0.4) !important;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.5) !important;
             border-color: #00f0ff !important;
             transition: all 0.4s ease;
         }
@@ -161,7 +161,7 @@
             </div>
             <div class="flex items-center space-x-2">
                 <span class="text-base font-bold text-white font-sans tracking-wide">NOTARY402</span>
-                <span class="text-[10px] bg-purple-950 text-purple-300 px-2 py-0.5 rounded border border-purple-500/30 hidden sm:inline">CONSOLE v0.6.1</span>
+                <span class="text-[10px] bg-purple-950 text-purple-300 px-2 py-0.5 rounded border border-purple-500/30 hidden sm:inline">CONSOLE v0.6.2</span>
             </div>
         </div>
         <div class="flex items-center space-x-2 text-[11px]">
@@ -183,16 +183,16 @@
 </header>
 
 <!-- MODAL PRESENTACIÓN INTERACTIVA E2E -->
-<div id="e2e-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-cyan-500/40 rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl relative">
+<div id="e2e-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-cyan-500/50 rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl relative">
         <div class="flex items-center justify-between border-b border-slate-800 pb-3">
             <div class="flex items-center gap-2">
                 <div class="p-2 bg-cyan-500/10 text-cyan-400 rounded-lg border border-cyan-500/30">
                     <i data-lucide="play-circle" class="w-5 h-5"></i>
                 </div>
                 <div>
-                    <h3 id="t-modal-title" class="font-sans font-bold text-white text-base">Modo Presentación Notarial Agéntico (E2E)</h3>
-                    <p id="t-modal-sub" class="text-xs text-slate-400 font-mono">Explicación paso a paso del ciclo notarial guiado</p>
+                    <h3 id="t-modal-title" class="font-sans font-bold text-white text-base">Modo Presentación Notarial Agéntico (E2E Paso a Paso)</h3>
+                    <p id="t-modal-sub" class="text-xs text-slate-400 font-mono">Controla manualmente la velocidad de la demo</p>
                 </div>
             </div>
             <button onclick="stopE2EFlow()" class="text-slate-500 hover:text-white text-xs font-mono p-1">✕ Cerrar</button>
@@ -200,16 +200,16 @@
 
         <!-- Indicador de Progreso (Steps) -->
         <div class="grid grid-cols-6 gap-1 font-mono text-[10px] text-center" id="e2e-steps-indicator">
-            <div id="step-dot-1" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500">1. Intención</div>
-            <div id="step-dot-2" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500">2. Solicitud</div>
-            <div id="step-dot-3" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500">3. QVAC LLM</div>
-            <div id="step-dot-4" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500">4. Billetera</div>
-            <div id="step-dot-5" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500">5. Pago L402</div>
-            <div id="step-dot-6" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500">6. Atestación</div>
+            <button onclick="jumpToE2EStep(0)" id="step-dot-1" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500 hover:border-cyan-500">1. Intención</button>
+            <button onclick="jumpToE2EStep(1)" id="step-dot-2" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500 hover:border-cyan-500">2. Solicitud</button>
+            <button onclick="jumpToE2EStep(2)" id="step-dot-3" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500 hover:border-cyan-500">3. QVAC LLM</button>
+            <button onclick="jumpToE2EStep(3)" id="step-dot-4" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500 hover:border-cyan-500">4. Billetera</button>
+            <button onclick="jumpToE2EStep(4)" id="step-dot-5" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500 hover:border-cyan-500">5. Pago L402</button>
+            <button onclick="jumpToE2EStep(5)" id="step-dot-6" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500 hover:border-cyan-500">6. Atestación</button>
         </div>
 
         <!-- Cuerpo Explicativo del Paso Actual -->
-        <div id="e2e-step-content" class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2 font-mono min-h-[140px]">
+        <div id="e2e-step-content" class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2 font-mono min-h-[150px]">
             <div class="flex items-center justify-between text-xs text-cyan-400 font-bold">
                 <span id="e2e-step-title">Paso 1: Registro de Intención Legal</span>
                 <span id="e2e-step-endpoint" class="text-slate-500 text-[10px]">POST /v1/legal-intent</span>
@@ -220,12 +220,21 @@
             <div id="e2e-step-output" class="text-[11px] text-amber-300 pt-2 border-t border-slate-900"></div>
         </div>
 
-        <!-- Botones de Control de la Presentación -->
-        <div class="flex items-center justify-between pt-2 font-mono text-xs">
-            <span id="e2e-timer-label" class="text-slate-500 text-[11px]">Auto-avanzando en 3.5s...</span>
+        <!-- Controles de Velocidad & Navegación -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 font-mono text-xs border-t border-slate-800">
             <div class="flex items-center gap-2">
-                <button onclick="pauseResumeE2E()" id="e2e-pause-btn" class="btn-secondary py-1.5 px-3 text-xs">⏸ Pausar</button>
-                <button onclick="nextE2EStep()" id="e2e-next-btn" class="btn-primary py-1.5 px-4 text-xs">Siguiente Paso ➔</button>
+                <span class="text-slate-400 text-[11px]">Modo:</span>
+                <button onclick="setE2EMode('manual')" id="mode-manual-btn" class="sub-tab active">Manual (Clics)</button>
+                <button onclick="setE2EMode('auto')" id="mode-auto-btn" class="sub-tab">Auto (10s por paso)</button>
+            </div>
+
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <button onclick="prevE2EStep()" id="e2e-prev-btn" class="btn-secondary py-1.5 px-3 text-xs flex items-center gap-1">
+                    ← Anterior
+                </button>
+                <button onclick="nextE2EStep()" id="e2e-next-btn" class="btn-primary py-1.5 px-4 text-xs flex items-center gap-1">
+                    <span>Siguiente Paso</span> →
+                </button>
             </div>
         </div>
     </div>
@@ -244,7 +253,7 @@
         </div>
         <div class="flex items-center gap-2 w-full md:w-auto">
             <button onclick="startGuidedE2EFlow()" id="e2e-btn" class="btn-primary text-xs w-full md:w-auto flex items-center justify-center gap-2 py-2.5">
-                <i data-lucide="play-circle" class="w-4 h-4"></i> <span id="t-e2e-btn">Ver Demo Guiada E2E (Explicada)</span>
+                <i data-lucide="play-circle" class="w-4 h-4"></i> <span id="t-e2e-btn">Ver Demo Guiada Paso a Paso</span>
             </button>
         </div>
     </section>
@@ -616,7 +625,7 @@
             Notary402 demonstrates jurisdiction-aware legal workflow automation and cryptographic attestations. When local law requires a licensed notary or human legal professional, the system escalates rather than replacing that role.
         </p>
         <div class="flex flex-col sm:flex-row items-center justify-between text-[10px] text-slate-600 font-mono">
-            <span>Notary402 v0.6.1 — Agentic Operations Console</span>
+            <span>Notary402 v0.6.2 — Agentic Operations Console</span>
             <span>El Salvador • L402 Lightning • Bitcoin Native</span>
         </div>
     </div>
@@ -647,7 +656,7 @@ const I18N = {
     es: {
         heroTitle: "Notary402 Consola de Operaciones Agénticas",
         heroDesc: "Plataforma de pruebas e interacción completa para los 14 endpoints del Protocolo Notarial Agéntico L402.",
-        e2eBtn: "Ver Demo Guiada E2E (Explicada)",
+        e2eBtn: "Ver Demo Guiada Paso a Paso",
         modVerify: "1. Verificador Público",
         modIntent: "2. Registro e Intención",
         modProofs: "3. Pruebas y Pagos",
@@ -700,7 +709,7 @@ const I18N = {
     en: {
         heroTitle: "Notary402 Agentic Operations Console",
         heroDesc: "Complete testing and interaction console for all 14 endpoints of the L402 Agentic Notary Protocol.",
-        e2eBtn: "Watch Guided E2E Demo",
+        e2eBtn: "Watch Step-by-Step Guided Demo",
         modVerify: "1. Public Verifier",
         modIntent: "2. Intent & Registration",
         modProofs: "3. Proofs & Payments",
@@ -805,8 +814,8 @@ const E2E_STEPS_DATA = [
 
 let e2eCurrentStep = 0;
 let e2eTimer = null;
-let e2eIsPaused = false;
-let e2eCountdown = 4;
+let e2eMode = 'manual'; // 'manual' o 'auto'
+let e2eCountdown = 10;
 
 const SIG_LEVELS = {
     0:{name:'Hash Attestation',icon:'hash',color:'text-slate-400',bg:'bg-slate-900',border:'border-slate-700'},
@@ -895,7 +904,7 @@ function applyTranslations() {
 // ─── PRESENTACIÓN GUIADA E2E ──────────────────────────────
 function startGuidedE2EFlow() {
     e2eCurrentStep = 0;
-    e2eIsPaused = false;
+    setE2EMode('manual');
     document.getElementById('e2e-modal').classList.remove('hidden');
     executeE2EStep(0);
 }
@@ -906,18 +915,40 @@ function stopE2EFlow() {
     clearHighlights();
 }
 
-function pauseResumeE2E() {
-    e2eIsPaused = !e2eIsPaused;
-    document.getElementById('e2e-pause-btn').innerText = e2eIsPaused ? '▶ Continuar' : '⏸ Pausar';
+function setE2EMode(mode) {
+    e2eMode = mode;
+    document.getElementById('mode-manual-btn').className = mode === 'manual' ? 'sub-tab active' : 'sub-tab';
+    document.getElementById('mode-auto-btn').className = mode === 'auto' ? 'sub-tab active' : 'sub-tab';
+    
+    clearInterval(e2eTimer);
+    if (mode === 'auto') {
+        e2eCountdown = 10;
+        e2eTimer = setInterval(() => {
+            e2eCountdown--;
+            if (e2eCountdown <= 0) {
+                nextE2EStep();
+            }
+        }, 1000);
+    }
+}
+
+function jumpToE2EStep(index) {
+    e2eCurrentStep = index;
+    executeE2EStep(index);
+}
+
+function prevE2EStep() {
+    if (e2eCurrentStep > 0) {
+        e2eCurrentStep--;
+        executeE2EStep(e2eCurrentStep);
+    }
 }
 
 async function nextE2EStep() {
-    clearInterval(e2eTimer);
     if (e2eCurrentStep < E2E_STEPS_DATA.length - 1) {
         e2eCurrentStep++;
         executeE2EStep(e2eCurrentStep);
     } else {
-        // Al terminar el último paso, llevar al verificador público
         stopE2EFlow();
         switchModule('verify');
         const lastAttId = currentFlowState.attestation_id || 'att_402_9921_sv';
@@ -933,6 +964,9 @@ async function executeE2EStep(index) {
     document.getElementById('e2e-step-endpoint').innerText = stepData.endpoint;
     document.getElementById('e2e-step-desc').innerText = stepData.desc;
     document.getElementById('e2e-step-output').innerHTML = '<span class="animate-pulse">Ejecutando endpoint...</span>';
+
+    // Actualizar estado de los botones prev/next
+    document.getElementById('e2e-prev-btn').disabled = (index === 0);
 
     // Actualizar indicador de pasos
     for (let i = 1; i <= 6; i++) {
@@ -950,18 +984,9 @@ async function executeE2EStep(index) {
     await stepData.action();
     document.getElementById('e2e-step-output').innerText = '✓ ' + stepData.output();
 
-    // Iniciar temporizador de 4 segundos
-    e2eCountdown = 4;
-    clearInterval(e2eTimer);
-    e2eTimer = setInterval(() => {
-        if (!e2eIsPaused) {
-            e2eCountdown--;
-            document.getElementById('e2e-timer-label').innerText = `Auto-avanzando en ${e2eCountdown}s...`;
-            if (e2eCountdown <= 0) {
-                nextE2EStep();
-            }
-        }
-    }, 1000);
+    if (e2eMode === 'auto') {
+        e2eCountdown = 10;
+    }
 }
 
 function highlightCard(cardId) {
