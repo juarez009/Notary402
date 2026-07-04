@@ -1,1 +1,5 @@
 *.md
+node_modules/
+.api-server.*.log
+dist/
+.env

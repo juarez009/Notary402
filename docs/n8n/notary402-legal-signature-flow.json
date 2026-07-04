@@ -1,0 +1,94 @@
+{
+  "name": "notary402-legal-signature-flow",
+  "nodes": [
+    {
+      "name": "MCP or Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "position": [0, 0],
+      "parameters": {
+        "path": "notary402/legal-signature",
+        "httpMethod": "POST",
+        "responseMode": "lastNode"
+      }
+    },
+    {
+      "name": "Create Signature Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [240, 0],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8080/v1/signature/request",
+        "sendBody": true,
+        "contentType": "json"
+      }
+    },
+    {
+      "name": "Verify Amoy Wallet",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [480, 0],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3001/v1/wallets/verify-signature",
+        "sendBody": true,
+        "contentType": "json"
+      }
+    },
+    {
+      "name": "Run QVAC Legal Analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [720, 0],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3001/v1/signature/validate",
+        "sendBody": true,
+        "contentType": "json"
+      }
+    },
+    {
+      "name": "Branch Legal Risk",
+      "type": "n8n-nodes-base.if",
+      "position": [960, 0],
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.requires_human_notary}}",
+              "value2": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Escalate via Zavu",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1200, -120],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3001/v1/zavu/escalate",
+        "sendBody": true,
+        "contentType": "json"
+      }
+    },
+    {
+      "name": "Issue Attestation",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1200, 120],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8080/v1/attestations",
+        "sendBody": true,
+        "contentType": "json"
+      }
+    },
+    {
+      "name": "DataMCP Audit Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [1440, 0],
+      "parameters": {
+        "content": "Attach the DataMCP MCP link as a read-only audit database tool. Use get_schema/query to inspect signature_requests, payment_proofs, legal_analyses and attestations after each step."
+      }
+    }
+  ],
+  "connections": {}
+}

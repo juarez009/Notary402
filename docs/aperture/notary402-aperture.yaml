@@ -1,0 +1,28 @@
+# Example Aperture configuration for Notary402 MVP.
+# Aperture remains the L402 authority. Notary402 records the receipt after
+# Aperture validates payment and forwards the protected request.
+
+listenaddr: "0.0.0.0:8080"
+debuglevel: "info"
+
+authenticator:
+  disable: false
+
+services:
+  notary402-signature-request:
+    hostregexp: ".*"
+    pathregexp: "^/v1/signature/request$"
+    address: "http://127.0.0.1:3001"
+    protocol: "http"
+    price: 10
+    capabilities:
+      - "notary402.signature.request"
+
+  notary402-attestations:
+    hostregexp: ".*"
+    pathregexp: "^/v1/attestations$"
+    address: "http://127.0.0.1:3001"
+    protocol: "http"
+    price: 25
+    capabilities:
+      - "notary402.attestations.issue"
