@@ -9,6 +9,15 @@ export interface StoredWalletProof extends WalletProof {
   created_at: string;
 }
 
+export interface StoredDocumentRequest {
+  document_request_id: string;
+  tipo_documento: string;
+  comparecientes: any[];
+  detalles: Record<string, any>;
+  jurisdiccion: "SV";
+  created_at: string;
+}
+
 export interface HumanEscalationRecord {
   escalation_id: string;
   signature_request_id: string;
@@ -36,6 +45,8 @@ export interface AuditStore {
   saveAttestation(attestation: Attestation): Promise<void>;
   getAttestation(id: string): Promise<Attestation | undefined>;
   saveHumanEscalation(record: HumanEscalationRecord): Promise<void>;
+  saveDocumentRequest(record: StoredDocumentRequest): Promise<void>;
+  getDocumentRequest(id: string): Promise<StoredDocumentRequest | undefined>;
   close(): Promise<void>;
 }
 
@@ -48,6 +59,7 @@ export function createMemoryAuditStore(): AuditStore {
   const legalAnalyses = new Map<string, LegalAnalysis>();
   const attestations = new Map<string, Attestation>();
   const humanEscalations = new Map<string, HumanEscalationRecord>();
+  const documentRequests = new Map<string, StoredDocumentRequest>();
 
   return {
     async saveAgentProfile(agentProfile) {
@@ -94,6 +106,12 @@ export function createMemoryAuditStore(): AuditStore {
     },
     async saveHumanEscalation(record) {
       humanEscalations.set(record.escalation_id, record);
+    },
+    async saveDocumentRequest(record) {
+      documentRequests.set(record.document_request_id, record);
+    },
+    async getDocumentRequest(id) {
+      return documentRequests.get(id);
     },
     async close() {},
   };
@@ -265,6 +283,18 @@ export function createPostgresAuditStore(connectionString: string): AuditStore {
         [record.escalation_id, record.signature_request_id, record.jurisdiction, record.reason, record.channel, record.zavu_message_id, record.status, record.created_at],
       );
     },
+    async saveDocumentRequest(record) {
+      await pool.query(
+        `insert into document_requests (document_request_id, tipo_documento, comparecientes, detalles, jurisdiccion, created_at)
+         values ($1,$2,$3,$4,$5,$6)
+         on conflict (document_request_id) do update set detalles = excluded.detalles`,
+        [record.document_request_id, record.tipo_documento, JSON.stringify(record.comparecientes), JSON.stringify(record.detalles), record.jurisdiccion, record.created_at],
+      );
+    },
+    async getDocumentRequest(id) {
+      const result = await pool.query<DocumentRequestRow>("select * from document_requests where document_request_id = $1", [id]);
+      return result.rows[0] ? documentRequestFromRow(result.rows[0]) : undefined;
+    },
     async close() {
       await pool.end();
     },
@@ -336,6 +366,15 @@ interface AttestationRow extends QueryResultRow {
   signature: Attestation["signature"];
   legal_analysis: Attestation["legal_analysis"];
   status: "issued";
+  created_at: Date | string;
+}
+
+interface DocumentRequestRow extends QueryResultRow {
+  document_request_id: string;
+  tipo_documento: string;
+  comparecientes: any[] | string;
+  detalles: Record<string, any> | string;
+  jurisdiccion: "SV";
   created_at: Date | string;
 }
 
@@ -428,6 +467,17 @@ function attestationFromRow(row: AttestationRow): Attestation {
     signature: row.signature,
     legal_analysis: row.legal_analysis,
     status: row.status,
+    created_at: dateString(row.created_at),
+  };
+}
+
+function documentRequestFromRow(row: DocumentRequestRow): StoredDocumentRequest {
+  return {
+    document_request_id: row.document_request_id,
+    tipo_documento: row.tipo_documento,
+    comparecientes: Array.isArray(row.comparecientes) ? row.comparecientes : (parseJsonArray(row.comparecientes as string) as any[]),
+    detalles: typeof row.detalles === "string" ? (JSON.parse(row.detalles) as Record<string, any>) : row.detalles,
+    jurisdiccion: row.jurisdiccion,
     created_at: dateString(row.created_at),
   };
 }

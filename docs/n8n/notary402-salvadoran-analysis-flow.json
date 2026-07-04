@@ -1,0 +1,119 @@
+{
+  "name": "notary402-salvadoran-analysis-flow",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "notary402/document-request",
+        "httpMethod": "POST",
+        "responseMode": "lastNode"
+      },
+      "name": "Webhook Document Request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Eres un Asistente Notarial Experto en El Salvador. Revisa los datos de 'Generales de Ley' provistos. Valida según el Art. 32 de la Ley de Notariado: 1. Son mayores de 18 años. 2. Tienen DUI válido (ej. 12345678-9). 3. Tienen Domicilio y Profesión. Responde estrictamente con un JSON: { \"valido\": true/false, \"razon\": \"...\", \"texto_legal_sugerido\": \"...\" }."
+            },
+            {
+              "role": "user",
+              "message": "={{ JSON.stringify($json.body) }}"
+            }
+          ]
+        },
+        "jsonOutput": true
+      },
+      "name": "Agente Notarial SV (Art. 32)",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [240, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.valido}}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "Branch Approval",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [480, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:5678/webhook/notary402/legal-signature",
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={\"legal_text\": \"{{$json.texto_legal_sugerido}}\", \"document_type\": \"{{$('Webhook Document Request').item.json.body.tipo_documento}}\", \"agent_id\": \"notary402-doc-agent\"}"
+      },
+      "name": "Trigger Signature Flow",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [720, -100]
+    },
+    {
+      "parameters": {
+        "content": "Rechazado por incumplir requisitos legales de El Salvador."
+      },
+      "name": "Reject Request",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [720, 100]
+    }
+  ],
+  "connections": {
+    "Webhook Document Request": {
+      "main": [
+        [
+          {
+            "node": "Agente Notarial SV (Art. 32)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente Notarial SV (Art. 32)": {
+      "main": [
+        [
+          {
+            "node": "Branch Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Branch Approval": {
+      "main": [
+        [
+          {
+            "node": "Trigger Signature Flow",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {}
+}

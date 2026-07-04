@@ -25,6 +25,7 @@ import {
   verifyBodySchema,
   walletVerifyBodySchema,
   zavuEscalateBodySchema,
+  documentRequestBodySchema,
 } from "./schemas.ts";
 import { createDataMcpFlowPlan, readDataMcpConfig, type DataMcpConfig } from "./datamcp.ts";
 import { createAuditStoreFromEnv, type AuditStore } from "./audit-store.ts";
@@ -96,6 +97,39 @@ export function buildApp(options: BuildAppOptions = {}) {
   app.get("/openapi.json", async () => notary402OpenApi);
 
   app.get("/v1/live/status", async () => createLiveStatus(appEnv, dataMcpConfig));
+
+  app.post<{ Body: any }>("/v1/documents/request", {
+    schema: {
+      body: documentRequestBodySchema,
+      response: { 400: errorResponseSchema },
+    },
+  }, async (request, reply) => {
+    const documentRequestId = `docreq_${crypto.randomUUID()}`;
+    const payload = {
+      document_request_id: documentRequestId,
+      tipo_documento: request.body.tipo_documento,
+      comparecientes: request.body.comparecientes,
+      detalles: request.body.detalles,
+      jurisdiccion: request.body.jurisdiccion,
+      created_at: new Date().toISOString(),
+    };
+    await store.saveDocumentRequest(payload);
+    
+    if (appEnv.N8N_DOCUMENT_WEBHOOK_URL) {
+      try {
+        await fetch(appEnv.N8N_DOCUMENT_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } catch (err) {
+        app.log.error({ err }, "Failed to trigger n8n document webhook");
+      }
+    }
+
+    reply.code(201);
+    return payload;
+  });
 
   app.post<{ Body: CreateLegalIntentInput }>("/v1/legal-intent", {
     schema: {

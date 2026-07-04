@@ -96,3 +96,12 @@ create index if not exists idx_signature_requests_request_hash on signature_requ
 create index if not exists idx_legal_analyses_signature_request_id on legal_analyses(signature_request_id);
 create index if not exists idx_attestations_signature_request_id on attestations(signature_request_id);
 create index if not exists idx_human_escalations_signature_request_id on human_escalations(signature_request_id);
+
+create table if not exists document_requests (
+  document_request_id text primary key,
+  tipo_documento text not null,
+  comparecientes jsonb not null,
+  detalles jsonb not null,
+  jurisdiccion text not null,
+  created_at timestamptz not null default now()
+);

@@ -118,3 +118,37 @@ export const verifyBodySchema = {
   required: ["attestation_id"],
   additionalProperties: false,
 } as const;
+
+export const generalesDeLeySchema = {
+  type: "object",
+  properties: {
+    nombre_completo: { type: "string", minLength: 5 },
+    edad: { type: "integer", minimum: 18 },
+    profesion: { type: "string", minLength: 2 },
+    domicilio: { type: "string", minLength: 2 },
+    nacionalidad: { type: "string", minLength: 2 },
+    dui: { type: "string", pattern: "^[0-9]{8}-[0-9]$" },
+    nit: { type: "string" },
+  },
+  required: ["nombre_completo", "edad", "profesion", "domicilio", "nacionalidad", "dui"],
+  additionalProperties: false,
+} as const;
+
+export const documentRequestBodySchema = {
+  type: "object",
+  properties: {
+    tipo_documento: { type: "string", enum: ["COMPRAVENTA", "PODER_GENERAL", "AUTENTICA"] },
+    comparecientes: {
+      type: "array",
+      items: generalesDeLeySchema,
+      minItems: 1,
+    },
+    detalles: {
+      type: "object",
+      additionalProperties: true,
+    },
+    jurisdiccion: { type: "string", enum: ["SV"] },
+  },
+  required: ["tipo_documento", "comparecientes", "detalles", "jurisdiccion"],
+  additionalProperties: false,
+} as const;

@@ -63,6 +63,21 @@ function App() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // New tab state
+  const [activeTab, setActiveTab] = useState<"verify" | "request">("verify");
+
+  // Document request form state
+  const [tipoDocumento, setTipoDocumento] = useState("COMPRAVENTA");
+  const [nombre, setNombre] = useState("");
+  const [edad, setEdad] = useState("");
+  const [profesion, setProfesion] = useState("");
+  const [domicilio, setDomicilio] = useState("");
+  const [nacionalidad, setNacionalidad] = useState("Salvadoreña");
+  const [dui, setDui] = useState("");
+  const [nit, setNit] = useState("");
+  const [reqMessage, setReqMessage] = useState("");
+  const [reqLoading, setReqLoading] = useState(false);
+
   const checkRows = useMemo(() => Object.entries(verification?.checks ?? {}), [verification]);
 
   async function verifyAttestation(event: React.FormEvent<HTMLFormElement>) {
@@ -101,17 +116,57 @@ function App() {
     }
   }
 
+  async function submitDocumentRequest(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setReqLoading(true);
+    setReqMessage("");
+    try {
+      const response = await fetch(`${API_BASE_URL}/v1/documents/request`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          tipo_documento: tipoDocumento,
+          jurisdiccion: "SV",
+          detalles: {},
+          comparecientes: [{
+            nombre_completo: nombre,
+            edad: parseInt(edad, 10),
+            profesion,
+            domicilio,
+            nacionalidad,
+            dui,
+            nit: nit || undefined
+          }]
+        }),
+      });
+      if (!response.ok) throw new Error("Failed to submit document request");
+      const data = await response.json();
+      setReqMessage(`Successfully submitted! ID: ${data.document_request_id}`);
+    } catch (caught) {
+      setReqMessage(caught instanceof Error ? caught.message : "Submission failed.");
+    } finally {
+      setReqLoading(false);
+    }
+  }
+
   return (
     <main className="shell">
       <section className="masthead">
         <div>
-          <p className="eyebrow">Notary402 verifier</p>
-          <h1>Agentic legal trust audit</h1>
+          <p className="eyebrow">Notary402</p>
+          <h1>Agentic legal trust audit & services</h1>
         </div>
         <span className="status-pill">SV MVP</span>
       </section>
 
-      <form className="search-panel" onSubmit={verifyAttestation}>
+      <div className="tabs" style={{ display: "flex", gap: "1rem", marginBottom: "2rem" }}>
+        <button className={activeTab === "verify" ? "secondary" : ""} onClick={() => setActiveTab("verify")}>Verify Attestation</button>
+        <button className={activeTab === "request" ? "secondary" : ""} onClick={() => setActiveTab("request")}>Request Document (SV)</button>
+      </div>
+
+      {activeTab === "verify" ? (
+        <>
+          <form className="search-panel" onSubmit={verifyAttestation}>
         <label htmlFor="attestation-id">Attestation ID</label>
         <div className="search-row">
           <input
@@ -224,6 +279,42 @@ function App() {
           )}
         </article>
       </section>
+        </>
+      ) : (
+        <form className="panel" onSubmit={submitDocumentRequest} style={{ display: "flex", flexDirection: "column", gap: "1rem", maxWidth: "600px" }}>
+          <h2>Generales de Ley (Art. 32 El Salvador)</h2>
+          <label>Tipo de Documento
+            <select value={tipoDocumento} onChange={(e) => setTipoDocumento(e.target.value)}>
+              <option value="COMPRAVENTA">Compraventa de Inmueble</option>
+              <option value="PODER_GENERAL">Poder General</option>
+              <option value="AUTENTICA">Auténtica de Firma</option>
+            </select>
+          </label>
+          <label>Nombre Completo
+            <input required value={nombre} onChange={(e) => setNombre(e.target.value)} />
+          </label>
+          <label>Edad
+            <input type="number" required value={edad} onChange={(e) => setEdad(e.target.value)} min={18} />
+          </label>
+          <label>Profesión u Oficio
+            <input required value={profesion} onChange={(e) => setProfesion(e.target.value)} />
+          </label>
+          <label>Domicilio
+            <input required value={domicilio} onChange={(e) => setDomicilio(e.target.value)} />
+          </label>
+          <label>Nacionalidad
+            <input required value={nacionalidad} onChange={(e) => setNacionalidad(e.target.value)} />
+          </label>
+          <label>DUI (00000000-0)
+            <input required pattern="^[0-9]{8}-[0-9]$" value={dui} onChange={(e) => setDui(e.target.value)} placeholder="00000000-0" />
+          </label>
+          <label>NIT (Opcional)
+            <input value={nit} onChange={(e) => setNit(e.target.value)} />
+          </label>
+          <button type="submit" disabled={reqLoading}>{reqLoading ? "Enviando..." : "Enviar Petición a Agente Notarial"}</button>
+          {reqMessage && <p className={reqMessage.includes("Failed") ? "error" : "good"} style={{ color: reqMessage.includes("Failed") ? "red" : "green" }}>{reqMessage}</p>}
+        </form>
+      )}
     </main>
   );
 }
