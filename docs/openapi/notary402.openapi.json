@@ -17,6 +17,12 @@
         "responses": { "201": { "description": "Legal intent created" }, "400": { "description": "Invalid request" } }
       }
     },
+    "/v1/documents/request": {
+      "post": {
+        "summary": "Request a Salvadoran legal document draft and notarization workflow",
+        "responses": { "201": { "description": "Document request created" }, "400": { "description": "Invalid request" } }
+      }
+    },
     "/v1/signature/request": {
       "post": {
         "summary": "Create a signature request",
