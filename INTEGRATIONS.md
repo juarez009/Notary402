@@ -115,7 +115,7 @@ MVP integration:
 
 Role:
 
-- PostgreSQL audit/context MCP gateway.
+- Supabase PostgreSQL audit/context MCP gateway.
 - Schema-aware read access for agents and n8n.
 - Activity logs for SQL queries made through MCP.
 
@@ -167,8 +167,8 @@ resync_schema
 Flow:
 
 ```text
-Notary402 API writes audit state to PostgreSQL
-DataMCP exposes PostgreSQL through MCP
+Notary402 API writes audit state to Supabase PostgreSQL
+DataMCP exposes Supabase PostgreSQL through MCP
 n8n/agents query DataMCP read-only after each workflow step
 Verifier still calls Notary402 API for final validation
 ```
@@ -189,7 +189,7 @@ Expose tools through:
 
 - Notary402 MCP server, or
 - n8n MCP server.
-- DataMCP MCP link for PostgreSQL audit context.
+- DataMCP MCP link for Supabase PostgreSQL audit context.
 
 ## OpenClaw / Hermes / OpenCode
 

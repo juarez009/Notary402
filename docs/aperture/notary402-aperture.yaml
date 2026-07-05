@@ -1,0 +1,20 @@
+listenaddr: 0.0.0.0:8080
+debuglevel: debug
+
+authenticator:
+  disable: false
+
+services:
+  notary402:
+    hostregexp: "^localhost:8080$"
+    address: "http://localhost:3001"
+    protocol: http
+    routes:
+      signature-request:
+        path: "/v1/signature/request"
+        method: "POST"
+        price_msat: 1000
+      attestations:
+        path: "/v1/attestations"
+        method: "POST"
+        price_msat: 1000

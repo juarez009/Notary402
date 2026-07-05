@@ -16,7 +16,7 @@ n8n Workflow Orchestrator
         |-- Polygon Amoy: wallet signature and tx proofs
         |-- QVAC: local AI legal analysis
         |-- Zavu: multichannel notification and escalation
-        |-- DataMCP: PostgreSQL audit/context MCP gateway
+        |-- DataMCP: Supabase PostgreSQL audit/context MCP gateway
         |-- Notary402 API: core records and attestations
         v
 Verifier / Dashboard
@@ -98,7 +98,7 @@ Responsibilities:
 
 Responsibilities:
 
-- Expose PostgreSQL audit tables to agents through MCP.
+- Expose Supabase PostgreSQL audit tables to agents through MCP.
 - Provide schema-aware read access using `get_schema`, `get_table_details`, `query`, `get_permissions` and `get_schema_changes`.
 - Keep agent database permissions scoped, preferably read-only in MVP.
 - Provide activity logs for database queries made by agents and tools.
@@ -118,7 +118,7 @@ DataMCP is not the source of domain writes. Notary402 API remains responsible fo
 8. n8n branches by risk.
 9. Zavu notifies or escalates.
 10. Notary402 issues attestation.
-11. Notary402 persists audit state to PostgreSQL.
+11. Notary402 persists audit state to Supabase PostgreSQL through backend service role credentials.
 12. DataMCP exposes audit state to agents/n8n through read-only MCP.
 13. Verifier validates attestation.
 ```

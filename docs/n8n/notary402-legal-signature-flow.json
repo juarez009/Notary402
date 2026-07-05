@@ -1,0 +1,99 @@
+{
+  "name": "notary402-legal-signature-flow",
+  "nodes": [
+    {
+      "parameters": { "path": "notary402/legal-signature", "httpMethod": "POST", "responseMode": "lastNode" },
+      "id": "webhook",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3001/v1/legal-intent",
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={{ JSON.stringify($json.body.legal_intent) }}"
+      },
+      "id": "legal-intent",
+      "name": "Create Legal Intent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8080/v1/signature/request",
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={{ JSON.stringify({ ...$('Webhook Trigger').item.json.body.signature_request, legal_intent_id: $json.legal_intent_id }) }}"
+      },
+      "id": "signature-request",
+      "name": "Create Signature Request via Aperture",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3001/v1/signature/validate",
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={{ JSON.stringify({ signature_request_id: $json.signature_request_id, jurisdiction: 'SV', legal_text: $('Webhook Trigger').item.json.body.legal_text }) }}"
+      },
+      "id": "legal-analysis",
+      "name": "Run Legal Analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "conditions": { "boolean": [{ "value1": "={{ $json.requires_human_notary }}", "value2": true }] }
+      },
+      "id": "risk-branch",
+      "name": "Needs Human Notary?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [880, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3001/v1/zavu/escalate",
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={{ JSON.stringify({ signature_request_id: $json.signature_request_id, jurisdiction: 'SV', reason: 'Human notary review required', test: true }) }}"
+      },
+      "id": "zavu",
+      "name": "Escalate to Zavu",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1100, -120]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://localhost:3001/v1/integrations/datamcp"
+      },
+      "id": "datamcp-note",
+      "name": "DataMCP Read-only Note",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1100, 120]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": { "main": [[{ "node": "Create Legal Intent", "type": "main", "index": 0 }]] },
+    "Create Legal Intent": { "main": [[{ "node": "Create Signature Request via Aperture", "type": "main", "index": 0 }]] },
+    "Create Signature Request via Aperture": { "main": [[{ "node": "Run Legal Analysis", "type": "main", "index": 0 }]] },
+    "Run Legal Analysis": { "main": [[{ "node": "Needs Human Notary?", "type": "main", "index": 0 }]] },
+    "Needs Human Notary?": { "main": [[{ "node": "Escalate to Zavu", "type": "main", "index": 0 }], [{ "node": "DataMCP Read-only Note", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": {}
+}

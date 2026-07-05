@@ -1,0 +1,36 @@
+{
+  "name": "notary402",
+  "version": "0.5.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm.cmd run build && node --test dist/**/*.test.js",
+    "dev:api": "node --watch dist/apps/api/src/server.js",
+    "start:api": "node dist/apps/api/src/server.js",
+    "dev:web": "vite --host 127.0.0.1 --port 3000 apps/web",
+    "build:web": "vite build apps/web --outDir dist",
+    "check:live-config": "node dist/scripts/check-live-config.js",
+    "db:migrate": "node dist/scripts/db-migrate.js",
+    "smoke:supabase": "node dist/scripts/smoke-supabase.js",
+    "smoke:datamcp": "node dist/scripts/smoke-datamcp.js",
+    "smoke:amoy": "node dist/scripts/smoke-amoy.js",
+    "smoke:zavu": "node dist/scripts/smoke-zavu.js",
+    "smoke:aperture": "node dist/scripts/smoke-aperture.js",
+    "smoke:e2e-live": "node dist/scripts/smoke-e2e-live.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.22.0",
+    "@supabase/supabase-js": "^2.110.0",
+    "@vitejs/plugin-react": "^5.1.1",
+    "fastify": "^5.6.2",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "typescript": "^5.9.3",
+    "viem": "^2.43.1",
+    "vite": "^7.2.7",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {}
+}
