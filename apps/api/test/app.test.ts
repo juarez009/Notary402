@@ -19,6 +19,22 @@ describe("Notary402 API", () => {
     await app.close();
   });
 
+  it("creates agent profiles before writing agent-owned records", async () => {
+    const store = createMemoryAuditStore();
+    const app = buildApp({ store });
+    await app.ready();
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/legal-intent",
+      payload: { agent_id: "agent_fk_guard", jurisdiction: "SV", input: "Contrato con FK" }
+    });
+
+    assert.equal(response.statusCode, 201);
+    assert.equal((await store.getAgentProfile("agent_fk_guard"))?.agent_id, "agent_fk_guard");
+    await app.close();
+  });
+
   it("sets CORS for local web origin", async () => {
     const app = buildApp({ store: createMemoryAuditStore(), env: { WEB_ORIGIN: "http://localhost:3000" } as NodeJS.ProcessEnv });
     await app.ready();

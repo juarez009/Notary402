@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type {
   AgentProfile,
@@ -78,6 +79,37 @@ function supabaseError(table: string, error: { message?: string; code?: string }
   return new Error(`SUPABASE_${table.toUpperCase()}_${error.code || "ERROR"}: ${error.message || "request failed"}`);
 }
 
+function isSchemaCacheColumnError(error: { code?: string } | null) {
+  return error?.code === "PGRST204";
+}
+
+export function legacyDocumentRequestRow(row: DocumentRequest) {
+  const documentHash = documentRequestHash(row);
+  return {
+    document_request_id: row.document_request_id,
+    signature_request_id: row.signature_request_id || row.document_request_id,
+    document_hash: documentHash,
+    created_at: row.created_at
+  };
+}
+
+function documentRequestHash(row: DocumentRequest) {
+  return row.document_hash || `0x${createHash("sha256").update(JSON.stringify(row)).digest("hex")}`;
+}
+
+export function legacyDocumentSignatureRequestRow(row: DocumentRequest): SignatureRequest {
+  return {
+    signature_request_id: row.signature_request_id || row.document_request_id,
+    agent_id: "agent_document_request",
+    jurisdiction: "SV",
+    document_hash: documentRequestHash(row),
+    requested_signature_level: 1,
+    request_hash: `0x${createHash("sha256").update(`request:${JSON.stringify(row)}`).digest("hex")}`,
+    status: "issued",
+    created_at: row.created_at
+  };
+}
+
 export function createSupabaseAuditStoreFromClient(client: SupabaseClient<any, any, any>): AuditStore {
   async function upsert<T extends Record<string, unknown>>(table: string, row: T): Promise<T> {
     const { data, error } = await client.from(table).upsert(row).select().single();
@@ -120,7 +152,28 @@ export function createSupabaseAuditStoreFromClient(client: SupabaseClient<any, a
       if (error) throw supabaseError("human_escalations", error);
       return data as HumanEscalation[];
     },
-    createDocumentRequest: (row) => upsert("document_requests", row)
+    async createDocumentRequest(row) {
+      const { data, error } = await client.from("document_requests").upsert(row).select().single();
+      if (!error) return data as DocumentRequest;
+      if (!isSchemaCacheColumnError(error)) throw supabaseError("document_requests", error);
+
+      const fallback = legacyDocumentRequestRow(row);
+      const fallbackResult = await client.from("document_requests").upsert(fallback).select().single();
+      if (fallbackResult.error?.code === "23503") {
+        const parent = legacyDocumentSignatureRequestRow(row);
+        await upsert("agent_profiles", {
+          agent_id: parent.agent_id,
+          name: "Document Request Compatibility Agent",
+          created_at: row.created_at
+        });
+        await upsert("signature_requests", parent);
+        const retryResult = await client.from("document_requests").upsert(fallback).select().single();
+        if (retryResult.error) throw supabaseError("document_requests", retryResult.error);
+        return { ...row, ...retryResult.data } as DocumentRequest;
+      }
+      if (fallbackResult.error) throw supabaseError("document_requests", fallbackResult.error);
+      return { ...row, ...fallbackResult.data } as DocumentRequest;
+    }
   };
 }
 

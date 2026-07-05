@@ -199,6 +199,14 @@ export function buildApp(options: AppOptions = {}) {
   const store = options.store || createAuditStoreFromEnv(env);
   const app = Fastify({ logger: false });
 
+  async function ensureAgentProfile(agentId: string, walletAddress?: string) {
+    await store.upsertAgentProfile({
+      agent_id: agentId,
+      wallet_address: walletAddress,
+      created_at: now()
+    });
+  }
+
   app.addHook("onRequest", async (request, reply) => {
     const origin = request.headers.origin;
     const allowed = new Set([env.WEB_ORIGIN || "http://localhost:3000", "http://127.0.0.1:3000"]);
@@ -300,6 +308,7 @@ export function buildApp(options: AppOptions = {}) {
 
   app.post("/v1/legal-intent", { schema: { body: bodySchemas.legalIntent } }, async (request, reply) => {
     const body = request.body as Record<string, unknown>;
+    await ensureAgentProfile(String(body.agent_id));
     const intent = {
       legal_intent_id: id("lintent"),
       agent_id: String(body.agent_id),
@@ -332,6 +341,7 @@ export function buildApp(options: AppOptions = {}) {
 
   app.post("/v1/signature/request", { schema: { body: bodySchemas.signatureRequest } }, async (request, reply) => {
     const body = request.body as Record<string, unknown>;
+    await ensureAgentProfile(String(body.agent_id));
     const signatureRequest = {
       signature_request_id: id("sigreq"),
       agent_id: String(body.agent_id),
@@ -353,6 +363,7 @@ export function buildApp(options: AppOptions = {}) {
     if (chain_id !== 80002) return reply.code(400).send({ error: "CHAIN_ID_MISMATCH", message: "Expected Polygon Amoy chain_id 80002", statusCode: 400 });
     const verified = await verifyMessage({ address: String(body.wallet_address) as `0x${string}`, message: String(body.message), signature: String(body.signature) as `0x${string}` }).catch(() => false);
     if (!verified) return reply.code(400).send({ error: "INVALID_WALLET_SIGNATURE", message: "Signature does not match wallet", statusCode: 400 });
+    await ensureAgentProfile(String(body.agent_id), String(body.wallet_address));
     const proof = {
       wallet_proof_id: id("walletproof"),
       agent_id: String(body.agent_id),

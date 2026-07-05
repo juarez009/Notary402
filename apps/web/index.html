@@ -283,16 +283,14 @@
     <section id="module-verify" class="space-y-6">
         <div class="v-card p-5 space-y-3">
             <div class="flex flex-col sm:flex-row gap-3">
-                <input type="text" id="attestation-input" value="att_402_9921_sv" placeholder="att_402_9921_sv" onchange="verifyAttestation()" onkeydown="if(event.key==='Enter') verifyAttestation()" class="input-field flex-1 font-mono">
+                <input type="text" id="attestation-input" value="" placeholder="att_..." onchange="verifyAttestation()" onkeydown="if(event.key==='Enter') verifyAttestation()" class="input-field flex-1 font-mono">
                 <button onclick="verifyAttestation()" id="verify-btn" class="btn-primary flex items-center justify-center gap-2">
                     <i data-lucide="search" class="w-4 h-4"></i> <span id="t-verify-btn">Verificar</span>
                 </button>
             </div>
             <div class="flex flex-wrap gap-2 text-xs font-mono items-center">
-                <span id="t-demo-label" class="text-slate-500">Atestaciones Demo:</span>
-                <button onclick="fillAndVerify('att_402_9921_sv')" class="text-cyan-400 hover:underline">att_402_9921_sv (Lvl 3)</button>
-                <button onclick="fillAndVerify('att_402_5401_sv')" class="text-pink-400 hover:underline">att_402_5401_sv (Lvl 4 Humano)</button>
-                <button onclick="fillAndVerify('att_402_0044_sv')" class="text-cyan-400 hover:underline">att_402_0044_sv (Lvl 1 SLA)</button>
+                <span id="t-demo-label" class="text-slate-500">Atestaciones reales:</span>
+                <span class="text-slate-600">Se cargan desde Supabase cuando existen.</span>
             </div>
         </div>
 
@@ -894,7 +892,7 @@
 
 <!-- ═══════════════════════════════════════════════════════ -->
 <script>
-const API_BASE = 'http://localhost:3001';
+const API_BASE = 'https://clarify-preamble-could.ngrok-free.dev';
 let currentLang = 'es';
 let lastVerifiedData = null, lastQRUrl = '';
 
@@ -1053,7 +1051,7 @@ const E2E_STEPS_DATA = [
         endpoint: "POST /v1/attestations & POST /v1/verify",
         desc: "Con todas las pruebas validadas, Notary402 emite la Atestación Notarial oficial y la despliega en el Verificador Público con QR escaneable.",
         action: async () => { highlightCard('card-step-6'); await submitIssueAttestation(); await verifyAttestation(); },
-        output: () => `Atestación Emitida -> ${currentFlowState.attestation_id || 'att_402_9921_sv'}`
+        output: () => `Atestación Emitida -> ${currentFlowState.attestation_id || 'sin_attestation_real'}`
     }
 ];
 
@@ -1071,14 +1069,17 @@ const SIG_LEVELS = {
     5:{name:'Public Instrument Workflow',icon:'landmark',color:'text-red-400',bg:'bg-red-950',border:'border-red-500/40'},
 };
 
-const MOCK_ATTESTATIONS = {
-    'att_402_9921_sv':{attestation_id:'att_402_9921_sv',valid:true,status:'issued',signature_level:3,requires_human_notary:false,jurisdiction:'SV',request_hash:'f10a8b9cd2ea491f2c2b0c3ff411a098ce1bc4a1b02de92',document_hash:'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',agent_wallet:'0x71C9415843E0774040951c45ac1A3BA037543a86',amoy_tx_hash:'0x3c99a2fe7ebd10cb8cf83a213e4b774619ba88bc',l402_payment:{amount_msats:150,status:'settled',receipt:'lnbc150n1p3llu34v82as...'},qvac_analysis:{document_type:'Arrendamiento Comercial',document_type_en:'Commercial Lease Agreement',risk_flags:[],checklist:[{label:'Capacidad legal de las partes identificada',passed:true},{label:'Cumplimiento Ley de Firma Electrónica (Art. 15-22)',passed:true}]},zavu:{status:'no_escalation'},created_at:'2026-07-04T15:30:00Z'},
-    'att_402_5401_sv':{attestation_id:'att_402_5401_sv',valid:true,status:'pending_human_review',signature_level:4,requires_human_notary:true,jurisdiction:'SV',request_hash:'c018a3ef201c10d32bb4a80ce0fbc140fa39a8203f19e21',document_hash:'9a01e0d3bc891f240fa08b9cd2ea491f2c2b0c3ff411a098ce1bc4a1b02de92',agent_wallet:'0x40951c45ac1A3BA037543a8671C9415843E07740',amoy_tx_hash:'0xa12048cf7e8b10cb8cf83a213e4b774619ba88bc27ef',l402_payment:{amount_msats:500,status:'settled',receipt:'lnbc1000n98df71la0fbc...'},qvac_analysis:{document_type:'Consolidación de Activos Tokenizados',risk_flags:['Monto excede límite de firma autónoma'],checklist:[{label:'Capacidad legal de las partes identificada',passed:true}]},zavu:{status:'pending_human_review',trigger:'High risk score',assigned_notary:'Mestre Toad Alfaro (San Salvador)',channel:'WhatsApp Business API',escalated_at:'2026-07-04T15:45:00Z'},created_at:'2026-07-04T15:40:00Z'},
-    'att_402_0044_sv':{attestation_id:'att_402_0044_sv',valid:true,status:'issued',signature_level:1,requires_human_notary:false,jurisdiction:'SV',request_hash:'e3bc01e4a8109bfcd8b103cb0c19df2ea491f2c2b0c3ff41',document_hash:'a1a098ce1bc4a1b02de92e3b0c44298fc1c149afbf4c8996fb92427ae41e464',agent_wallet:'0x37543a8671C9415843E0774040951c45ac1A3BA',amoy_tx_hash:'0x543a86c01e4a8fc7e8b10cb8cf83a213e4b774619ba',l402_payment:{amount_msats:100,status:'settled',receipt:'lnbc50n1p3f19e248b10c...'},qvac_analysis:{document_type:'Pacto SLA de API',risk_flags:[],checklist:[{label:'Tipo de documento compatible con firma agéntica',passed:true}]},zavu:{status:'no_escalation'},created_at:'2026-07-04T14:20:00Z'},
+const MOCK_ATTESTATIONS = {};
+const MOCK_LIVE_STATUS = {
+    supabase: { configured: false, connected: false },
+    datamcp: { configured: false, connected: false },
+    amoy_rpc: { configured: false, connected: false },
+    zavu: { configured: false, connected: false },
+    aperture: { configured: false, connected: false },
+    polar_lnd: { configured: false, connected: false },
+    n8n: { configured: false, connected: false }
 };
-
-const MOCK_LIVE_STATUS = {supabase:{status:'pending',note:'Not configured'},datamcp:{status:'pending',note:'MCP URL not set'},amoy:{status:'pending',note:'RPC not set'},qvac:{status:'pending',note:'Ollama offline'},zavu:{status:'pending',note:'Zavu URL not set'},aperture:{status:'pending',note:'Not running'},n8n:{status:'pending',note:'Not running'}};
-const MOCK_DATAMCP = {status:'integration_pending',provider:'datamcp',reason:'DATAMCP_MCP_URL not configured',tables:['agent_profiles','legal_intents','signature_requests','wallet_proofs','payment_proofs','legal_analyses','attestations','human_escalations'],permission_preset:'read-only',mcp_tools:['query','get_schema','get_table_details','get_permissions','get_schema_changes','resync_schema'],note:'Notary402 is the write authority. DataMCP exposes audit tables as read-only MCP context for agents and n8n.'};
+const MOCK_DATAMCP = { status: 'integration_pending', permission_preset: 'read-only', tables: [], mcp_tools: [], note: 'API no disponible; no se muestran datos simulados.' };
 
 // ─── API HELPER ──────────────────────────────────────────
 async function fetchFromAPI(path, options = {}) {
@@ -1191,8 +1192,7 @@ async function nextE2EStep() {
     } else {
         stopE2EFlow();
         switchModule('verify');
-        const lastAttId = currentFlowState.attestation_id || 'att_402_9921_sv';
-        fillAndVerify(lastAttId);
+        if (currentFlowState.attestation_id) fillAndVerify(currentFlowState.attestation_id);
     }
 }
 
@@ -1247,8 +1247,8 @@ async function verifyAttestation() {
     const input = document.getElementById('attestation-input');
     let id = input ? input.value.trim() : '';
     if (!id) {
-        id = 'att_402_9921_sv';
-        if (input) input.value = id;
+        showToast('Ingresa un attestation_id real');
+        return;
     }
     const btn = document.getElementById('verify-btn');
     const t = I18N[currentLang];
@@ -1262,7 +1262,7 @@ async function verifyAttestation() {
     
     let data = await fetchFromAPI('/v1/verify', { method: 'POST', body: JSON.stringify({ attestation_id: id }) });
     if (!data || data.__error) data = await fetchFromAPI('/v1/attestations/' + id);
-    if (!data || data.__error) data = MOCK_ATTESTATIONS[id] || null;
+    if (data && data.attestation) data = data.attestation;
 
     if (btn) {
         btn.disabled = false;
@@ -1270,7 +1270,7 @@ async function verifyAttestation() {
     }
     if (window.lucide) lucide.createIcons();
 
-    if (!data) { showToast(t.notFound + id); return; }
+    if (!data || data.__error) { showToast(t.notFound + id); return; }
     lastVerifiedData = data;
     renderVerificationResult(data);
     addToTimeline(data);
@@ -1355,7 +1355,9 @@ async function submitLegalIntent() {
     });
 
     if (!res || res.__error) {
-        res = { legal_intent_id: 'lintent_' + Math.random().toString(36).substr(2, 9), agent_id, created_at: new Date().toISOString(), __demo: true };
+        btn.disabled = false;
+        showToast(`API error: ${res?.__error || 'legal intent no registrado'}`);
+        return;
     }
 
     btn.disabled = false;
@@ -1384,7 +1386,9 @@ async function submitSignatureRequest() {
     });
 
     if (!res || res.__error) {
-        res = { signature_request_id: 'sigreq_' + Math.random().toString(36).substr(2, 9), requested_signature_level, __demo: true };
+        btn.disabled = false;
+        showToast(`API error: ${res?.__error || 'signature request no registrado'}`);
+        return;
     }
 
     btn.disabled = false;
@@ -1412,7 +1416,9 @@ async function submitQVACValidate() {
     });
 
     if (!res || res.__error) {
-        res = { analysis_id: 'qvac_' + Math.random().toString(36).substr(2, 9), status: 'valid', risk_score: 0.05, __demo: true };
+        btn.disabled = false;
+        showToast(`API error: ${res?.__error || 'validacion QVAC no registrada'}`);
+        return;
     }
 
     btn.disabled = false;
@@ -1509,13 +1515,9 @@ async function submitDocumentRequest() {
     });
 
     if (!res || res.__error) {
-        res = {
-            document_request_id: 'docreq_' + Math.random().toString(36).substr(2, 9),
-            ...currentDocApiPayload,
-            created_at: new Date().toISOString(),
-            status: 'created',
-            __demo: true
-        };
+        if (btn) btn.disabled = false;
+        showToast(`API error: ${res?.__error || 'document request no registrado'}`);
+        return;
     }
 
     if (btn) btn.disabled = false;
@@ -1590,7 +1592,9 @@ async function submitWalletVerify() {
     });
 
     if (!res || res.__error) {
-        res = { wallet_proof_id: 'wproof_' + Math.random().toString(36).substr(2, 9), verified: true, __demo: true };
+        btn.disabled = false;
+        showToast(`API error: ${res?.__error || 'wallet proof no registrado'}`);
+        return;
     }
 
     btn.disabled = false;
@@ -1617,7 +1621,9 @@ async function submitL402Verify() {
     });
 
     if (!res || res.__error) {
-        res = { payment_proof_id: 'pay_l402_' + Math.random().toString(36).substr(2, 9), status: 'settled', amount_msats: 150, __demo: true };
+        btn.disabled = false;
+        showToast(`API error: ${res?.__error || 'pago L402 no registrado'}`);
+        return;
     }
 
     btn.disabled = false;
@@ -1645,17 +1651,17 @@ async function submitAmoyVerify() {
     const out = document.getElementById('res-amoy');
     out.classList.remove('hidden');
 
-    if (res && res.status === 503) {
-        out.innerHTML = `<span class="text-amber-400 font-bold">⚠️ HTTP 503 AMOY_RPC_NOT_CONFIGURED</span>`;
+    if (!res || res.__error) {
+        out.innerHTML = `<span class="text-amber-400 font-bold">API error: ${res?.__error || 'Amoy RPC no configurado'}</span>`;
     } else {
         out.innerHTML = `<span class="text-purple-400 font-bold">✓ Consulta Amoy RPC Ejecutada</span>`;
     }
 }
 
 async function submitIssueAttestation() {
-    const wallet_proof_id = document.getElementById('att-wproof-id')?.value || 'wproof_demo_1';
-    const payment_proof_id = document.getElementById('att-pproof-id')?.value || 'pproof_demo_1';
-    const signature_request_id = currentFlowState.signature_request_id || 'sigreq_demo_99';
+    const wallet_proof_id = document.getElementById('att-wproof-id')?.value || '';
+    const payment_proof_id = document.getElementById('att-pproof-id')?.value || '';
+    const signature_request_id = currentFlowState.signature_request_id || '';
     const agent_wallet = document.getElementById('w-address')?.value || '0x71C9415843E0774040951c45ac1A3BA037543a86';
     const amoy_tx_hash = document.getElementById('amoy-tx-hash')?.value || '0x3c99a2fe7ebd10cb8cf83a213e4b774619ba88bc';
 
@@ -1668,27 +1674,11 @@ async function submitIssueAttestation() {
     });
 
     if (!res || res.__error) {
-        const demoId = 'att_402_' + Math.floor(1000 + Math.random() * 9000) + '_sv';
-        res = {
-            attestation_id: demoId,
-            valid: true,
-            status: 'issued',
-            signature_level: 3,
-            requires_human_notary: false,
-            jurisdiction: 'SV',
-            request_hash: currentFlowState.request_hash || 'f10a8b9cd2ea491f2c2b0c3ff411a098ce1bc4a1b02de92',
-            document_hash: currentFlowState.document_hash || 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-            agent_wallet: agent_wallet,
-            amoy_tx_hash: amoy_tx_hash,
-            l402_payment: { amount_msats: 150, status: 'settled', receipt: 'lnbc150n1p3llu34v82as...' },
-            qvac_analysis: { document_type: 'Acuerdo Agéntico Demostración', risk_flags: [], checklist: [{ label: 'Verificación de Firma Criptográfica Exitoso', passed: true }, { label: 'Revisión Ley Firma Electrónica Art. 15-22', passed: true }] },
-            zavu: { status: 'no_escalation' },
-            created_at: new Date().toISOString(),
-            __demo: true
-        };
+        if (btn) btn.disabled = false;
+        showToast(`API error: ${res?.__error || 'attestation no emitida'}`);
+        return;
     }
 
-    MOCK_ATTESTATIONS[res.attestation_id] = res;
     currentFlowState.attestation_id = res.attestation_id;
 
     const input = document.getElementById('attestation-input');
@@ -1766,7 +1756,9 @@ async function submitZavuEscalate() {
     });
 
     if (!res || res.__error) {
-        res = { status: 'escalated', channel: 'WhatsApp Business API', assigned_notary: 'Mestre Toad Alfaro', test: true, __demo: true };
+        btn.disabled = false;
+        showToast(`API error: ${res?.__error || 'escalacion Zavu no enviada'}`);
+        return;
     }
 
     btn.disabled = false;
@@ -1802,11 +1794,24 @@ function addToTimeline(data) {
 function renderTimeline() {
     const list = document.getElementById('timeline-list');
     if (!list) return;
+    if (timelineHistory.length === 0) {
+        list.innerHTML = '<div class="p-2.5 rounded bg-slate-950 border border-slate-800 text-xs text-slate-500 font-mono">Sin attestations reales en Supabase todavía.</div>';
+        return;
+    }
     list.innerHTML = timelineHistory.map(data => `
         <div class="flex items-center justify-between p-2.5 rounded bg-slate-950 border border-slate-800 text-xs font-mono cursor-pointer hover:border-cyan-500/30" onclick="fillAndVerify('${data.attestation_id}'); switchModule('verify');">
             <span class="text-cyan-300">${data.attestation_id}</span>
             <span class="text-slate-400 text-[10px]">Lvl ${data.signature_level}</span>
         </div>`).join('');
+}
+
+async function loadRealAttestations() {
+    const data = await fetchFromAPI('/v1/attestations');
+    timelineHistory.length = 0;
+    if (data && !data.__error && Array.isArray(data.attestations)) {
+        data.attestations.forEach(attestation => addToTimeline(attestation));
+    }
+    renderTimeline();
 }
 
 function buildQR(id) {
@@ -1839,7 +1844,7 @@ window.onload = function() {
     refreshLiveStatus();
     loadDataMCP();
     updateDocPreviewTemplate();
-    Object.values(MOCK_ATTESTATIONS).forEach(a => addToTimeline(a));
+    loadRealAttestations();
 };
 </script>
 </body>

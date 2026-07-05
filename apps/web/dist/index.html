@@ -43,7 +43,7 @@
             color: #cbd5e1;
             font-family: 'Inter', sans-serif;
         }
-        
+
         .v-card {
             background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(16px);
@@ -51,11 +51,10 @@
             border-radius: 12px;
             transition: border-color .2s ease, box-shadow .2s ease;
         }
-        
         .v-card:hover {
             border-color: rgba(0, 240, 255, 0.35);
         }
-        
+
         .input-field {
             background: #090d16;
             border: 1px solid #334155;
@@ -65,13 +64,12 @@
             font-size: 0.875rem;
             transition: all 0.15s ease;
         }
-        
         .input-field:focus {
             outline: none;
             border-color: #00f0ff;
             box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
         }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, #00f0ff 0%, #3b82f6 100%);
             color: #020617;
@@ -81,16 +79,13 @@
             transition: all 0.2s ease;
             cursor: pointer;
         }
-        
         .btn-primary:hover {
             box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
             transform: translateY(-1px);
         }
-        
         .btn-primary:active { transform: scale(0.98); }
-        
         .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
-        
+
         .btn-secondary {
             background: #1e293b;
             border: 1px solid #334155;
@@ -101,13 +96,12 @@
             transition: all 0.15s ease;
             cursor: pointer;
         }
-        
         .btn-secondary:hover {
             background: #334155;
             color: #ffffff;
             border-color: #475569;
         }
-        
+
         .nav-tab {
             padding: 0.75rem 1.25rem;
             font-family: 'JetBrains Mono', monospace;
@@ -120,15 +114,13 @@
             align-items: center;
             gap: 0.5rem;
         }
-        
         .nav-tab:hover { color: #00f0ff; }
-        
         .nav-tab.active {
             color: #00f0ff;
             border-bottom-color: #00f0ff;
             background: rgba(0, 240, 255, 0.04);
         }
-        
+
         .sub-tab {
             font-size: 0.75rem;
             font-family: 'JetBrains Mono', monospace;
@@ -139,25 +131,22 @@
             transition: all 0.15s ease;
             cursor: pointer;
         }
-        
         .sub-tab:hover { color: #f8fafc; background: rgba(255,255,255,0.03); }
-        
         .sub-tab.active {
             color: #00f0ff;
             background: rgba(0, 240, 255, 0.08);
             border-color: rgba(0, 240, 255, 0.3);
         }
-        
+
         @keyframes pulse-slow { 0%,100%{opacity:.4;transform:scale(.95)} 50%{opacity:1;transform:scale(1.05)} }
-        
         .dot-pulse { animation: pulse-slow 2s infinite ease-in-out; }
-        
+
         .highlight-step {
             box-shadow: 0 0 30px rgba(0, 240, 255, 0.5) !important;
             border-color: #00f0ff !important;
             transition: all 0.4s ease;
         }
-        
+
         *:focus-visible { outline: 2px solid #00f0ff !important; outline-offset: 2px; }
     </style>
 </head>
@@ -1715,54 +1704,20 @@ async function submitIssueAttestation() {
     showToast('Atestación Emitida');
 }
 
-// Live integrations
-const SVC_LABELS = {
-    supabase: 'Supabase',
-    datamcp: 'DataMCP',
-    amoy_rpc: 'Amoy RPC',
-    zavu: 'Zavu',
-    aperture: 'Aperture',
-    polar_lnd: 'Polar LND',
-    n8n: 'n8n'
-};
-
-function liveServiceState(service) {
-    if (service && service.connected) return { cls: 'int-ok', label: 'connected' };
-    if (service && service.configured) return { cls: 'text-sky-300', label: 'configured' };
-    return { cls: 'int-pending', label: 'pending' };
-}
-
-function liveServiceDetail(key, service) {
-    if (!service) return '';
-    if (key === 'supabase') return service.schema || service.url || '';
-    if (key === 'polar_lnd') return [service.network, service.grpc_host].filter(Boolean).join(' | ');
-    return service.base_url || service.mcp_url || service.webhook_url || service.url || service.endpoint || service.permission_preset || '';
-}
+// ─── MÓDULO 4: AUDITORÍA Y LIVE ──────────────────────────
+const SVC_LABELS = { postgres: 'PostgreSQL', datamcp: 'DataMCP', amoy: 'L402 Gateway', qvac: 'QVAC', zavu: 'Zavu', aperture: 'Aperture', n8n: 'n8n' };
 
 async function refreshLiveStatus() {
     let data = await fetchFromAPI('/v1/live/status'), isDemo = false;
     if (!data || data.__error) { data = MOCK_LIVE_STATUS; isDemo = true; }
+    document.getElementById('live-status-grid').innerHTML = Object.entries(SVC_LABELS).map(([k, l]) => {
+        const s = data[k]; let cls = (!s || s.status === 'pending' || s.status === 'integration_pending') ? 'int-pending' : 'int-ok';
+        return `<div class="p-2.5 rounded bg-slate-950 border border-slate-800 text-center"><span class="text-slate-500 text-[10px] block mb-0.5">${l}</span><span class="${cls} text-[11px] font-mono font-bold">● ${s?.note || 'Online'}</span></div>`;
+    }).join('');
 
-    const grid = document.getElementById('live-status-grid');
-    if (grid) {
-        grid.innerHTML = Object.entries(SVC_LABELS).map(([key, label]) => {
-            const service = data[key];
-            const state = liveServiceState(service);
-            const detail = liveServiceDetail(key, service);
-            return `<div class="p-2.5 rounded bg-slate-950 border border-slate-800 text-center">
-                <span class="text-slate-500 text-[10px] block mb-0.5">${label}</span>
-                <span class="${state.cls} text-[11px] font-mono font-bold">status: ${state.label}</span>
-                <span class="text-slate-500 text-[10px] block mt-1 break-all">${detail}</span>
-            </div>`;
-        }).join('');
-    }
-
-    const badge = document.getElementById('api-health-badge');
-    if (badge) {
-        badge.innerHTML = isDemo
-            ? "<span class='w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5'></span><span class='text-amber-400'>Demo</span>"
-            : "<span class='w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 dot-pulse'></span><span class='text-emerald-400 font-bold'>API</span>";
-    }
+    document.getElementById('api-health-badge').innerHTML = isDemo
+        ? '<span class="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5"></span><span class="text-amber-400">Demo</span>'
+        : '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 dot-pulse"></span><span class="text-emerald-400 font-bold">API</span>';
     lucide.createIcons();
 }
 

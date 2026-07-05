@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 
-const API = "http://localhost:3001";
+const API = "https://clarify-preamble-could.ngrok-free.dev";
 
 const integrations = [
   { key: "supabase", label: "Supabase" },
@@ -60,7 +60,7 @@ function App() {
       if (!response.ok) throw new Error(`status ${response.status}`);
       setStatus(await response.json());
     } catch {
-      setError("No se pudo conectar con la API en http://localhost:3001. Revisa CORS/API.");
+      setError("No se pudo conectar con la API publica. Revisa CORS/API.");
     }
   }
 

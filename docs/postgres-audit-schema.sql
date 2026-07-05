@@ -96,7 +96,12 @@ create table if not exists human_escalations (
 
 create table if not exists document_requests (
   document_request_id text primary key,
-  signature_request_id text not null,
-  document_hash text not null,
+  signature_request_id text,
+  document_hash text,
+  tipo_documento text,
+  jurisdiccion text,
+  comparecientes jsonb not null default '[]',
+  detalles jsonb not null default '{}',
+  status text not null default 'created',
   created_at timestamptz not null
 );

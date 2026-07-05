@@ -3,6 +3,8 @@ import { describe, it } from "node:test";
 import {
   createAuditStoreFromEnv,
   createMemoryAuditStore,
+  legacyDocumentRequestRow,
+  legacyDocumentSignatureRequestRow,
   normalizeSupabaseServiceRoleKey,
   normalizeSupabaseUrl
 } from "../src/audit-store.js";
@@ -29,6 +31,37 @@ describe("AuditStore", () => {
   it("normalizes Supabase REST URLs to project base URLs", () => {
     assert.equal(normalizeSupabaseUrl("https://project.supabase.co/rest/v1/"), "https://project.supabase.co");
     assert.equal(normalizeSupabaseUrl(" https://project.supabase.co "), "https://project.supabase.co");
+  });
+
+  it("maps rich document requests to the legacy Supabase document_requests schema", () => {
+    const row = legacyDocumentRequestRow({
+      document_request_id: "docreq_1",
+      tipo_documento: "COMPRAVENTA",
+      jurisdiccion: "SV",
+      comparecientes: [{ nombre: "Audit" }],
+      detalles: { lote: 1 },
+      status: "created",
+      created_at: "2026-01-01T00:00:00.000Z"
+    });
+
+    assert.equal(row.document_request_id, "docreq_1");
+    assert.equal(row.signature_request_id, "docreq_1");
+    assert.match(row.document_hash, /^0x[0-9a-f]{64}$/);
+    assert.equal(row.created_at, "2026-01-01T00:00:00.000Z");
+  });
+
+  it("maps rich document requests to a legacy parent signature_request row", () => {
+    const row = legacyDocumentSignatureRequestRow({
+      document_request_id: "docreq_1",
+      tipo_documento: "COMPRAVENTA",
+      created_at: "2026-01-01T00:00:00.000Z"
+    });
+
+    assert.equal(row.signature_request_id, "docreq_1");
+    assert.equal(row.agent_id, "agent_document_request");
+    assert.equal(row.jurisdiction, "SV");
+    assert.equal(row.status, "issued");
+    assert.match(row.document_hash, /^0x[0-9a-f]{64}$/);
   });
 
   it("uses supabase store when the Supabase service role key has paste whitespace", () => {
