@@ -246,9 +246,9 @@
     <!-- HERO / BANNER -->
     <section class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 v-card border-cyan-500/20 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950">
         <div class="space-y-1">
-            <h1 id="t-hero-title" class="text-xl sm:text-2xl font-bold text-white font-sans tracking-tight">Notary402 Agentic Operations Console</h1>
+            <h1 id="t-hero-title" class="text-xl sm:text-2xl font-bold text-white font-sans tracking-tight">Notary402 — Protocolo Notarial Agéntico Web3</h1>
             <p id="t-hero-desc" class="text-xs sm:text-sm text-slate-400 max-w-2xl">
-                Plataforma de pruebas e interacción completa para los 14 endpoints del Protocolo Notarial Agéntico L402.
+                Infraestructura de Confianza Legal, Firmas EIP-191 y Pagos L402 Lightning para Agentes Autónomos en El Salvador.
             </p>
         </div>
         <div class="flex items-center gap-2 w-full md:w-auto">
@@ -1456,9 +1456,28 @@ function updateDocPreviewTemplate() {
         template = `CONTRATO DE ARRENDAMIENTO COMERCIAL AGÉNTICO L402. En la ciudad de San Salvador, fecha ${dateStr}. Nos comparece el señor ${nombre}, de ${edad} años de edad, ${profesion}, domicilio ${domicilio}, DUI ${dui}, en calidad de ARRENDANTE; y el Agente de Software Autónomo en calidad de ARRENDATARIO. Convenimos en el arrendamiento del espacio de servidores e infraestructura física por la canonjía mensual equivalente en Satoshis de la Red Lightning Network. El incumplimiento del protocolo L402 autoriza la rescisión inmediata del contrato sin necesidad de requerimiento judicial. Ley aplicable: Ley de Comercio Electrónico y Ley de Notariado de El Salvador.`;
     }
 
+    const typeNames = {
+        'COMPRAVENTA': 'Compraventa Inmueble (CNR El Salvador)',
+        'PODER_GENERAL': 'Poder General Administrativo & Judicial Agéntico',
+        'AUTENTICA': 'Auténtica de Firma Criptográfica (Art. 15-22)',
+        'ARRENDAMIENTO': 'Arrendamiento Comercial Agéntico L402'
+    };
+
+    const summaryCard = `📌 RESUMEN EJECUTIVO NOTARIAL
+──────────────────────────────────────────────────────────
+• Instrumento   : ${typeNames[type] || type}
+• Compareciente : ${nombre} (${profesion}, ${edad} años)
+• Identificación: DUI ${dui} | NIT ${nit}
+• Jurisdicción  : El Salvador (Ley de Notariado Art. 32 & Ley de Firma)
+• Cobro Arancel : Red Bitcoin Lightning L402 (Machine-to-Machine)
+──────────────────────────────────────────────────────────
+
+📜 REDACCIÓN NOTARIAL FORMAL COMPLETA:
+`;
+
     currentDocDraftText = template;
     const draftContainer = document.getElementById('doc-draft-container');
-    if (draftContainer) draftContainer.innerText = template;
+    if (draftContainer) draftContainer.innerText = summaryCard + template;
 
     currentDocApiPayload = {
         tipo_documento: type,
