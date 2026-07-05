@@ -41,6 +41,49 @@ La secuencia muestra cuatro etapas claras:
 | 2026-07-04 20:04:36 -0600 | RicardoFv2 | `04454cf6` | style/ui | Se aplican lineamientos UI/UX Pro Max, reemplazando emojis por iconos SVG y mejorando espaciado/contraste. | `apps/web/index.html`, `apps/web/public/index.html`, `frontend-verifier/index.html` |
 | 2026-07-04 20:08:16 -0600 | RicardoFv2 | `86464212` | style/ui | Se agregan Executive Summary Cards al preview documental y se simplifica el copy del hero para mayor legibilidad. | `apps/web/index.html`, `apps/web/public/index.html`, `frontend-verifier/index.html` |
 | 2026-07-04 20:10:17 -0600 | RicardoFv2 | `291d2549` | docs | Se unifica `README.md` con arquitectura completa, niveles de firma, setup live, endpoints y runner de demo. | `README.md` |
+| 2026-07-04 20:14:44 -0600 | Juarez009 | `bb1ebfd3` | docs | Se agrega documentacion acumulada sobre el desarrollo del proyecto hasta ese momento. | `MOVIMIENTOS_PROYECTO.md` |
+
+## Human explanations by hour
+
+### Around 12 PM
+
+Before the first commit, the project already had direction. The design brief and execution plan show that the team was defining what Notary402 should become: a legal trust layer for agent-driven workflows, with a clear product idea before the codebase became active.
+
+### Around 1 PM
+
+The repository was initialized and the development environment started taking shape. The first Git commit created the baseline, while local skill and agent files show the workspace being prepared for fast implementation, debugging, frontend work, testing, and verification.
+
+### Around 2 PM
+
+This hour was about turning the idea into a technical blueprint. The project gained early backend and core files, plus product and architecture documents such as the PRD, architecture notes, integration plan, legal boundaries, and implementation plan. In plain English, the team was deciding what the system should do and where each responsibility should live.
+
+### Around 3 PM
+
+Around 3:00 PM, the project moved from planning and isolated building blocks into a real working foundation. The team was no longer only describing Notary402; they were assembling the actual MVP structure that the rest of the day would build on.
+
+Between 3:11 PM and 3:24 PM, the local file timeline shows work around integrations and app setup. This included Web3/legal integration files, tests for external services, Vite and TypeScript configuration for the web app, and early documentation for DataMCP and Aperture. In human terms, this was the moment where the project started connecting its technical pieces: blockchain verification, payment boundaries, legal analysis, audit context, and the frontend shell.
+
+At 3:35 PM, commit `2cc486c0` captured the main foundation of the MVP. It added the API application, the core package, integration modules, MCP server, initial web app, database/audit documentation, environment examples, package configuration, and test coverage. This commit is important because it turned the repository into a full product workspace instead of a loose collection of ideas.
+
+### Around 4 PM
+
+The 4 PM hour moved the MVP from structure into real product behavior. The team added live-environment helpers, smoke scripts, OpenAPI work, stronger core logic, and the Salvadoran notarial analysis flow. By the end of this block, Notary402 was not just a code skeleton; it had legal workflow behavior, external validation paths, and a clearer contract for how the API should be used.
+
+### Around 5 PM
+
+This was the productization hour. The frontend became a real verifier and then evolved into an operations console. Documentation also became much stronger: the README, API spec, environment setup, demo script, and task list made the project easier to explain and present. The work at 5 PM turned technical progress into something a judge, teammate, or demo audience could understand.
+
+### Around 6 PM
+
+At 6 PM, the team integrated Supabase and stabilized the demo experience. The API, audit store, MCP server, OpenAPI contract, database schema, live scripts, and frontend were updated together. Several UI fixes followed, including restoring button behavior, improving verification transitions, adding the document request endpoint, and removing conflict markers that had broken JavaScript handlers.
+
+### Around 7 PM
+
+The 7 PM block focused on making the project demo-ready for an autonomous agent story. The key movement was the addition of the Web3 AI Agent CLI runner through `npm run demo:agent`. That gave the project a way to present Notary402 as an agent-first legal trust workflow instead of only a manual web/API demo.
+
+### Around 8 PM
+
+The final hour was about polish, clarity, and documentation. The UI was cleaned up with better spacing, tabbed flows, SVG icons, stronger contrast, executive summary cards, and simpler hero copy. The README was unified, and the project movement document itself was added so the full development story could be explained chronologically.
 
 ## Movimientos por area
 
