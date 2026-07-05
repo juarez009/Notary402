@@ -1,0 +1,7 @@
+[build]
+  command = "npm ci --include=dev --prefer-online --no-audit --no-fund && npm run build:web"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NPM_FLAGS = "--include=dev"
