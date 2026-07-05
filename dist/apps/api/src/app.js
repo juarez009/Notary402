@@ -188,6 +188,11 @@ export function buildApp(options = {}) {
         amoy_rpc: { configured: Boolean(env.AMOY_RPC_URL), chain_id: Number(env.AMOY_CHAIN_ID || 80002), url: redactedUrl(env.AMOY_RPC_URL) },
         zavu: { configured: Boolean(env.ZAVU_ESCALATE_URL || env.ZAVU_BASE_URL), endpoint: redactedUrl(env.ZAVU_ESCALATE_URL || env.ZAVU_BASE_URL), channel: "whatsapp" },
         aperture: { configured: Boolean(env.APERTURE_BASE_URL), base_url: redactedUrl(env.APERTURE_BASE_URL) },
+        polar_lnd: {
+            configured: Boolean(env.LND_AGENT_GRPC_HOST && env.LND_AGENT_MACAROON && env.LND_AGENT_TLS_CERT),
+            network: env.POLAR_NETWORK_NAME || null,
+            grpc_host: env.LND_AGENT_GRPC_HOST ? redactedUrl(`lnd://${env.LND_AGENT_GRPC_HOST}`) : null
+        },
         n8n: {
             configured: Boolean(env.N8N_WEBHOOK_NOTARY402 || (env.N8N_BASE_URL && env.N8N_API_KEY) || env.N8N_MCP_URL),
             base_url: redactedUrl(env.N8N_BASE_URL),
