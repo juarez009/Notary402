@@ -823,9 +823,6 @@ const I18N = {
         downloadQr: "Descargar QR",
         footerDisclaimer: "Notary402 demuestra la automatización de flujos de trabajo legales con conciencia de jurisdicción y atestaciones criptográficas. Cuando la ley local requiere un notario autorizado o profesional legal humano, el sistema escala en lugar de reemplazar ese rol.",
         toastCopied: "Copiado al portapapeles",
-        toastJsonCopied: "JSON copiado",
-        toastQrDownloaded: "QR descargado",
-<<<<<<< HEAD
         notFound: "Atestación no encontrada: ",
         datamcpState: "Estado DataMCP",
         datamcpTables: "Tablas de Auditoría Supabase",
@@ -847,9 +844,6 @@ const I18N = {
             channel: "Canal",
             date: "Escalado"
         }
-=======
-        notFound: "Atestación no encontrada: "
->>>>>>> 256b681b4374048c46585051213cb66e9ee7585e
     },
     en: {
         heroTitle: "Notary402 Agentic Operations Console",
@@ -878,7 +872,6 @@ const I18N = {
         toastCopied: "Copied to clipboard",
         toastJsonCopied: "JSON Copied",
         toastQrDownloaded: "QR Downloaded",
-<<<<<<< HEAD
         notFound: "Attestation not found: ",
         datamcpState: "DataMCP State",
         datamcpTables: "Supabase Audit Tables",
@@ -900,9 +893,6 @@ const I18N = {
             channel: "Channel",
             date: "Escalated At"
         }
-=======
-        notFound: "Attestation not found: "
->>>>>>> 256b681b4374048c46585051213cb66e9ee7585e
     }
 };
 
@@ -1009,7 +999,6 @@ function switchVerifyTab(tabName) {
         document.getElementById(`pane-v-${t}`)?.classList.toggle('hidden', t !== tabName);
     });
 }
->>>>>>> 256b681b4374048c46585051213cb66e9ee7585e
 
 function toggleLanguage() {
     currentLang = currentLang === 'es' ? 'en' : 'es';
@@ -1646,26 +1635,7 @@ function buildQR(id) {
     try { new QRCode(c, { text: url, width: 140, height: 140 }); } catch (e) {}
 }
 
-<<<<<<< HEAD
-const SVC_LABELS={supabase:'Supabase',datamcp:'DataMCP',amoy:'L402 Gateway',qvac:'QVAC',zavu:'Zavu',aperture:'Aperture',n8n:'n8n'};
-async function refreshLiveStatus(){
-    const banner=document.getElementById('integration-error-banner');banner.classList.add('hidden');
-    let data=await fetchFromAPI('/v1/live/status'),isDemo=false;
-    if(!data||data.__error){
-        if(data?.__error==='integration_pending'){banner.classList.remove('hidden');document.getElementById('integration-error-msg').textContent='API devolvió 503 — algunos servicios están en integration_pending. Configura .env.live para conectarlos.';}
-        data=MOCK_LIVE_STATUS;isDemo=true;
-    }
-    document.getElementById('live-status-grid').innerHTML=Object.entries(SVC_LABELS).map(([k,l])=>{
-        const s=data[k];let dot='●',cls,note;
-        if(!s||s.status==='pending'||s.status==='integration_pending'){cls='int-pending';note=s?.note||'Pending';}
-        else if(['connected','ok','ready','active'].includes(s.status)){cls='int-ok';note='Online';}
-        else if(['error','down'].includes(s.status)){cls='int-error';note=s?.note||'Error';}
-        else{cls='int-demo';note=isDemo?'Demo':'—';}
-        return`<div class="p-2.5 rounded bg-slate-950 border border-slate-800 text-center"><span class="text-slate-500 text-[10px] block mb-0.5">${l}</span><span class="${cls} text-[11px] font-mono font-bold">${dot} ${note}</span></div>`;
-    }).join('');
-    document.getElementById('api-health-badge').innerHTML=isDemo?'<span class="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5"></span><span class="text-amber-400">Demo</span>':'<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 dot-pulse"></span><span class="text-emerald-400 font-bold">API</span>';
-    lucide.createIcons();
-}
+
 
 function downloadQR() {
     const canvas = document.querySelector('#qr-canvas canvas');
