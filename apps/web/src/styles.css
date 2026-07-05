@@ -85,6 +85,10 @@ h2 {
   color: #56d6b1;
 }
 
+.configured {
+  color: #8fb8ff;
+}
+
 .pending {
   color: #f4ba5f;
 }

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import net, { type AddressInfo } from "node:net";
 import { describe, it } from "node:test";
 import { privateKeyToAccount } from "viem/accounts";
 import { buildApp } from "../src/app.js";
@@ -44,6 +45,31 @@ describe("Notary402 API", () => {
     assert.equal(text.includes("key=secret"), false);
     assert.equal(response.json().supabase.configured, true);
     await app.close();
+  });
+
+  it("reports Polar LND connected when the gRPC port accepts TCP", async () => {
+    const server = net.createServer((socket) => socket.end());
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const address = server.address() as AddressInfo;
+
+    try {
+      const app = buildApp({
+        store: createMemoryAuditStore(),
+        env: {
+          LND_AGENT_GRPC_HOST: `127.0.0.1:${address.port}`,
+          LND_AGENT_MACAROON: "macaroon",
+          LND_AGENT_TLS_CERT: "cert"
+        } as NodeJS.ProcessEnv
+      });
+      await app.ready();
+      const response = await app.inject({ method: "GET", url: "/v1/live/status" });
+      assert.equal(response.statusCode, 200);
+      assert.equal(response.json().polar_lnd.configured, true);
+      assert.equal(response.json().polar_lnd.connected, true);
+      await app.close();
+    } finally {
+      await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+    }
   });
 
   it("serves OpenAPI", async () => {

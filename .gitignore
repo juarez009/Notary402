@@ -5,3 +5,4 @@ dist/
 !.env.example
 !.env.live.example
 .DS_Store
+work/

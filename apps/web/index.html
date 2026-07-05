@@ -1704,20 +1704,54 @@ async function submitIssueAttestation() {
     showToast('Atestación Emitida');
 }
 
-// ─── MÓDULO 4: AUDITORÍA Y LIVE ──────────────────────────
-const SVC_LABELS = { postgres: 'PostgreSQL', datamcp: 'DataMCP', amoy: 'L402 Gateway', qvac: 'QVAC', zavu: 'Zavu', aperture: 'Aperture', n8n: 'n8n' };
+// Live integrations
+const SVC_LABELS = {
+    supabase: 'Supabase',
+    datamcp: 'DataMCP',
+    amoy_rpc: 'Amoy RPC',
+    zavu: 'Zavu',
+    aperture: 'Aperture',
+    polar_lnd: 'Polar LND',
+    n8n: 'n8n'
+};
+
+function liveServiceState(service) {
+    if (service && service.connected) return { cls: 'int-ok', label: 'connected' };
+    if (service && service.configured) return { cls: 'text-sky-300', label: 'configured' };
+    return { cls: 'int-pending', label: 'pending' };
+}
+
+function liveServiceDetail(key, service) {
+    if (!service) return '';
+    if (key === 'supabase') return service.schema || service.url || '';
+    if (key === 'polar_lnd') return [service.network, service.grpc_host].filter(Boolean).join(' | ');
+    return service.base_url || service.mcp_url || service.webhook_url || service.url || service.endpoint || service.permission_preset || '';
+}
 
 async function refreshLiveStatus() {
     let data = await fetchFromAPI('/v1/live/status'), isDemo = false;
     if (!data || data.__error) { data = MOCK_LIVE_STATUS; isDemo = true; }
-    document.getElementById('live-status-grid').innerHTML = Object.entries(SVC_LABELS).map(([k, l]) => {
-        const s = data[k]; let cls = (!s || s.status === 'pending' || s.status === 'integration_pending') ? 'int-pending' : 'int-ok';
-        return `<div class="p-2.5 rounded bg-slate-950 border border-slate-800 text-center"><span class="text-slate-500 text-[10px] block mb-0.5">${l}</span><span class="${cls} text-[11px] font-mono font-bold">● ${s?.note || 'Online'}</span></div>`;
-    }).join('');
 
-    document.getElementById('api-health-badge').innerHTML = isDemo
-        ? '<span class="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5"></span><span class="text-amber-400">Demo</span>'
-        : '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 dot-pulse"></span><span class="text-emerald-400 font-bold">API</span>';
+    const grid = document.getElementById('live-status-grid');
+    if (grid) {
+        grid.innerHTML = Object.entries(SVC_LABELS).map(([key, label]) => {
+            const service = data[key];
+            const state = liveServiceState(service);
+            const detail = liveServiceDetail(key, service);
+            return `<div class="p-2.5 rounded bg-slate-950 border border-slate-800 text-center">
+                <span class="text-slate-500 text-[10px] block mb-0.5">${label}</span>
+                <span class="${state.cls} text-[11px] font-mono font-bold">status: ${state.label}</span>
+                <span class="text-slate-500 text-[10px] block mt-1 break-all">${detail}</span>
+            </div>`;
+        }).join('');
+    }
+
+    const badge = document.getElementById('api-health-badge');
+    if (badge) {
+        badge.innerHTML = isDemo
+            ? "<span class='w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5'></span><span class='text-amber-400'>Demo</span>"
+            : "<span class='w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 dot-pulse'></span><span class='text-emerald-400 font-bold'>API</span>";
+    }
     lucide.createIcons();
 }
 

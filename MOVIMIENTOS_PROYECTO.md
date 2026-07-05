@@ -49,6 +49,17 @@ La secuencia muestra cuatro etapas claras:
 | 2026-07-04 22:17:10 -0600 | Juarez009 | `222dda7f` | docs/planning | Se agrega archivo de siguientes pasos para orientar el trabajo posterior. | `NEXT_STEPS.md` |
 | 2026-07-04 22:25:29 -0600 | arte988 | `05d67eb0` | config/db | Se actualiza configuracion, se agrega `.gitignore` y se incorpora esquema completo de Supabase. | `.gitignore`, `docs/supabase-schema-full.sql`, `.env` |
 | 2026-07-04 22:33:46 -0600 | arte988 | `84e3738f` | deps/build | Se actualizan `package.json`/`package-lock.json` y cambia el estado de dependencias locales en `node_modules`. | `package.json`, `package-lock.json`, `node_modules/` |
+| 2026-07-04 22:50:27 -0600 | Juarez009 | `afdbd1e9` | docs | Se actualiza el registro de eventos del proyecto. | `MOVIMIENTOS_PROYECTO.md` |
+| 2026-07-04 22:54:08 -0600 | RicardoFv2 | `c73c2c97` | fix | Se reemplaza `npm.cmd` por `npm` cross-platform en el script de test. | `package.json` |
+| 2026-07-04 23:51:07 -0600 | RicardoFv2 | `290daa16` | feature/demo | Se restaura el runner autonomo Web3 con flujo de 7 pasos e incluye solicitud documental salvadorena. | `apps/api/test/app.test.ts`, `package.json`, `scripts/agent-hackathon-demo.ts` |
+| 2026-07-04 23:52:24 -0600 | RicardoFv2 | `9f6cbcdd` | feature/api | Se agrega `POST /v1/documents/request` al Fastify app y se permite request/hash opcional en `DocumentRequest`. | `apps/api/src/app.ts`, `packages/core/src/types.ts` |
+| 2026-07-04 23:54:15 -0600 | RicardoFv2 | `5f2ff8f5` | docs | Se actualiza README con comandos completos de start, dev, test, build y smoke. | `README.md` |
+| 2026-07-05 00:17:35 -0600 | Juarez009 | `af12dc40` | fix/runtime | Se corrige la ejecucion del frontend/API y se agregan logs/caches/dependencias locales de runtime. | `.gitignore`, `apps/api/src/app.ts`, `apps/web/node_modules/.vite/`, `api-dev.*.log`, `frontend-dev.*.log`, `node_modules/`, `dist/` |
+| 2026-07-05 00:22:33 -0600 | Juarez009 | `19642ae0` | fix/runtime | Segunda correccion de ejecucion del frontend relacionada con audit store compilado y fuente. | `apps/api/src/audit-store.ts`, `dist/apps/api/src/audit-store.js` |
+| 2026-07-05 00:29:00 -0600 | RicardoFv2 | `a5382ad4` | docs/deploy | Se agrega guia de deployment para Netlify y Polar L402 con Cloudflare Tunnel. | `docs/DEPLOYMENT.md` |
+| 2026-07-05 00:49:55 -0600 | Juarez009 | `7ae7342a` | feature/payments | Se agrega funcionalidad Polar y scripts de configuracion asociados. | `.env.example`, `.env.live.example`, `apps/api/src/app.ts`, `package.json`, `scripts/check-live-config.ts`, `scripts/configure-polar.ts`, `scripts/configure-polar.test.ts`, `dist/` |
+| 2026-07-05 00:50:28 -0600 | Juarez009 | `38d9c86a` | merge | Merge de `master` desde `https://github.com/juarez009/CodeBuild`. | Historial Git |
+| 2026-07-05 01:48:15 -0600 | Juarez009 | `671e93f6` | fix/config | Se corrigen credenciales Supabase y se actualizan API, audit store, tests, frontend y scripts compilados. | `apps/api/src/app.ts`, `apps/api/src/audit-store.ts`, `apps/api/test/`, `apps/web/src/`, `apps/web/dist/`, `scripts/check-live-config.ts`, `dist/` |
 
 ## Human explanations by hour
 
@@ -107,6 +118,24 @@ Later in the hour, `.env` and local tool configuration were added. That pushed t
 The 10 PM hour extended the project beyond the demo into next-step planning and infrastructure hardening. `NEXT_STEPS.md` gave the team a path forward, while the full Supabase schema made the database side more explicit and reproducible. The later dependency/package update showed the project being aligned with its runtime ecosystem.
 
 Codex's role in this late phase was especially useful because it kept the project thinking beyond the immediate presentation. It helped turn a one-day sprint into a maintainable handoff: what exists, what changed, what still needs to happen, and what infrastructure is required to keep building. By this point, Codex was not just accelerating implementation; it was helping the team leave behind a map for the next builders.
+
+### Around 11 PM
+
+The 11 PM hour tightened the project after the dependency and infrastructure wave. The event registry was updated, the test script became more portable by replacing `npm.cmd` with cross-platform `npm`, the autonomous Web3 demo runner returned with a clearer 7-step story, and the real Fastify document request endpoint was wired into the API and shared types. The README then caught up with complete start, development, test, build, and smoke commands.
+
+Codex's role here was practical and narrative at the same time. It helped make the project easier to run on different environments, restored the agent demo as a presentable flow, and kept the API contract aligned with the product story. This is the kind of late-night engineering where Codex shines: small fixes, important wiring, and documentation that turns fragile progress into something another person can actually execute.
+
+### Around 12 AM
+
+After midnight, the project shifted into deployment and payments readiness. The frontend/API execution fixes brought the local app closer to a runnable state, deployment documentation explained Netlify plus Polar L402 and Cloudflare Tunnel setup, and Polar functionality was added with environment variables, API changes, package scripts, and configuration helpers.
+
+Codex helped bridge the gap between "it works locally" and "this can be shown or deployed." It connected runtime fixes, deployment instructions, and payment setup into one operational path. At this stage, Codex was acting like an implementation partner and release engineer: keeping the app runnable, explainable, and closer to live infrastructure.
+
+### Around 1 AM
+
+The 1 AM hour focused on credential reliability. Supabase credentials were corrected and the changes touched the API, audit store, tests, frontend, check-live-config script, and compiled outputs. This was less flashy than adding a feature, but it was critical for trust: the audit layer and live configuration need to be dependable for the whole Notary402 story to hold.
+
+Codex's value in this final stretch was persistence. It helped carry the project through the unglamorous but essential configuration work that makes a demo credible. By the end of this phase, the project had not only features and documentation, but also a stronger connection to the live services it depends on.
 
 ## Movimientos por area
 

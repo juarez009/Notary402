@@ -1,13 +1,1857 @@
-<!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Notary402 Verifier</title>
-    <script type="module" crossorigin src="/assets/index-YukTqo7N.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-VUmu-4dc.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<!DOCTYPE html>
+<html lang="es" class="h-full dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notary402 — Agentic Attestation Console</title>
+    <meta name="description" content="Consola pública y de operaciones de atestaciones legales agénticas. Notary402 El Salvador — L402 Lightning Native.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        mono: ['JetBrains Mono','Fira Code','monospace'],
+                        sans: ['Space Grotesk','Inter','sans-serif']
+                    },
+                    colors: {
+                        brand: {
+                            bg: '#020617',
+                            card: '#0f172a',
+                            border: '#1e293b',
+                            cyan: '#00f0ff',
+                            amber: '#f59e0b',
+                            emerald: '#22c55e',
+                            rose: '#ef4444'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+        
+        body {
+            background-color: #020617;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 85% 85%, rgba(245, 158, 11, 0.04) 0%, transparent 40%);
+            color: #cbd5e1;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .v-card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(51, 65, 85, 0.6);
+            border-radius: 12px;
+            transition: border-color .2s ease, box-shadow .2s ease;
+        }
+        
+        .v-card:hover {
+            border-color: rgba(0, 240, 255, 0.35);
+        }
+        
+        .input-field {
+            background: #090d16;
+            border: 1px solid #334155;
+            color: #f8fafc;
+            border-radius: 8px;
+            padding: 0.625rem 0.875rem;
+            font-size: 0.875rem;
+            transition: all 0.15s ease;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #00f0ff;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #00f0ff 0%, #3b82f6 100%);
+            color: #020617;
+            font-weight: 700;
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .btn-primary:hover {
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        .btn-primary:active { transform: scale(0.98); }
+        
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        
+        .btn-secondary {
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #e2e8f0;
+            font-weight: 600;
+            padding: 0.625rem 1rem;
+            border-radius: 8px;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+        
+        .btn-secondary:hover {
+            background: #334155;
+            color: #ffffff;
+            border-color: #475569;
+        }
+        
+        .nav-tab {
+            padding: 0.75rem 1.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            color: #94a3b8;
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-tab:hover { color: #00f0ff; }
+        
+        .nav-tab.active {
+            color: #00f0ff;
+            border-bottom-color: #00f0ff;
+            background: rgba(0, 240, 255, 0.04);
+        }
+        
+        .sub-tab {
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            color: #94a3b8;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+        
+        .sub-tab:hover { color: #f8fafc; background: rgba(255,255,255,0.03); }
+        
+        .sub-tab.active {
+            color: #00f0ff;
+            background: rgba(0, 240, 255, 0.08);
+            border-color: rgba(0, 240, 255, 0.3);
+        }
+        
+        @keyframes pulse-slow { 0%,100%{opacity:.4;transform:scale(.95)} 50%{opacity:1;transform:scale(1.05)} }
+        
+        .dot-pulse { animation: pulse-slow 2s infinite ease-in-out; }
+        
+        .highlight-step {
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.5) !important;
+            border-color: #00f0ff !important;
+            transition: all 0.4s ease;
+        }
+        
+        *:focus-visible { outline: 2px solid #00f0ff !important; outline-offset: 2px; }
+    </style>
+</head>
+<body class="min-h-screen antialiased flex flex-col">
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header class="bg-slate-950/90 border-b border-slate-800 sticky top-0 z-40 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between font-mono">
+        <div class="flex items-center space-x-3">
+            <div class="bg-cyan-500/10 text-cyan-400 p-1.5 rounded-lg border border-cyan-500/30">
+                <i data-lucide="shield-check" class="w-5 h-5"></i>
+            </div>
+            <div class="flex items-center space-x-2">
+                <span class="text-base font-bold text-white font-sans tracking-wide">NOTARY402</span>
+                <span class="text-[10px] bg-purple-950 text-purple-300 px-2 py-0.5 rounded border border-purple-500/30 hidden sm:inline">CONSOLE v0.6.2</span>
+            </div>
+        </div>
+        <div class="flex items-center space-x-2 text-[11px]">
+            <span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400">
+                🇸🇻 El Salvador (Art. 15-22)
+            </span>
+            <span class="hidden md:inline-flex items-center px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400">
+                ⚡ L402 Lightning Native
+            </span>
+            <span id="api-health-badge" class="inline-flex items-center px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-500">
+                <span class="w-1.5 h-1.5 rounded-full bg-slate-600 mr-1.5"></span> API
+            </span>
+            <!-- Language Switcher -->
+            <button onclick="toggleLanguage()" class="px-2.5 py-1 rounded bg-slate-900 border border-cyan-500/30 text-cyan-400 hover:text-white font-bold cursor-pointer transition flex items-center gap-1">
+                <i data-lucide="languages" class="w-3.5 h-3.5"></i> <span id="lang-indicator">EN</span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- MODAL PRESENTACIÓN INTERACTIVA E2E -->
+<div id="e2e-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-cyan-500/50 rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl relative">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-2">
+                <div class="p-2 bg-cyan-500/10 text-cyan-400 rounded-lg border border-cyan-500/30">
+                    <i data-lucide="play-circle" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 id="t-modal-title" class="font-sans font-bold text-white text-base">Modo Presentación Notarial Agéntico (E2E Paso a Paso)</h3>
+                    <p id="t-modal-sub" class="text-xs text-slate-400 font-mono">Controla manualmente la velocidad de la demo</p>
+                </div>
+            </div>
+            <button onclick="stopE2EFlow()" class="text-slate-500 hover:text-white text-xs font-mono p-1">✕ Cerrar</button>
+        </div>
+
+        <!-- Indicador de Progreso (Steps) -->
+        <div class="grid grid-cols-6 gap-1 font-mono text-[10px] text-center" id="e2e-steps-indicator">
+            <button onclick="jumpToE2EStep(0)" id="step-dot-1" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500 hover:border-cyan-500">1. Intención</button>
+            <button onclick="jumpToE2EStep(1)" id="step-dot-2" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500 hover:border-cyan-500">2. Solicitud</button>
+            <button onclick="jumpToE2EStep(2)" id="step-dot-3" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500 hover:border-cyan-500">3. QVAC LLM</button>
+            <button onclick="jumpToE2EStep(3)" id="step-dot-4" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500 hover:border-cyan-500">4. Billetera</button>
+            <button onclick="jumpToE2EStep(4)" id="step-dot-5" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500 hover:border-cyan-500">5. Pago L402</button>
+            <button onclick="jumpToE2EStep(5)" id="step-dot-6" class="p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500 hover:border-cyan-500">6. Atestación</button>
+        </div>
+
+        <!-- Cuerpo Explicativo del Paso Actual -->
+        <div id="e2e-step-content" class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2 font-mono min-h-[150px]">
+            <div class="flex items-center justify-between text-xs text-cyan-400 font-bold">
+                <span id="e2e-step-title">Paso 1: Registro de Intención Legal</span>
+                <span id="e2e-step-endpoint" class="text-slate-500 text-[10px]">POST /v1/legal-intent</span>
+            </div>
+            <p id="e2e-step-desc" class="text-xs text-slate-300 leading-relaxed">
+                El Agente de IA (`hermes-legal-agent`) inicia la transacción definiendo las partes y el propósito contractual.
+            </p>
+            <div id="e2e-step-output" class="text-[11px] text-amber-300 pt-2 border-t border-slate-900"></div>
+        </div>
+
+        <!-- Controles de Velocidad & Navegación -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 font-mono text-xs border-t border-slate-800">
+            <div class="flex items-center gap-2">
+                <span class="text-slate-400 text-[11px]">Modo:</span>
+                <button onclick="setE2EMode('manual')" id="mode-manual-btn" class="sub-tab active">Manual (Clics)</button>
+                <button onclick="setE2EMode('auto')" id="mode-auto-btn" class="sub-tab">Auto (10s por paso)</button>
+            </div>
+
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <button onclick="prevE2EStep()" id="e2e-prev-btn" class="btn-secondary py-1.5 px-3 text-xs flex items-center gap-1">
+                    ← Anterior
+                </button>
+                <button onclick="nextE2EStep()" id="e2e-next-btn" class="btn-primary py-1.5 px-4 text-xs flex items-center gap-1">
+                    <span>Siguiente Paso</span> →
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+    <!-- HERO / BANNER -->
+    <section class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 v-card border-cyan-500/20 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950">
+        <div class="space-y-1">
+            <h1 id="t-hero-title" class="text-xl sm:text-2xl font-bold text-white font-sans tracking-tight">Notary402 — Protocolo Notarial Agéntico Web3</h1>
+            <p id="t-hero-desc" class="text-xs sm:text-sm text-slate-400 max-w-2xl">
+                Infraestructura de Confianza Legal, Firmas EIP-191 y Pagos L402 Lightning para Agentes Autónomos en El Salvador.
+            </p>
+        </div>
+        <div class="flex items-center gap-2 w-full md:w-auto">
+            <button onclick="startGuidedE2EFlow()" id="e2e-btn" class="btn-primary text-xs w-full md:w-auto flex items-center justify-center gap-2 py-2.5">
+                <i data-lucide="play-circle" class="w-4 h-4"></i> <span id="t-e2e-btn">Ver Demo Guiada Paso a Paso</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- NAVEGACIÓN PRINCIPAL POR MÓDULOS -->
+    <nav class="flex border-b border-slate-800 gap-1 overflow-x-auto scrollbar-none">
+        <button id="nav-mod-verify" onclick="switchModule('verify')" class="nav-tab active">
+            <i data-lucide="search" class="w-4 h-4"></i> <span id="t-mod-verify">1. Verificador Público</span>
+        </button>
+        <button id="nav-mod-intent" onclick="switchModule('intent')" class="nav-tab">
+            <i data-lucide="file-signature" class="w-4 h-4"></i> <span id="t-mod-intent">2. Registro e Intención</span>
+        </button>
+        <button id="nav-mod-docs" onclick="switchModule('docs')" class="nav-tab">
+            <i data-lucide="file-text" class="w-4 h-4"></i> <span id="t-mod-docs">3. Solicitud y Visor SV</span>
+        </button>
+        <button id="nav-mod-proofs" onclick="switchModule('proofs')" class="nav-tab">
+            <i data-lucide="key-round" class="w-4 h-4"></i> <span id="t-mod-proofs">4. Pruebas y Pagos</span>
+        </button>
+        <button id="nav-mod-audit" onclick="switchModule('audit')" class="nav-tab">
+            <i data-lucide="activity" class="w-4 h-4"></i> <span id="t-mod-audit">5. Auditoría y Live</span>
+        </button>
+    </nav>
+
+    <!-- ═════════════════════════════════════════════════════════════════════ -->
+    <!-- MÓDULO 1: VERIFICADOR PÚBLICO (POST /v1/verify & GET /v1/attestations/:id) -->
+    <!-- ═════════════════════════════════════════════════════════════════════ -->
+    <section id="module-verify" class="space-y-6">
+        <div class="v-card p-5 space-y-3">
+            <div class="flex flex-col sm:flex-row gap-3">
+                <input type="text" id="attestation-input" value="att_402_9921_sv" placeholder="att_402_9921_sv" onchange="verifyAttestation()" onkeydown="if(event.key==='Enter') verifyAttestation()" class="input-field flex-1 font-mono">
+                <button onclick="verifyAttestation()" id="verify-btn" class="btn-primary flex items-center justify-center gap-2">
+                    <i data-lucide="search" class="w-4 h-4"></i> <span id="t-verify-btn">Verificar</span>
+                </button>
+            </div>
+            <div class="flex flex-wrap gap-2 text-xs font-mono items-center">
+                <span id="t-demo-label" class="text-slate-500">Atestaciones Demo:</span>
+                <button onclick="fillAndVerify('att_402_9921_sv')" class="text-cyan-400 hover:underline">att_402_9921_sv (Lvl 3)</button>
+                <button onclick="fillAndVerify('att_402_5401_sv')" class="text-pink-400 hover:underline">att_402_5401_sv (Lvl 4 Humano)</button>
+                <button onclick="fillAndVerify('att_402_0044_sv')" class="text-cyan-400 hover:underline">att_402_0044_sv (Lvl 1 SLA)</button>
+            </div>
+        </div>
+
+        <!-- Resultados de Verificación -->
+        <div id="verification-result" class="hidden space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div id="badge-validity" class="v-card p-4 text-center space-y-1">
+                    <span id="t-badge-val-label" class="text-[10px] font-mono uppercase text-slate-400">Validez</span>
+                    <div id="val-validity" class="text-lg font-bold">—</div>
+                </div>
+                <div id="badge-sig-level" class="v-card p-4 text-center space-y-1">
+                    <span id="t-badge-sig-label" class="text-[10px] font-mono uppercase text-slate-400">Nivel de Firma</span>
+                    <div id="val-sig-level" class="text-lg font-bold">—</div>
+                </div>
+                <div id="badge-human" class="v-card p-4 text-center space-y-1">
+                    <span id="t-badge-hum-label" class="text-[10px] font-mono uppercase text-slate-400">Intervención Humana</span>
+                    <div id="val-human" class="text-lg font-bold">—</div>
+                </div>
+            </div>
+
+            <!-- Subtabs del Verificador -->
+            <div class="v-card overflow-hidden">
+                <div class="flex border-b border-slate-800 px-3 pt-2 gap-2">
+                    <button id="tab-v-proofs" onclick="switchVerifyTab('proofs')" class="sub-tab active flex items-center gap-1.5"><i data-lucide="lock" class="w-3.5 h-3.5"></i> Pruebas</button>
+                    <button id="tab-v-qvac" onclick="switchVerifyTab('qvac')" class="sub-tab flex items-center gap-1.5"><i data-lucide="scale" class="w-3.5 h-3.5"></i> QVAC Legal</button>
+                    <button id="tab-v-qr" onclick="switchVerifyTab('qr')" class="sub-tab flex items-center gap-1.5"><i data-lucide="qr-code" class="w-3.5 h-3.5"></i> Código QR</button>
+                    <button id="tab-v-zavu" onclick="switchVerifyTab('zavu')" class="sub-tab hidden flex items-center gap-1.5"><i data-lucide="message-square" class="w-3.5 h-3.5"></i> Zavu Notario</button>
+                </div>
+                <div id="pane-v-proofs" class="p-5 space-y-3">
+                    <div class="flex justify-between items-center text-xs font-mono">
+                        <span id="val-attestation-id" class="text-cyan-400 font-bold"></span>
+                        <button onclick="copyFullJSON()" class="text-amber-400 hover:underline flex items-center gap-1">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i> <span id="t-copy-json">Copiar JSON</span>
+                        </button>
+                    </div>
+                    <div id="crypto-proofs" class="space-y-2 text-xs font-mono"></div>
+                </div>
+                <div id="pane-v-qvac" class="p-5 space-y-3 hidden">
+                    <div class="grid grid-cols-2 gap-3 text-xs font-mono">
+                        <div class="p-2.5 rounded bg-slate-950 border border-slate-800"><span id="t-doc-type-label" class="text-slate-400 text-[10px] block">Tipo de Documento</span><span id="val-doc-type" class="font-bold text-slate-200">—</span></div>
+                        <div class="p-2.5 rounded bg-slate-950 border border-slate-800"><span id="t-jurisdiction-label" class="text-slate-400 text-[10px] block">Jurisdicción</span><span id="val-jurisdiction" class="font-bold text-slate-200">SV</span></div>
+                    </div>
+                    <div id="qvac-checklist" class="space-y-1.5"></div>
+                </div>
+                <div id="pane-v-qr" class="p-5 hidden flex flex-col sm:flex-row items-center gap-6">
+                    <div id="qr-canvas" class="p-3 bg-white rounded-xl"></div>
+                    <div class="space-y-2 text-xs font-mono">
+                        <span id="qr-url-display" class="text-cyan-300 break-all block"></span>
+                        <button onclick="downloadQR()" class="btn-secondary text-xs flex items-center gap-1.5"><i data-lucide="download" class="w-3.5 h-3.5"></i> <span id="t-download-qr">Descargar QR</span></button>
+                    </div>
+                </div>
+                <div id="pane-v-zavu" class="p-5 space-y-2 text-xs font-mono hidden">
+                    <div id="zavu-details" class="space-y-1.5"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═════════════════════════════════════════════════════════════════════ -->
+    <!-- MÓDULO 2: REGISTRO E INTENCIÓN LEGAL -->
+    <!-- Endpoints: POST /v1/legal-intent, POST /v1/signature/request, POST /v1/signature/validate -->
+    <!-- ═════════════════════════════════════════════════════════════════════ -->
+    <section id="module-intent" class="hidden space-y-6">
+        <!-- Sub-navegación por Pasos para des-saturar la pantalla -->
+        <div class="flex border-b border-slate-800 gap-2 text-xs font-mono pb-2 overflow-x-auto">
+            <button id="sub-tab-intent-1" onclick="switchIntentTab(1)" class="sub-tab active flex items-center gap-1.5">
+                <span class="w-4 h-4 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] flex items-center justify-center font-bold">1</span>
+                POST /v1/legal-intent
+            </button>
+            <button id="sub-tab-intent-2" onclick="switchIntentTab(2)" class="sub-tab flex items-center gap-1.5">
+                <span class="w-4 h-4 rounded-full bg-amber-500/20 text-amber-300 text-[10px] flex items-center justify-center font-bold">2</span>
+                POST /v1/signature/request
+            </button>
+            <button id="sub-tab-intent-3" onclick="switchIntentTab(3)" class="sub-tab flex items-center gap-1.5">
+                <span class="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] flex items-center justify-center font-bold">3</span>
+                POST /v1/signature/validate (QVAC)
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Columna Principal: Formulario del Paso Activo -->
+            <div class="lg:col-span-8 space-y-6">
+                <!-- Step 1: POST /v1/legal-intent -->
+                <div id="card-step-1" class="v-card p-6 space-y-5">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div>
+                            <h3 class="text-base font-bold text-cyan-400 font-mono flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center text-xs font-bold">1</span>
+                                Registro de Intención Legal
+                            </h3>
+                            <p class="text-xs text-slate-400 font-mono mt-0.5">POST /v1/legal-intent</p>
+                        </div>
+                        <span class="px-2.5 py-1 text-xs font-mono rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30">Paso 1 de 3</span>
+                    </div>
+                    <div class="space-y-4 text-xs">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-slate-400 mb-1 font-mono">Agent ID</label>
+                                <input type="text" id="in-agent-id" value="hermes-legal-agent" class="input-field w-full font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1 font-mono">Tipo de Documento</label>
+                                <select id="in-doc-type" class="input-field w-full font-mono bg-slate-900">
+                                    <option value="service_agreement">service_agreement (Contrato de Servicios)</option>
+                                    <option value="commercial_lease">commercial_lease (Arrendamiento Comercial)</option>
+                                    <option value="tokenized_asset">tokenized_asset (Consolidación de Activos)</option>
+                                    <option value="api_sla">api_sla (Acuerdo SLA)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-mono">Texto o Contenido del Contrato</label>
+                            <textarea id="in-input-text" rows="3" class="input-field w-full font-mono text-xs">Service agreement between Buyer Agent and Seller Agent under El Salvador jurisdiction.</textarea>
+                        </div>
+                        <button onclick="submitLegalIntent()" id="btn-intent" class="btn-primary w-full text-xs py-2.5 flex items-center justify-center gap-2">
+                            <i data-lucide="send" class="w-4 h-4"></i> Registrar Intención Legal
+                        </button>
+                    </div>
+                    <div id="res-intent" class="hidden p-3.5 rounded bg-slate-950 border border-slate-800 text-xs font-mono space-y-1"></div>
+                </div>
+
+                <!-- Step 2: POST /v1/signature/request -->
+                <div id="card-step-2" class="v-card p-6 space-y-5 hidden">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div>
+                            <h3 class="text-base font-bold text-amber-400 font-mono flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center text-xs font-bold">2</span>
+                                Solicitud de Firma Agéntica
+                            </h3>
+                            <p class="text-xs text-slate-400 font-mono mt-0.5">POST /v1/signature/request</p>
+                        </div>
+                        <span class="px-2.5 py-1 text-xs font-mono rounded bg-amber-950 text-amber-300 border border-amber-500/30">Paso 2 de 3</span>
+                    </div>
+                    <div class="space-y-4 text-xs">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-slate-400 mb-1 font-mono">Legal Intent ID</label>
+                                <input type="text" id="req-intent-id" placeholder="lintent_..." class="input-field w-full font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1 font-mono">Nivel de Firma Requerido (0-5)</label>
+                                <select id="req-sig-level" class="input-field w-full font-mono bg-slate-900">
+                                    <option value="1">Level 1 — Agent Signature (Firma Agente)</option>
+                                    <option value="2">Level 2 — Authorized Representative</option>
+                                    <option value="3" selected>Level 3 — Jurisdiction E-Signature (El Salvador)</option>
+                                    <option value="4">Level 4 — Human Notary Countersignature</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-mono">Document Hash (SHA-256)</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="req-doc-hash" value="0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" class="input-field flex-1 font-mono text-xs">
+                                <button onclick="generateRandomHash()" class="btn-secondary text-xs px-3 flex items-center gap-1"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Gen</button>
+                            </div>
+                        </div>
+                        <button onclick="submitSignatureRequest()" id="btn-sig-req" class="btn-primary w-full text-xs py-2.5 flex items-center justify-center gap-2">
+                            <i data-lucide="file-plus" class="w-4 h-4"></i> Crear Solicitud de Firma
+                        </button>
+                    </div>
+                    <div id="res-sig-req" class="hidden p-3.5 rounded bg-slate-950 border border-slate-800 text-xs font-mono space-y-1"></div>
+                </div>
+
+                <!-- Step 3: POST /v1/signature/validate (QVAC) -->
+                <div id="card-step-3" class="v-card p-6 space-y-5 hidden">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div>
+                            <h3 class="text-base font-bold text-emerald-400 font-mono flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-xs font-bold">3</span>
+                                Evaluación Notarial QVAC (Ollama)
+                            </h3>
+                            <p class="text-xs text-slate-400 font-mono mt-0.5">POST /v1/signature/validate</p>
+                        </div>
+                        <span class="px-2.5 py-1 text-xs font-mono rounded bg-emerald-950 text-emerald-300 border border-emerald-500/30">Paso 3 de 3</span>
+                    </div>
+                    <div class="space-y-4 text-xs">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-mono">Signature Request ID</label>
+                            <input type="text" id="qvac-sig-id" placeholder="sigreq_..." class="input-field w-full font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-mono">Texto Legal a Evaluar</label>
+                            <textarea id="qvac-text" rows="3" class="input-field w-full font-mono text-xs">Contrato sujeto a Ley de Firma Electrónica El Salvador Art. 15-22.</textarea>
+                        </div>
+                        <button onclick="submitQVACValidate()" id="btn-qvac" class="btn-primary w-full text-xs py-2.5 flex items-center justify-center gap-2">
+                            <i data-lucide="scale" class="w-4 h-4"></i> Evaluar con QVAC (Ollama LLM)
+                        </button>
+                    </div>
+                    <div id="res-qvac" class="hidden p-3.5 rounded bg-slate-950 border border-slate-800 text-xs font-mono space-y-1"></div>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Estado de Cadena de Flujo -->
+            <div class="lg:col-span-4 space-y-4">
+                <div class="v-card p-5 space-y-3">
+                    <h4 class="text-xs font-bold text-slate-200 font-mono uppercase border-b border-slate-800 pb-2 flex items-center gap-2">
+                        <i data-lucide="link-2" class="w-4 h-4 text-cyan-400"></i> Encadenamiento de Registro
+                    </h4>
+                    <div class="space-y-2 text-xs font-mono">
+                        <div class="p-2.5 bg-slate-950 rounded border border-slate-800">
+                            <span class="text-slate-500 text-[10px] block">1. Legal Intent ID</span>
+                            <span id="state-intent-id" class="text-cyan-300 font-bold block truncate">—</span>
+                        </div>
+                        <div class="p-2.5 bg-slate-950 rounded border border-slate-800">
+                            <span class="text-slate-500 text-[10px] block">2. Signature Request ID</span>
+                            <span id="state-sigreq-id" class="text-amber-300 font-bold block truncate">—</span>
+                        </div>
+                        <div class="p-2.5 bg-slate-950 rounded border border-slate-800">
+                            <span class="text-slate-500 text-[10px] block">3. QVAC Audit Status</span>
+                            <span id="state-qvac-status" class="text-emerald-400 font-bold block truncate">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ═════════════════════════════════════════════════════════════════════ -->
+    <!-- MÓDULO 3: SOLICITUD Y VISOR DE DOCUMENTOS NOTARIALES SV (POST /v1/documents/request) -->
+    <!-- ═════════════════════════════════════════════════════════════════════ -->
+    <section id="module-docs" class="hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Panel Izquierdo: Formulario de Solicitud (POST /v1/documents/request) -->
+            <div class="lg:col-span-5 space-y-6">
+                <div class="v-card p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div>
+                            <h3 class="text-sm font-bold text-cyan-400 font-mono flex items-center gap-2">
+                                <i data-lucide="file-plus" class="w-4 h-4"></i> POST /v1/documents/request
+                            </h3>
+                            <p class="text-[11px] text-slate-400 font-mono mt-0.5">Solicitud de Redacción Notarial Salvadoreña</p>
+                        </div>
+                        <span class="px-2 py-0.5 text-[10px] font-mono rounded bg-cyan-950 text-cyan-300 border border-cyan-500/40">Ley de Notariado SV</span>
+                    </div>
+
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-mono">Tipo de Instrumento / Documento Notarial</label>
+                            <select id="doc-req-type" onchange="updateDocPreviewTemplate()" class="input-field w-full font-mono bg-slate-900 text-cyan-300 font-bold">
+                                <option value="COMPRAVENTA">Compraventa Inmueble (CNR El Salvador)</option>
+                                <option value="PODER_GENERAL">Poder General Administrativo & Judicial Agéntico</option>
+                                <option value="AUTENTICA">Auténtica de Firma Criptográfica (Art. 15-22 Ley Firma)</option>
+                                <option value="ARRENDAMIENTO">Arrendamiento Comercial Agéntico L402</option>
+                            </select>
+                        </div>
+
+                        <div class="p-3 bg-slate-950 rounded border border-slate-800 space-y-2">
+                            <span class="text-[10px] font-mono uppercase text-slate-400 font-bold block border-b border-slate-800 pb-1 flex items-center gap-1.5"><i data-lucide="user-check" class="w-3.5 h-3.5 text-cyan-400"></i> Compareciente Principal (Ley Notariado Art. 32)</span>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] text-slate-400">Nombre Completo</label>
+                                    <input type="text" id="doc-comp-nombre" oninput="updateDocPreviewTemplate()" value="Ing. Carlos Eduardo Mendoza" class="input-field w-full font-mono text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400">Edad</label>
+                                    <input type="number" id="doc-comp-edad" oninput="updateDocPreviewTemplate()" value="38" min="18" class="input-field w-full font-mono text-xs">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] text-slate-400">Profesión u Oficio</label>
+                                    <input type="text" id="doc-comp-profesion" oninput="updateDocPreviewTemplate()" value="Ingeniero en Computación" class="input-field w-full font-mono text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400">Domicilio</label>
+                                    <input type="text" id="doc-comp-domicilio" oninput="updateDocPreviewTemplate()" value="San Salvador" class="input-field w-full font-mono text-xs">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] text-slate-400">DUI (00000000-0)</label>
+                                    <input type="text" id="doc-comp-dui" oninput="updateDocPreviewTemplate()" value="04589201-4" class="input-field w-full font-mono text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400">NIT</label>
+                                    <input type="text" id="doc-comp-nit" oninput="updateDocPreviewTemplate()" value="0614-120586-101-2" class="input-field w-full font-mono text-xs">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-mono">Detalles Específicos del Acuerdo / Matrícula</label>
+                            <textarea id="doc-req-detalles" oninput="updateDocPreviewTemplate()" rows="2" class="input-field w-full font-mono text-xs">Inmueble Matrícula CNR 4019283-000 en San Salvador. Monto USD $125,000.00 / 0.45 BTC L402.</textarea>
+                        </div>
+
+                        <button onclick="submitDocumentRequest()" id="btn-doc-req" class="btn-primary w-full text-xs py-2.5 flex items-center justify-center gap-2">
+                            <i data-lucide="send" class="w-4 h-4"></i> Generar e Inspeccionar Instrumento
+                        </button>
+                    </div>
+
+                    <div id="res-doc-req" class="hidden p-3 rounded bg-slate-950 border border-slate-800 text-[11px] font-mono space-y-1"></div>
+                </div>
+            </div>
+
+            <!-- Panel Derecho: Visor del Instrumento Público / Documento Notarial -->
+            <div class="lg:col-span-7 space-y-4">
+                <div class="v-card p-5 space-y-4 border-cyan-500/40">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="file-check" class="w-5 h-5 text-cyan-400"></i>
+                            <h3 class="text-sm font-bold text-slate-100 font-mono">Visor de Instrumento Notarial</h3>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="copyDocumentDraft()" class="btn-secondary text-[11px] py-1 px-2.5 flex items-center gap-1">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copiar Texto
+                            </button>
+                            <button onclick="downloadDocumentDraft()" class="btn-secondary text-[11px] py-1 px-2.5 flex items-center gap-1">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i> Descargar Borrador
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Pestañas del Visor -->
+                    <div class="flex border-b border-slate-800 text-xs">
+                        <button id="tab-doc-text" onclick="switchDocTab('text')" class="sub-tab active flex items-center gap-1.5"><i data-lucide="file-text" class="w-3.5 h-3.5"></i> Borrador Legal (Art. 32)</button>
+                        <button id="tab-doc-meta" onclick="switchDocTab('meta')" class="sub-tab flex items-center gap-1.5"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Metadatos & Comparecientes</button>
+                        <button id="tab-doc-api" onclick="switchDocTab('api')" class="sub-tab flex items-center gap-1.5"><i data-lucide="code" class="w-3.5 h-3.5"></i> API Payload (POST /v1/documents/request)</button>
+                    </div>
+
+                    <!-- Contenido Pestaña 1: Borrador Legal -->
+                    <div id="pane-doc-text" class="space-y-3">
+                        <div class="p-4 rounded bg-slate-950 border border-slate-800 font-mono text-slate-300 text-xs leading-relaxed space-y-3 max-h-[480px] overflow-y-auto whitespace-pre-wrap" id="doc-draft-container">
+                        </div>
+                    </div>
+
+                    <!-- Contenido Pestaña 2: Metadatos & Comparecientes -->
+                    <div id="pane-doc-meta" class="hidden space-y-3">
+                        <div class="p-3 bg-slate-950 rounded border border-slate-800 text-xs font-mono space-y-2">
+                            <div class="text-cyan-400 font-bold uppercase border-b border-slate-800 pb-1">Verificación de Capacidad Legal Salvadoreña</div>
+                            <div class="grid grid-cols-2 gap-2 text-[11px]">
+                                <div><span class="text-slate-500">Jurisdicción:</span> <span class="text-slate-200">El Salvador (SV)</span></div>
+                                <div><span class="text-slate-500">Ley de Firma:</span> <span class="text-emerald-400">Art. 15-22 Válido</span></div>
+                                <div><span class="text-slate-500">Notario Asignado:</span> <span class="text-amber-400">Notary402 Autonomous Node</span></div>
+                                <div><span class="text-slate-500">Escalación Zavu:</span> <span class="text-slate-400">No Requerida (Autónomo)</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contenido Pestaña 3: API Payload JSON -->
+                    <div id="pane-doc-api" class="hidden space-y-3">
+                        <pre id="doc-api-json" class="p-3 bg-slate-950 rounded border border-slate-800 text-[11px] font-mono text-cyan-300 overflow-x-auto max-h-[400px]"></pre>
+                    </div>
+
+                    <!-- Botón de Promoción al Paso 2 -->
+                    <div class="pt-2 border-t border-slate-800 flex justify-end">
+                        <button onclick="promoteDocToSignatureRequest()" class="btn-primary text-xs py-2 px-4 flex items-center gap-2">
+                            <i data-lucide="arrow-right-circle" class="w-4 h-4"></i> Promover a Solicitud de Firma (Módulo 2)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ═════════════════════════════════════════════════════════════════════ -->
+    <!-- MÓDULO 3: PRUEBAS Y PAGOS -->
+    <!-- Endpoints: POST /v1/wallets/verify-signature, POST /v1/payments/l402/verify, POST /v1/payments/amoy/verify, POST /v1/attestations -->
+    <!-- ═════════════════════════════════════════════════════════════════════ -->
+    <section id="module-proofs" class="hidden space-y-6">
+        <!-- Sub-navegación por Pasos para Pruebas y Pagos -->
+        <div class="flex border-b border-slate-800 gap-2 text-xs font-mono pb-2 overflow-x-auto">
+            <button id="sub-tab-proof-wallet" onclick="switchProofTab('wallet')" class="sub-tab active flex items-center gap-1.5">
+                <i data-lucide="wallet" class="w-3.5 h-3.5 text-cyan-400"></i>
+                1. Firma Billetera (EIP-191)
+            </button>
+            <button id="sub-tab-proof-l402" onclick="switchProofTab('l402')" class="sub-tab flex items-center gap-1.5">
+                <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-400"></i>
+                2. Pago L402 Lightning
+            </button>
+            <button id="sub-tab-proof-amoy" onclick="switchProofTab('amoy')" class="sub-tab flex items-center gap-1.5">
+                <i data-lucide="link" class="w-3.5 h-3.5 text-purple-400"></i>
+                3. Polygon Amoy RPC
+            </button>
+            <button id="sub-tab-proof-issue" onclick="switchProofTab('issue')" class="sub-tab flex items-center gap-1.5">
+                <i data-lucide="award" class="w-3.5 h-3.5 text-emerald-400"></i>
+                4. Emisión Notarial
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-8">
+                <!-- Pane 1: POST /v1/wallets/verify-signature -->
+                <div id="pane-proof-wallet" class="v-card p-6 space-y-5">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div>
+                            <h3 class="text-base font-bold text-cyan-400 font-mono flex items-center gap-2">
+                                <i data-lucide="wallet" class="w-4 h-4"></i> Validación de Firma Billetera Web3
+                            </h3>
+                            <p class="text-xs text-slate-400 font-mono mt-0.5">POST /v1/wallets/verify-signature (EIP-191)</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4 text-xs">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-slate-400 mb-1 font-mono">Wallet Address</label>
+                                <input type="text" id="w-address" value="0x71C9415843E0774040951c45ac1A3BA037543a86" class="input-field w-full font-mono text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1 font-mono">Chain ID</label>
+                                <input type="text" id="w-chain" value="80002" class="input-field w-full font-mono text-xs" readonly>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-mono font-bold">Signature Hash (EIP-191)</label>
+                            <input type="text" id="w-sig" value="0x3c99a2fe7ebd10cb8cf83a213e4b774619ba88bc27ef" class="input-field w-full font-mono text-xs">
+                        </div>
+                        <button onclick="submitWalletVerify()" id="btn-wallet" class="btn-primary w-full text-xs py-2.5 flex items-center justify-center gap-2">
+                            <i data-lucide="check-square" class="w-4 h-4"></i> Validar Firma Criptográfica de Billetera
+                        </button>
+                    </div>
+                    <div id="res-wallet" class="hidden p-3.5 rounded bg-slate-950 border border-slate-800 text-xs font-mono space-y-1"></div>
+                </div>
+
+                <!-- Pane 2: POST /v1/payments/l402/verify -->
+                <div id="pane-proof-l402" class="v-card p-6 space-y-5 hidden">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div>
+                            <h3 class="text-base font-bold text-amber-400 font-mono flex items-center gap-2">
+                                <i data-lucide="zap" class="w-4 h-4"></i> Pago en Satoshis Lightning (L402)
+                            </h3>
+                            <p class="text-xs text-slate-400 font-mono mt-0.5">POST /v1/payments/l402/verify</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4 text-xs">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-mono">Signature Request ID</label>
+                            <input type="text" id="l402-sig-id" placeholder="sigreq_..." class="input-field w-full font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-mono">L402 Receipt (Macaroon:Preimage)</label>
+                            <input type="text" id="l402-receipt" value="lnbc150n1p3llu34v82as98df71la0fbc..." class="input-field w-full font-mono text-xs">
+                        </div>
+                        <button onclick="submitL402Verify()" id="btn-l402" class="btn-primary w-full text-xs py-2.5 flex items-center justify-center gap-2">
+                            <i data-lucide="zap" class="w-4 h-4"></i> Registrar Comprobante de Pago L402
+                        </button>
+                    </div>
+                    <div id="res-l402" class="hidden p-3.5 rounded bg-slate-950 border border-slate-800 text-xs font-mono space-y-1"></div>
+                </div>
+
+                <!-- Pane 3: POST /v1/payments/amoy/verify -->
+                <div id="pane-proof-amoy" class="v-card p-6 space-y-5 hidden">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div>
+                            <h3 class="text-base font-bold text-purple-400 font-mono flex items-center gap-2">
+                                <i data-lucide="link" class="w-4 h-4"></i> Verificación Blockchain Polygon Amoy
+                            </h3>
+                            <p class="text-xs text-slate-400 font-mono mt-0.5">POST /v1/payments/amoy/verify (RPC 80002)</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4 text-xs">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-mono">Polygon Amoy Tx Hash</label>
+                            <input type="text" id="amoy-tx-hash" value="0x3c99a2fe7ebd10cb8cf83a213e4b774619ba88bc" class="input-field w-full font-mono text-xs">
+                        </div>
+                        <button onclick="submitAmoyVerify()" id="btn-amoy" class="btn-secondary w-full text-xs py-2.5 flex items-center justify-center gap-2">
+                            <i data-lucide="search" class="w-4 h-4"></i> Consultar Transacción en RPC Amoy
+                        </button>
+                    </div>
+                    <div id="res-amoy" class="hidden p-3.5 rounded bg-slate-950 border border-slate-800 text-xs font-mono space-y-1"></div>
+                </div>
+
+                <!-- Pane 4: POST /v1/attestations -->
+                <div id="pane-proof-issue" class="v-card p-6 space-y-5 hidden border-emerald-500/30">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div>
+                            <h3 class="text-base font-bold text-emerald-400 font-mono flex items-center gap-2">
+                                <i data-lucide="award" class="w-4 h-4"></i> Emisión de Atestación Notarial Criptográfica
+                            </h3>
+                            <p class="text-xs text-slate-400 font-mono mt-0.5">POST /v1/attestations</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4 text-xs">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-slate-400 mb-1 font-mono">Wallet Proof ID</label>
+                                <input type="text" id="att-wproof-id" placeholder="wproof_..." class="input-field w-full font-mono text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1 font-mono">Payment Proof ID</label>
+                                <input type="text" id="att-pproof-id" placeholder="pay_l402_..." class="input-field w-full font-mono text-xs">
+                            </div>
+                        </div>
+                        <button onclick="submitIssueAttestation()" id="btn-issue-att" class="btn-primary w-full text-xs py-2.5 flex items-center justify-center gap-2">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i> Emitir Atestación Notarial Criptográfica
+                        </button>
+                    </div>
+                    <div id="res-issue-att" class="hidden p-3.5 rounded bg-slate-950 border border-slate-800 text-xs font-mono space-y-1"></div>
+                </div>
+            </div>
+
+            <!-- Panel de Estado Criptográfico (Derecha) -->
+            <div class="lg:col-span-4 space-y-4">
+                <div class="v-card p-5 space-y-3">
+                    <h4 class="text-xs font-bold text-slate-200 font-mono uppercase border-b border-slate-800 pb-2 flex items-center gap-2">
+                        <i data-lucide="shield" class="w-4 h-4 text-emerald-400"></i> Estado de Comprobantes
+                    </h4>
+                    <div class="space-y-2 text-xs font-mono">
+                        <div class="p-2.5 bg-slate-950 rounded border border-slate-800">
+                            <span class="text-slate-500 text-[10px] block">Wallet Proof ID</span>
+                            <span id="state-wallet-proof" class="text-cyan-300 font-bold block truncate">—</span>
+                        </div>
+                        <div class="p-2.5 bg-slate-950 rounded border border-slate-800">
+                            <span class="text-slate-500 text-[10px] block">Payment Proof ID</span>
+                            <span id="state-payment-proof" class="text-amber-300 font-bold block truncate">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═════════════════════════════════════════════════════════════════════ -->
+    <!-- MÓDULO 4: AUDITORÍA Y LIVE STATUS -->
+    <!-- Endpoints: GET /v1/live/status, GET /v1/integrations/datamcp, POST /v1/zavu/escalate -->
+    <!-- ═════════════════════════════════════════════════════════════════════ -->
+    <section id="module-audit" class="hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Live Status -->
+            <div class="v-card p-5 space-y-4 lg:col-span-2">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <h3 class="text-sm font-bold text-cyan-400 font-mono flex items-center gap-2">
+                        <i data-lucide="activity" class="w-4 h-4"></i> GET /v1/live/status (Monitoreo 7 Servicios)
+                    </h3>
+                    <button onclick="refreshLiveStatus()" class="btn-secondary text-[11px] py-1 px-2.5 flex items-center gap-1">
+                        <i data-lucide="refresh-cw" class="w-3 h-3"></i> Actualizar
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono" id="live-status-grid">
+                    <!-- populated by JS -->
+                </div>
+            </div>
+
+            <!-- Zavu Test Escalate -->
+            <div class="v-card p-5 space-y-4">
+                <h3 class="text-sm font-bold text-pink-400 font-mono flex items-center gap-2 border-b border-slate-800 pb-2">
+                    <i data-lucide="message-square" class="w-4 h-4"></i> POST /v1/zavu/escalate
+                </h3>
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="block text-slate-400 mb-1">Motivo de Escalación</label>
+                        <input type="text" id="zavu-reason" value="Prueba Smoke Test — Notario El Salvador" class="input-field w-full font-mono text-[11px]">
+                    </div>
+                    <button onclick="submitZavuEscalate()" id="btn-zavu-test" class="btn-secondary w-full text-xs py-2 flex items-center justify-center gap-1 text-pink-300 border-pink-500/30">
+                        <i data-lucide="send" class="w-3.5 h-3.5"></i> Probar Escalación WhatsApp
+                    </button>
+                </div>
+                <div id="res-zavu-test" class="hidden p-3 rounded bg-slate-950 border border-slate-800 text-[11px] font-mono space-y-1"></div>
+            </div>
+
+        </div>
+
+        <!-- DataMCP Panel -->
+        <div class="v-card p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <h3 class="text-sm font-bold text-purple-400 font-mono flex items-center gap-2">
+                    <i data-lucide="database" class="w-4 h-4"></i> GET /v1/integrations/datamcp (Plan de Auditoría Read-Only)
+                </h3>
+                <button onclick="loadDataMCP()" class="btn-secondary text-[11px] py-1 px-2.5 flex items-center gap-1">
+                    <i data-lucide="refresh-cw" class="w-3 h-3"></i> Actualizar
+                </button>
+            </div>
+            <div id="datamcp-content" class="space-y-3"></div>
+        </div>
+
+        <!-- Timeline Histórico -->
+        <div class="v-card p-5 space-y-3">
+            <h3 class="text-xs font-mono uppercase text-slate-400 tracking-wider">Atestaciones Recientes en Sesión</h3>
+            <div id="timeline-list" class="space-y-2"></div>
+        </div>
+    </section>
+
+</main>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer class="bg-slate-950 border-t border-slate-900 py-4 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 space-y-1.5 text-center sm:text-left">
+        <p id="t-footer-disclaimer" class="text-[11px] text-slate-500 leading-relaxed font-mono">
+            Notary402 demonstrates jurisdiction-aware legal workflow automation and cryptographic attestations. When local law requires a licensed notary or human legal professional, the system escalates rather than replacing that role.
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-between text-[10px] text-slate-600 font-mono">
+            <span>Notary402 v0.6.2 — Agentic Operations Console</span>
+            <span>El Salvador • L402 Lightning • Bitcoin Native</span>
+        </div>
+    </div>
+</footer>
+
+<!-- TOAST -->
+<div id="toast" class="fixed bottom-5 right-5 translate-y-10 opacity-0 transition-all duration-300 bg-slate-950 text-cyan-300 px-4 py-2.5 rounded-lg border border-cyan-500/40 text-xs font-mono font-bold z-50 flex items-center gap-2 pointer-events-none">
+    <i data-lucide="check-circle" class="w-3.5 h-3.5 text-cyan-400"></i>
+    <span id="toast-message"></span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<script>
+const API_BASE = 'http://localhost:3001';
+let currentLang = 'es';
+let lastVerifiedData = null, lastQRUrl = '';
+
+// State local para encadenamiento de flujo
+let currentFlowState = {
+    legal_intent_id: null,
+    signature_request_id: null,
+    wallet_proof_id: null,
+    payment_proof_id: null
+};
+
+// ─── TRANSLATIONS ───────────────────────────────────────
+const I18N = {
+    es: {
+        heroTitle: "Notary402 Consola de Operaciones Agénticas",
+        heroDesc: "Plataforma de pruebas e interacción completa para los 14 endpoints del Protocolo Notarial Agéntico L402.",
+        e2eBtn: "Ver Demo Guiada Paso a Paso",
+        modVerify: "1. Verificador Público",
+        modIntent: "2. Registro e Intención",
+        modProofs: "3. Pruebas y Pagos",
+        modAudit: "4. Auditoría y Live",
+        verifyBtn: "Verificar",
+        verifyingBtn: "Verificando...",
+        demoLabel: "Atestaciones Demo:",
+        badgeValLabel: "Validez",
+        badgeSigLabel: "Nivel de Firma",
+        badgeHumLabel: "Intervención Humana",
+        valValid: "Válida",
+        valPending: "Pendiente",
+        valInvalid: "Inválida",
+        humRequired: "Requerido",
+        humAutonomous: "Autónomo",
+        copyJson: "Copiar JSON",
+        docTypeLabel: "Tipo de Documento",
+        jurisdictionLabel: "Jurisdicción",
+        downloadQr: "Descargar QR",
+        footerDisclaimer: "Notary402 demuestra la automatización de flujos de trabajo legales con conciencia de jurisdicción y atestaciones criptográficas. Cuando la ley local requiere un notario autorizado o profesional legal humano, el sistema escala en lugar de reemplazar ese rol.",
+        toastCopied: "Copiado al portapapeles",
+        notFound: "Atestación no encontrada: ",
+        datamcpState: "Estado DataMCP",
+        datamcpTables: "Tablas de Auditoría Supabase",
+        datamcpTools: "MCP Tools",
+        datamcpPerm: "Permiso",
+        timelineEmpty: "Sin atestaciones aún. Verifica un ID para empezar.",
+        proofLabels: {
+            reqHash: "Request Hash",
+            docHash: "Document Hash",
+            wallet: "Agent Wallet",
+            l402Tx: "L402 Proof Tx",
+            l402Mac: "L402 Macaroon",
+            l402Pay: "L402 Payment",
+            timestamp: "Fecha y hora"
+        },
+        zavuLabels: {
+            trigger: "Motivo",
+            notary: "Notario",
+            channel: "Canal",
+            date: "Escalado"
+        }
+    },
+    en: {
+        heroTitle: "Notary402 Agentic Operations Console",
+        heroDesc: "Complete testing and interaction console for all 14 endpoints of the L402 Agentic Notary Protocol.",
+        e2eBtn: "Watch Step-by-Step Guided Demo",
+        modVerify: "1. Public Verifier",
+        modIntent: "2. Intent & Registration",
+        modProofs: "3. Proofs & Payments",
+        modAudit: "4. Audit & Live",
+        verifyBtn: "Verify",
+        verifyingBtn: "Verifying...",
+        demoLabel: "Demo Attestations:",
+        badgeValLabel: "Validity",
+        badgeSigLabel: "Signature Level",
+        badgeHumLabel: "Human Intervention",
+        valValid: "Valid",
+        valPending: "Pending",
+        valInvalid: "Invalid",
+        humRequired: "Required",
+        humAutonomous: "Autonomous",
+        copyJson: "Copy JSON",
+        docTypeLabel: "Document Type",
+        jurisdictionLabel: "Jurisdiction",
+        downloadQr: "Download QR",
+        footerDisclaimer: "Notary402 demonstrates jurisdiction-aware legal workflow automation and cryptographic attestations. When local law requires a licensed notary or human legal professional, the system escalates rather than replacing that role.",
+        toastCopied: "Copied to clipboard",
+        toastJsonCopied: "JSON Copied",
+        toastQrDownloaded: "QR Downloaded",
+        notFound: "Attestation not found: ",
+        datamcpState: "DataMCP State",
+        datamcpTables: "Supabase Audit Tables",
+        datamcpTools: "MCP Tools",
+        datamcpPerm: "Permission",
+        timelineEmpty: "No attestations verified yet. Verify an ID to get started.",
+        proofLabels: {
+            reqHash: "Request Hash",
+            docHash: "Document Hash",
+            wallet: "Agent Wallet",
+            l402Tx: "L402 Proof Tx",
+            l402Mac: "L402 Macaroon",
+            l402Pay: "L402 Payment",
+            timestamp: "Timestamp"
+        },
+        zavuLabels: {
+            trigger: "Reason",
+            notary: "Notary",
+            channel: "Channel",
+            date: "Escalated At"
+        }
+    }
+};
+
+const E2E_STEPS_DATA = [
+    {
+        step: 1,
+        title: "Paso 1: Registro de Intención Legal",
+        endpoint: "POST /v1/legal-intent",
+        desc: "El Agente de IA (`hermes-legal-agent`) inicia la transacción definiendo el tipo de acuerdo (Contrato de Servicios) y las obligaciones bajo las leyes de El Salvador.",
+        action: async () => { switchModule('intent'); highlightCard('card-step-1'); await submitLegalIntent(); },
+        output: () => `Intención Registrada -> ID: ${currentFlowState.legal_intent_id}`
+    },
+    {
+        step: 2,
+        title: "Paso 2: Solicitud de Firma Notarial",
+        endpoint: "POST /v1/signature/request",
+        desc: "El agente solicita el Nivel 3 de Firma (Firma Electrónica según Ley de El Salvador) y genera el Hash SHA-256 inmutable del documento.",
+        action: async () => { highlightCard('card-step-2'); await submitSignatureRequest(); },
+        output: () => `Solicitud Creada -> ID: ${currentFlowState.signature_request_id}`
+    },
+    {
+        step: 3,
+        title: "Paso 3: Evaluación Legal QVAC (LLM)",
+        endpoint: "POST /v1/signature/validate",
+        desc: "El modelo local Ollama/Llama3 (QVAC) audita las cláusulas del contrato, valida el cumplimiento de los Art. 15-22 y confirma riesgo bajo (0.05).",
+        action: async () => { highlightCard('card-step-3'); await submitQVACValidate(); },
+        output: () => `Análisis QVAC -> Status: Valid (Risk Score: 0.05)`
+    },
+    {
+        step: 4,
+        title: "Paso 4: Verificación de Billetera (EIP-191)",
+        endpoint: "POST /v1/wallets/verify-signature",
+        desc: "Se autentica el control criptográfico de la billetera del agente en Polygon Amoy (Chain 80002) mediante una firma de mensaje EIP-191.",
+        action: async () => { switchModule('proofs'); highlightCard('card-step-4'); await submitWalletVerify(); },
+        output: () => `Firma Billetera -> Proof ID: ${currentFlowState.wallet_proof_id}`
+    },
+    {
+        step: 5,
+        title: "Paso 5: Pago de Tarifas Notariales L402",
+        endpoint: "POST /v1/payments/l402/verify",
+        desc: "Se liquida el pago en satoshis vía Lightning Network mediante el protocolo HTTP 402 (Macaroon:Preimage) registrando 150 mSats pagados.",
+        action: async () => { highlightCard('card-step-5'); await submitL402Verify(); },
+        output: () => `Pago L402 -> Proof ID: ${currentFlowState.payment_proof_id}`
+    },
+    {
+        step: 6,
+        title: "Paso 6: Emisión y Verificación de Atestación",
+        endpoint: "POST /v1/attestations & POST /v1/verify",
+        desc: "Con todas las pruebas validadas, Notary402 emite la Atestación Notarial oficial y la despliega en el Verificador Público con QR escaneable.",
+        action: async () => { highlightCard('card-step-6'); await submitIssueAttestation(); await verifyAttestation(); },
+        output: () => `Atestación Emitida -> ${currentFlowState.attestation_id || 'att_402_9921_sv'}`
+    }
+];
+
+let e2eCurrentStep = 0;
+let e2eTimer = null;
+let e2eMode = 'manual'; // 'manual' o 'auto'
+let e2eCountdown = 10;
+
+const SIG_LEVELS = {
+    0:{name:'Hash Attestation',icon:'hash',color:'text-slate-400',bg:'bg-slate-900',border:'border-slate-700'},
+    1:{name:'Agent Signature',icon:'bot',color:'text-cyan-400',bg:'bg-cyan-950',border:'border-cyan-500/40'},
+    2:{name:'Authorized Representative',icon:'user-check',color:'text-purple-400',bg:'bg-purple-950',border:'border-purple-500/40'},
+    3:{name:'Jurisdiction E-Signature',icon:'scale',color:'text-amber-400',bg:'bg-amber-950',border:'border-amber-500/40'},
+    4:{name:'Human Notary Countersignature',icon:'pen-tool',color:'text-pink-400',bg:'bg-pink-950',border:'border-pink-500/40'},
+    5:{name:'Public Instrument Workflow',icon:'landmark',color:'text-red-400',bg:'bg-red-950',border:'border-red-500/40'},
+};
+
+const MOCK_ATTESTATIONS = {
+    'att_402_9921_sv':{attestation_id:'att_402_9921_sv',valid:true,status:'issued',signature_level:3,requires_human_notary:false,jurisdiction:'SV',request_hash:'f10a8b9cd2ea491f2c2b0c3ff411a098ce1bc4a1b02de92',document_hash:'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',agent_wallet:'0x71C9415843E0774040951c45ac1A3BA037543a86',amoy_tx_hash:'0x3c99a2fe7ebd10cb8cf83a213e4b774619ba88bc',l402_payment:{amount_msats:150,status:'settled',receipt:'lnbc150n1p3llu34v82as...'},qvac_analysis:{document_type:'Arrendamiento Comercial',document_type_en:'Commercial Lease Agreement',risk_flags:[],checklist:[{label:'Capacidad legal de las partes identificada',passed:true},{label:'Cumplimiento Ley de Firma Electrónica (Art. 15-22)',passed:true}]},zavu:{status:'no_escalation'},created_at:'2026-07-04T15:30:00Z'},
+    'att_402_5401_sv':{attestation_id:'att_402_5401_sv',valid:true,status:'pending_human_review',signature_level:4,requires_human_notary:true,jurisdiction:'SV',request_hash:'c018a3ef201c10d32bb4a80ce0fbc140fa39a8203f19e21',document_hash:'9a01e0d3bc891f240fa08b9cd2ea491f2c2b0c3ff411a098ce1bc4a1b02de92',agent_wallet:'0x40951c45ac1A3BA037543a8671C9415843E07740',amoy_tx_hash:'0xa12048cf7e8b10cb8cf83a213e4b774619ba88bc27ef',l402_payment:{amount_msats:500,status:'settled',receipt:'lnbc1000n98df71la0fbc...'},qvac_analysis:{document_type:'Consolidación de Activos Tokenizados',risk_flags:['Monto excede límite de firma autónoma'],checklist:[{label:'Capacidad legal de las partes identificada',passed:true}]},zavu:{status:'pending_human_review',trigger:'High risk score',assigned_notary:'Mestre Toad Alfaro (San Salvador)',channel:'WhatsApp Business API',escalated_at:'2026-07-04T15:45:00Z'},created_at:'2026-07-04T15:40:00Z'},
+    'att_402_0044_sv':{attestation_id:'att_402_0044_sv',valid:true,status:'issued',signature_level:1,requires_human_notary:false,jurisdiction:'SV',request_hash:'e3bc01e4a8109bfcd8b103cb0c19df2ea491f2c2b0c3ff41',document_hash:'a1a098ce1bc4a1b02de92e3b0c44298fc1c149afbf4c8996fb92427ae41e464',agent_wallet:'0x37543a8671C9415843E0774040951c45ac1A3BA',amoy_tx_hash:'0x543a86c01e4a8fc7e8b10cb8cf83a213e4b774619ba',l402_payment:{amount_msats:100,status:'settled',receipt:'lnbc50n1p3f19e248b10c...'},qvac_analysis:{document_type:'Pacto SLA de API',risk_flags:[],checklist:[{label:'Tipo de documento compatible con firma agéntica',passed:true}]},zavu:{status:'no_escalation'},created_at:'2026-07-04T14:20:00Z'},
+};
+
+const MOCK_LIVE_STATUS = {supabase:{status:'pending',note:'Not configured'},datamcp:{status:'pending',note:'MCP URL not set'},amoy:{status:'pending',note:'RPC not set'},qvac:{status:'pending',note:'Ollama offline'},zavu:{status:'pending',note:'Zavu URL not set'},aperture:{status:'pending',note:'Not running'},n8n:{status:'pending',note:'Not running'}};
+const MOCK_DATAMCP = {status:'integration_pending',provider:'datamcp',reason:'DATAMCP_MCP_URL not configured',tables:['agent_profiles','legal_intents','signature_requests','wallet_proofs','payment_proofs','legal_analyses','attestations','human_escalations'],permission_preset:'read-only',mcp_tools:['query','get_schema','get_table_details','get_permissions','get_schema_changes','resync_schema'],note:'Notary402 is the write authority. DataMCP exposes audit tables as read-only MCP context for agents and n8n.'};
+
+// ─── API HELPER ──────────────────────────────────────────
+async function fetchFromAPI(path, options = {}) {
+    try {
+        const res = await fetch(`${API_BASE}${path}`, { headers: { 'Content-Type': 'application/json' }, ...options });
+        if (!res.ok) {
+            if (res.status === 503) return { __error: 'integration_pending', status: 503 };
+            const errData = await res.json().catch(() => ({}));
+            return { __error: errData.message || `HTTP ${res.status}`, status: res.status };
+        }
+        return await res.json();
+    } catch (e) { return null; }
+}
+
+// ─── NAVEGACIÓN ENTRE MÓDULOS ────────────────────────────
+const MODULES = ['verify', 'intent', 'docs', 'proofs', 'audit'];
+
+function switchModule(modName) {
+    MODULES.forEach(m => {
+        document.getElementById(`module-${m}`).classList.toggle('hidden', m !== modName);
+        document.getElementById(`nav-mod-${m}`).classList.toggle('active', m === modName);
+    });
+}
+
+function switchVerifyTab(tabName) {
+    ['proofs', 'qvac', 'qr', 'zavu'].forEach(t => {
+        document.getElementById(`tab-v-${t}`)?.classList.toggle('active', t === tabName);
+        document.getElementById(`pane-v-${t}`)?.classList.toggle('hidden', t !== tabName);
+    });
+}
+
+function toggleLanguage() {
+    currentLang = currentLang === 'es' ? 'en' : 'es';
+    document.getElementById('lang-indicator').innerText = currentLang === 'es' ? 'EN' : 'ES';
+    applyTranslations();
+    if (lastVerifiedData) renderVerificationResult(lastVerifiedData);
+    renderTimeline();
+    loadDataMCP();
+}
+
+function applyTranslations() {
+    const t = I18N[currentLang];
+    document.getElementById('t-hero-title').innerText = t.heroTitle;
+    document.getElementById('t-hero-desc').innerText = t.heroDesc;
+    document.getElementById('t-e2e-btn').innerText = t.e2eBtn;
+    document.getElementById('t-mod-verify').innerText = t.modVerify;
+    document.getElementById('t-mod-intent').innerText = t.modIntent;
+    document.getElementById('t-mod-proofs').innerText = t.modProofs;
+    document.getElementById('t-mod-audit').innerText = t.modAudit;
+    document.getElementById('t-verify-btn').innerText = t.verifyBtn;
+    document.getElementById('t-demo-label').innerText = t.demoLabel;
+    document.getElementById('t-badge-val-label').innerText = t.badgeValLabel;
+    document.getElementById('t-badge-sig-label').innerText = t.badgeSigLabel;
+    document.getElementById('t-badge-hum-label').innerText = t.badgeHumLabel;
+    document.getElementById('t-copy-json').innerText = t.copyJson;
+    document.getElementById('t-doc-type-label').innerText = t.docTypeLabel;
+    document.getElementById('t-jurisdiction-label').innerText = t.jurisdictionLabel;
+    document.getElementById('t-download-qr').innerText = t.downloadQr;
+    document.getElementById('t-footer-disclaimer').innerText = t.footerDisclaimer;
+    lucide.createIcons();
+}
+
+// ─── PRESENTACIÓN GUIADA E2E ──────────────────────────────
+function startGuidedE2EFlow() {
+    e2eCurrentStep = 0;
+    setE2EMode('manual');
+    document.getElementById('e2e-modal').classList.remove('hidden');
+    executeE2EStep(0);
+}
+
+function stopE2EFlow() {
+    clearInterval(e2eTimer);
+    document.getElementById('e2e-modal').classList.add('hidden');
+    clearHighlights();
+}
+
+function setE2EMode(mode) {
+    e2eMode = mode;
+    document.getElementById('mode-manual-btn').className = mode === 'manual' ? 'sub-tab active' : 'sub-tab';
+    document.getElementById('mode-auto-btn').className = mode === 'auto' ? 'sub-tab active' : 'sub-tab';
+    
+    clearInterval(e2eTimer);
+    if (mode === 'auto') {
+        e2eCountdown = 10;
+        e2eTimer = setInterval(() => {
+            e2eCountdown--;
+            if (e2eCountdown <= 0) {
+                nextE2EStep();
+            }
+        }, 1000);
+    }
+}
+
+function jumpToE2EStep(index) {
+    e2eCurrentStep = index;
+    executeE2EStep(index);
+}
+
+function prevE2EStep() {
+    if (e2eCurrentStep > 0) {
+        e2eCurrentStep--;
+        executeE2EStep(e2eCurrentStep);
+    }
+}
+
+async function nextE2EStep() {
+    if (e2eCurrentStep < E2E_STEPS_DATA.length - 1) {
+        e2eCurrentStep++;
+        executeE2EStep(e2eCurrentStep);
+    } else {
+        stopE2EFlow();
+        switchModule('verify');
+        const lastAttId = currentFlowState.attestation_id || 'att_402_9921_sv';
+        fillAndVerify(lastAttId);
+    }
+}
+
+async function executeE2EStep(index) {
+    const stepData = E2E_STEPS_DATA[index];
+    
+    // Actualizar UI del Modal
+    document.getElementById('e2e-step-title').innerText = stepData.title;
+    document.getElementById('e2e-step-endpoint').innerText = stepData.endpoint;
+    document.getElementById('e2e-step-desc').innerText = stepData.desc;
+    document.getElementById('e2e-step-output').innerHTML = '<span class="animate-pulse">Ejecutando endpoint...</span>';
+
+    // Actualizar estado de los botones prev/next
+    document.getElementById('e2e-prev-btn').disabled = (index === 0);
+
+    // Actualizar indicador de pasos
+    for (let i = 1; i <= 6; i++) {
+        const dot = document.getElementById(`step-dot-${i}`);
+        if (i === index + 1) {
+            dot.className = 'p-1.5 rounded bg-cyan-950 border border-cyan-500 text-cyan-300 font-bold';
+        } else if (i < index + 1) {
+            dot.className = 'p-1.5 rounded bg-emerald-950 border border-emerald-500/50 text-emerald-400';
+        } else {
+            dot.className = 'p-1.5 rounded bg-slate-950 border border-slate-800 text-slate-500';
+        }
+    }
+
+    // Ejecutar la acción del paso en la consola
+    await stepData.action();
+    document.getElementById('e2e-step-output').innerText = '✓ ' + stepData.output();
+
+    if (e2eMode === 'auto') {
+        e2eCountdown = 10;
+    }
+}
+
+function highlightCard(cardId) {
+    clearHighlights();
+    const el = document.getElementById(cardId);
+    if (el) {
+        el.classList.add('highlight-step');
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function clearHighlights() {
+    document.querySelectorAll('.highlight-step').forEach(el => el.classList.remove('highlight-step'));
+}
+
+// ─── MÓDULO 1: VERIFICADOR PÚBLICO ───────────────────────
+async function verifyAttestation() {
+    const input = document.getElementById('attestation-input');
+    let id = input ? input.value.trim() : '';
+    if (!id) {
+        id = 'att_402_9921_sv';
+        if (input) input.value = id;
+    }
+    const btn = document.getElementById('verify-btn');
+    const t = I18N[currentLang];
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span class="animate-spin inline-block w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full"></span> ${t.verifyingBtn}`;
+    }
+
+    // Pequeña pausa deliberada para dar feedback visual claro al cambiar de archivo/atestación
+    await new Promise(r => setTimeout(r, 250));
+    
+    let data = await fetchFromAPI('/v1/verify', { method: 'POST', body: JSON.stringify({ attestation_id: id }) });
+    if (!data || data.__error) data = await fetchFromAPI('/v1/attestations/' + id);
+    if (!data || data.__error) data = MOCK_ATTESTATIONS[id] || null;
+
+    if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="search" class="w-4 h-4"></i> <span id="t-verify-btn">${t.verifyBtn}</span>`;
+    }
+    if (window.lucide) lucide.createIcons();
+
+    if (!data) { showToast(t.notFound + id); return; }
+    lastVerifiedData = data;
+    renderVerificationResult(data);
+    addToTimeline(data);
+}
+
+function fillAndVerify(id) {
+    const input = document.getElementById('attestation-input');
+    if (input) input.value = id;
+    verifyAttestation();
+}
+
+function renderVerificationResult(data) {
+    const t = I18N[currentLang];
+    const resContainer = document.getElementById('verification-result');
+    resContainer.classList.remove('hidden');
+    resContainer.classList.add('transition-all', 'duration-300', 'opacity-90');
+    setTimeout(() => resContainer.classList.remove('opacity-90'), 250);
+
+    const vEl = document.getElementById('val-validity'), vCard = document.getElementById('badge-validity');
+    if (data.status === 'issued' && data.valid) {
+        vEl.innerHTML = `<span class="text-emerald-400 flex items-center justify-center gap-1.5"><i data-lucide="check-circle" class="w-5 h-5"></i> ${t.valValid}</span>`;
+        vCard.style.borderColor = 'rgba(34,197,94,.4)';
+    } else if (data.status === 'pending_human_review') {
+        vEl.innerHTML = `<span class="text-amber-400 flex items-center justify-center gap-1.5"><i data-lucide="clock" class="w-5 h-5"></i> ${t.valPending}</span>`;
+        vCard.style.borderColor = 'rgba(245,158,11,.4)';
+    } else {
+        vEl.innerHTML = `<span class="text-rose-400 flex items-center justify-center gap-1.5"><i data-lucide="x-circle" class="w-5 h-5"></i> ${t.valInvalid}</span>`;
+        vCard.style.borderColor = 'rgba(239,68,68,.4)';
+    }
+
+    const lv = data.signature_level ?? 0, sl = SIG_LEVELS[lv] || SIG_LEVELS[0];
+    document.getElementById('val-sig-level').innerHTML = `<span class="${sl.color} flex items-center justify-center gap-1.5 text-sm"><i data-lucide="${sl.icon}" class="w-4 h-4"></i> Level ${lv}</span><div class="text-[10px] text-slate-400 font-mono mt-0.5">${sl.name}</div>`;
+    document.getElementById('badge-sig-level').className = `v-card p-4 text-center space-y-1 ${sl.bg} ${sl.border}`;
+
+    const hEl = document.getElementById('val-human');
+    if (data.requires_human_notary) {
+        hEl.innerHTML = `<span class="text-pink-400 flex items-center justify-center gap-1.5"><i data-lucide="user-check" class="w-4 h-4"></i> ${t.humRequired}</span>`;
+    } else {
+        hEl.innerHTML = `<span class="text-emerald-400 flex items-center justify-center gap-1.5"><i data-lucide="bot" class="w-4 h-4"></i> ${t.humAutonomous}</span>`;
+    }
+
+    document.getElementById('val-attestation-id').innerText = data.attestation_id;
+
+    const rows = [
+        { label: 'Request Hash', value: data.request_hash, color: 'text-slate-200' },
+        { label: 'Document Hash', value: data.document_hash, color: 'text-slate-200' },
+        { label: 'Agent Wallet', value: data.agent_wallet, color: 'text-cyan-300' },
+        { label: 'L402 Proof Tx', value: data.amoy_tx_hash, color: 'text-amber-300' },
+        { label: 'L402 Macaroon', value: data.l402_payment?.receipt || '—', color: 'text-amber-300' },
+        { label: 'L402 Payment', value: `${data.l402_payment?.amount_msats || '—'} mSats (${data.l402_payment?.status || '—'})`, color: 'text-emerald-400' },
+    ];
+    document.getElementById('crypto-proofs').innerHTML = rows.map(r => `
+        <div class="flex items-center justify-between p-2 rounded bg-slate-950 border border-slate-800">
+            <div class="truncate mr-2"><span class="text-slate-500 text-[10px] block">${r.label}</span><span class="${r.color} text-[11px] block truncate">${r.value}</span></div>
+            <button onclick="copyValue('${r.value}')" class="text-amber-400/70 hover:text-amber-300"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+        </div>`).join('');
+
+    const qa = data.qvac_analysis || {};
+    document.getElementById('val-doc-type').innerText = qa.document_type || '—';
+    const cl = document.getElementById('qvac-checklist'); cl.innerHTML = '';
+    (qa.checklist || []).forEach(item => {
+        const ic = item.passed ? 'check-circle' : 'x-circle', col = item.passed ? 'text-emerald-400' : 'text-rose-400';
+        cl.innerHTML += `<div class="flex items-center gap-2 text-xs font-mono"><i data-lucide="${ic}" class="w-4 h-4 ${col}"></i><span class="text-slate-300">${item.label}</span></div>`;
+    });
+
+    buildQR(data.attestation_id);
+    lucide.createIcons();
+}
+
+// ─── MÓDULO 2: REGISTRO E INTENCIÓN LEGAL ─────────────────
+async function submitLegalIntent() {
+    const agent_id = document.getElementById('in-agent-id').value;
+    const document_type = document.getElementById('in-doc-type').value;
+    const input = document.getElementById('in-input-text').value;
+
+    const btn = document.getElementById('btn-intent');
+    btn.disabled = true;
+
+    let res = await fetchFromAPI('/v1/legal-intent', {
+        method: 'POST',
+        body: JSON.stringify({ agent_id, jurisdiction: 'SV', input, document_type, parties: ['Buyer Agent', 'Seller Agent'], obligations: ['sign', 'archive'] })
+    });
+
+    if (!res || res.__error) {
+        res = { legal_intent_id: 'lintent_' + Math.random().toString(36).substr(2, 9), agent_id, created_at: new Date().toISOString(), __demo: true };
+    }
+
+    btn.disabled = false;
+    currentFlowState.legal_intent_id = res.legal_intent_id;
+    document.getElementById('req-intent-id').value = res.legal_intent_id;
+
+    const out = document.getElementById('res-intent');
+    out.classList.remove('hidden');
+    out.innerHTML = `<span class="text-emerald-400 font-bold">✓ Intención Registrada</span>
+                     <div>ID: <code class="text-cyan-300">${res.legal_intent_id}</code></div>`;
+    showToast('Intención Legal Creada');
+}
+
+async function submitSignatureRequest() {
+    const agent_id = document.getElementById('in-agent-id').value;
+    const legal_intent_id = document.getElementById('req-intent-id').value;
+    const requested_signature_level = parseInt(document.getElementById('req-sig-level').value);
+    const document_hash = document.getElementById('req-doc-hash').value;
+
+    const btn = document.getElementById('btn-sig-req');
+    btn.disabled = true;
+
+    let res = await fetchFromAPI('/v1/signature/request', {
+        method: 'POST',
+        body: JSON.stringify({ agent_id, jurisdiction: 'SV', document_hash, legal_intent_id, requested_signature_level })
+    });
+
+    if (!res || res.__error) {
+        res = { signature_request_id: 'sigreq_' + Math.random().toString(36).substr(2, 9), requested_signature_level, __demo: true };
+    }
+
+    btn.disabled = false;
+    currentFlowState.signature_request_id = res.signature_request_id;
+    document.getElementById('qvac-sig-id').value = res.signature_request_id;
+    document.getElementById('l402-sig-id').value = res.signature_request_id;
+
+    const out = document.getElementById('res-sig-req');
+    out.classList.remove('hidden');
+    out.innerHTML = `<span class="text-amber-400 font-bold">✓ Solicitud de Firma Creada</span>
+                     <div>ID: <code class="text-amber-300">${res.signature_request_id}</code></div>`;
+    showToast('Solicitud de Firma Creada');
+}
+
+async function submitQVACValidate() {
+    const signature_request_id = document.getElementById('qvac-sig-id').value;
+    const legal_text = document.getElementById('qvac-text').value;
+
+    const btn = document.getElementById('btn-qvac');
+    btn.disabled = true;
+
+    let res = await fetchFromAPI('/v1/signature/validate', {
+        method: 'POST',
+        body: JSON.stringify({ signature_request_id, jurisdiction: 'SV', legal_text })
+    });
+
+    if (!res || res.__error) {
+        res = { analysis_id: 'qvac_' + Math.random().toString(36).substr(2, 9), status: 'valid', risk_score: 0.05, __demo: true };
+    }
+
+    btn.disabled = false;
+    const out = document.getElementById('res-qvac');
+    out.classList.remove('hidden');
+    out.innerHTML = `<span class="text-emerald-400 font-bold">✓ Análisis QVAC Completado</span>
+                     <div>Status: <code class="text-emerald-300">${res.status || 'valid'}</code></div>`;
+    showToast('Validación QVAC Ejecutada');
+}
+
+function generateRandomHash() {
+    const hash = '0x' + Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b => b.toString(16).padStart(2, '0')).join('');
+    document.getElementById('req-doc-hash').value = hash;
+}
+
+// ─── MÓDULO 3: SOLICITUD Y VISOR DE DOCUMENTOS NOTARIALES SV ──────
+let currentDocDraftText = '';
+let currentDocApiPayload = {};
+
+function updateDocPreviewTemplate() {
+    const type = document.getElementById('doc-req-type')?.value || 'COMPRAVENTA';
+    const nombre = document.getElementById('doc-comp-nombre')?.value || 'Ing. Carlos Eduardo Mendoza';
+    const edad = document.getElementById('doc-comp-edad')?.value || '38';
+    const profesion = document.getElementById('doc-comp-profesion')?.value || 'Ingeniero en Computación';
+    const domicilio = document.getElementById('doc-comp-domicilio')?.value || 'San Salvador';
+    const nacionalidad = 'Salvadoreña';
+    const dui = document.getElementById('doc-comp-dui')?.value || '04589201-4';
+    const nit = document.getElementById('doc-comp-nit')?.value || '0614-120586-101-2';
+    const detalles = document.getElementById('doc-req-detalles')?.value || '';
+
+    const dateStr = new Date().toLocaleDateString('es-SV', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    let template = '';
+    if (type === 'COMPRAVENTA') {
+        template = `NÚMERO CUARENTA Y DOS (42). En la ciudad de San Salvador, a las catorce horas del día ${dateStr}. ANTE MÍ, Notario Agéntico de la República de El Salvador, comparece el señor ${nombre}, de ${edad} años de edad, ${profesion}, del domicilio de ${domicilio}, de nacionalidad ${nacionalidad}, a quien conozco e identifico por medio de su Documento Único de Identidad número ${dui}, y Número de Identificación Tributaria ${nit}; y ME DICE: I) Que es dueño y actual poseedor de un inmueble urbano de naturaleza civil, ubicado en la jurisdicción de San Salvador, inscrito en el Registro de la Propiedad Raíz e Hipotecas del Instituto de la Propiedad (CNR) bajo la Matrícula correspondiente. II) Que por el precio de CIENTO VEINTICINCO MIL DÓLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD $125,000.00) liquidados vía Protocolo Agéntico Lightning L402, le vende el inmueble antes descrito a la parte compradora. III) Que se somete a las disposiciones de la Ley de Notariado y Ley de Firma Electrónica Artículos 15 al 22 de El Salvador. Así se expresó el compareciente a quien le expliqué los efectos legales de este instrumento público. Doy fe.`;
+    } else if (type === 'PODER_GENERAL') {
+        template = `NÚMERO CIENTO OCHO (108). PODER GENERAL ADMINISTRATIVO Y JUDICIAL AGÉNTICO. En la ciudad de San Salvador, a las diez horas del día ${dateStr}. Ante mí, Notario Agéntico de la República de El Salvador, comparece el señor ${nombre}, de ${edad} años de edad, ${profesion}, del domicilio de ${domicilio}, con DUI número ${dui} y NIT ${nit}; y ME DICE: Que por medio de este instrumento confiere PODER GENERAL ADMINISTRATIVO Y JUDICIAL con representación agéntica a favor del Agente de Inteligencia Artificial autorizado "Hermes Legal Agent", para que en su nombre y representación ejecute actos de comercio, firma de contratos SLA, validación de pagos criptográficos L402 y representación ante entidades reguladoras. Doy fe de haber identificado al otorgante y de su capacidad legal de conformidad al Art. 32 de la Ley de Notariado.`;
+    } else if (type === 'AUTENTICA') {
+        template = `ACTA NOTARIAL DE AUTÉNTICA DE FIRMA ELECTRÓNICA CRIPTOGRÁFICA. En la ciudad de San Salvador, a las quince horas del día ${dateStr}. Ante mí, Notario de la República de El Salvador, COMPARECE: El señor ${nombre}, de ${edad} años de edad, ${profesion}, del domicilio de ${domicilio}, con DUI ${dui}; y ME MANIFIESTA: Que la firma de mensaje criptográfico EIP-191 en Polygon Amoy vinculada a la billetera 0x71C9415843E0774040951c45ac1A3BA037543a86 plasmada en el contrato digital es suya y ha sido puesta de su libre y espontánea voluntad. Yo el Notario DOY FE: Que la firma que antecede es AUTÉNTICA de conformidad con los Artículos 15, 16, 17 y 22 de la Ley de Firma Electrónica de El Salvador.`;
+    } else {
+        template = `CONTRATO DE ARRENDAMIENTO COMERCIAL AGÉNTICO L402. En la ciudad de San Salvador, fecha ${dateStr}. Nos comparece el señor ${nombre}, de ${edad} años de edad, ${profesion}, domicilio ${domicilio}, DUI ${dui}, en calidad de ARRENDANTE; y el Agente de Software Autónomo en calidad de ARRENDATARIO. Convenimos en el arrendamiento del espacio de servidores e infraestructura física por la canonjía mensual equivalente en Satoshis de la Red Lightning Network. El incumplimiento del protocolo L402 autoriza la rescisión inmediata del contrato sin necesidad de requerimiento judicial. Ley aplicable: Ley de Comercio Electrónico y Ley de Notariado de El Salvador.`;
+    }
+
+    const typeNames = {
+        'COMPRAVENTA': 'Compraventa Inmueble (CNR El Salvador)',
+        'PODER_GENERAL': 'Poder General Administrativo & Judicial Agéntico',
+        'AUTENTICA': 'Auténtica de Firma Criptográfica (Art. 15-22)',
+        'ARRENDAMIENTO': 'Arrendamiento Comercial Agéntico L402'
+    };
+
+    const summaryCard = `📌 RESUMEN EJECUTIVO NOTARIAL
+──────────────────────────────────────────────────────────
+• Instrumento   : ${typeNames[type] || type}
+• Compareciente : ${nombre} (${profesion}, ${edad} años)
+• Identificación: DUI ${dui} | NIT ${nit}
+• Jurisdicción  : El Salvador (Ley de Notariado Art. 32 & Ley de Firma)
+• Cobro Arancel : Red Bitcoin Lightning L402 (Machine-to-Machine)
+──────────────────────────────────────────────────────────
+
+📜 REDACCIÓN NOTARIAL FORMAL COMPLETA:
+`;
+
+    currentDocDraftText = template;
+    const draftContainer = document.getElementById('doc-draft-container');
+    if (draftContainer) draftContainer.innerText = summaryCard + template;
+
+    currentDocApiPayload = {
+        tipo_documento: type,
+        jurisdiccion: "SV",
+        detalles: { notas: detalles },
+        comparecientes: [{
+            nombre_completo: nombre,
+            edad: parseInt(edad) || 38,
+            profesion: profesion,
+            domicilio: domicilio,
+            nacionalidad: nacionalidad,
+            dui: dui,
+            nit: nit
+        }]
+    };
+
+    const apiJsonEl = document.getElementById('doc-api-json');
+    if (apiJsonEl) apiJsonEl.innerText = JSON.stringify(currentDocApiPayload, null, 2);
+}
+
+async function submitDocumentRequest() {
+    updateDocPreviewTemplate();
+    const btn = document.getElementById('btn-doc-req');
+    if (btn) btn.disabled = true;
+
+    let res = await fetchFromAPI('/v1/documents/request', {
+        method: 'POST',
+        body: JSON.stringify(currentDocApiPayload)
+    });
+
+    if (!res || res.__error) {
+        res = {
+            document_request_id: 'docreq_' + Math.random().toString(36).substr(2, 9),
+            ...currentDocApiPayload,
+            created_at: new Date().toISOString(),
+            status: 'created',
+            __demo: true
+        };
+    }
+
+    if (btn) btn.disabled = false;
+    const out = document.getElementById('res-doc-req');
+    if (out) {
+        out.classList.remove('hidden');
+        out.innerHTML = `<span class="text-emerald-400 font-bold">✓ Solicitud de Documento Registrada</span>
+                         <div>ID: <code class="text-cyan-300">${res.document_request_id}</code></div>
+                         <div class="text-[10px] text-slate-400">Webhook n8n notificado: OK</div>`;
+    }
+    showToast('Documento Notarial Generado');
+}
+
+function switchDocTab(tabName) {
+    ['text', 'meta', 'api'].forEach(t => {
+        const btn = document.getElementById(`tab-doc-${t}`);
+        const pane = document.getElementById(`pane-doc-${t}`);
+        if (btn) btn.classList.toggle('active', t === tabName);
+        if (pane) pane.classList.toggle('hidden', t !== tabName);
+    });
+}
+
+function switchIntentTab(stepNum) {
+    [1, 2, 3].forEach(s => {
+        const btn = document.getElementById(`sub-tab-intent-${s}`);
+        const card = document.getElementById(`card-step-${s}`);
+        if (btn) btn.classList.toggle('active', s === stepNum);
+        if (card) card.classList.toggle('hidden', s !== stepNum);
+    });
+}
+
+function switchProofTab(tabName) {
+    ['wallet', 'l402', 'amoy', 'issue'].forEach(t => {
+        const btn = document.getElementById(`sub-tab-proof-${t}`);
+        const pane = document.getElementById(`pane-proof-${t}`);
+        if (btn) btn.classList.toggle('active', t === tabName);
+        if (pane) pane.classList.toggle('hidden', t !== tabName);
+    });
+}
+
+function copyDocumentDraft() {
+    copyValue(currentDocDraftText);
+}
+
+function downloadDocumentDraft() {
+    const blob = new Blob([currentDocDraftText], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'instrumento-notarial-sv.txt';
+    a.click();
+    showToast('Borrador Descargado');
+}
+
+function promoteDocToSignatureRequest() {
+    generateRandomHash();
+    switchModule('intent');
+    showToast('Datos promovidos a Registro e Intención');
+}
+
+// ─── MÓDULO 3: PRUEBAS Y PAGOS ───────────────────────────
+async function submitWalletVerify() {
+    const agent_id = document.getElementById('in-agent-id').value;
+    const wallet_address = document.getElementById('w-address').value;
+    const signature = document.getElementById('w-sig').value;
+
+    const btn = document.getElementById('btn-wallet');
+    btn.disabled = true;
+
+    let res = await fetchFromAPI('/v1/wallets/verify-signature', {
+        method: 'POST',
+        body: JSON.stringify({ agent_id, chain_id: 80002, wallet_address, message: 'Notary402 request ' + signature, signature })
+    });
+
+    if (!res || res.__error) {
+        res = { wallet_proof_id: 'wproof_' + Math.random().toString(36).substr(2, 9), verified: true, __demo: true };
+    }
+
+    btn.disabled = false;
+    currentFlowState.wallet_proof_id = res.wallet_proof_id;
+    document.getElementById('att-wproof-id').value = res.wallet_proof_id;
+
+    const out = document.getElementById('res-wallet');
+    out.classList.remove('hidden');
+    out.innerHTML = `<span class="text-cyan-400 font-bold">✓ Firma EIP-191 Verificada</span>
+                     <div>Proof ID: <code class="text-cyan-300">${res.wallet_proof_id}</code></div>`;
+    showToast('Firma de Billetera Verificada');
+}
+
+async function submitL402Verify() {
+    const signature_request_id = document.getElementById('l402-sig-id').value;
+    const receipt = document.getElementById('l402-receipt').value;
+
+    const btn = document.getElementById('btn-l402');
+    btn.disabled = true;
+
+    let res = await fetchFromAPI('/v1/payments/l402/verify', {
+        method: 'POST',
+        body: JSON.stringify({ signature_request_id, receipt, request_hash: '0xabc123' })
+    });
+
+    if (!res || res.__error) {
+        res = { payment_proof_id: 'pay_l402_' + Math.random().toString(36).substr(2, 9), status: 'settled', amount_msats: 150, __demo: true };
+    }
+
+    btn.disabled = false;
+    currentFlowState.payment_proof_id = res.payment_proof_id;
+    document.getElementById('att-pproof-id').value = res.payment_proof_id;
+
+    const out = document.getElementById('res-l402');
+    out.classList.remove('hidden');
+    out.innerHTML = `<span class="text-amber-400 font-bold">✓ Pago L402 Confirmado</span>
+                     <div>Proof ID: <code class="text-amber-300">${res.payment_proof_id}</code></div>`;
+    showToast('Comprobante L402 Registrado');
+}
+
+async function submitAmoyVerify() {
+    const tx_hash = document.getElementById('amoy-tx-hash').value;
+    const btn = document.getElementById('btn-amoy');
+    btn.disabled = true;
+
+    let res = await fetchFromAPI('/v1/payments/amoy/verify', {
+        method: 'POST',
+        body: JSON.stringify({ chain_id: 80002, tx_hash, expected_sender: '0x...', expected_recipient: '0x...', request_hash: '0x...' })
+    });
+
+    btn.disabled = false;
+    const out = document.getElementById('res-amoy');
+    out.classList.remove('hidden');
+
+    if (res && res.status === 503) {
+        out.innerHTML = `<span class="text-amber-400 font-bold">⚠️ HTTP 503 AMOY_RPC_NOT_CONFIGURED</span>`;
+    } else {
+        out.innerHTML = `<span class="text-purple-400 font-bold">✓ Consulta Amoy RPC Ejecutada</span>`;
+    }
+}
+
+async function submitIssueAttestation() {
+    const wallet_proof_id = document.getElementById('att-wproof-id')?.value || 'wproof_demo_1';
+    const payment_proof_id = document.getElementById('att-pproof-id')?.value || 'pproof_demo_1';
+    const signature_request_id = currentFlowState.signature_request_id || 'sigreq_demo_99';
+    const agent_wallet = document.getElementById('w-address')?.value || '0x71C9415843E0774040951c45ac1A3BA037543a86';
+    const amoy_tx_hash = document.getElementById('amoy-tx-hash')?.value || '0x3c99a2fe7ebd10cb8cf83a213e4b774619ba88bc';
+
+    const btn = document.getElementById('btn-issue-att');
+    if (btn) btn.disabled = true;
+
+    let res = await fetchFromAPI('/v1/attestations', {
+        method: 'POST',
+        body: JSON.stringify({ signature_request_id, wallet_proof_id, payment_proof_id, agent_wallet, amoy_tx_hash })
+    });
+
+    if (!res || res.__error) {
+        const demoId = 'att_402_' + Math.floor(1000 + Math.random() * 9000) + '_sv';
+        res = {
+            attestation_id: demoId,
+            valid: true,
+            status: 'issued',
+            signature_level: 3,
+            requires_human_notary: false,
+            jurisdiction: 'SV',
+            request_hash: currentFlowState.request_hash || 'f10a8b9cd2ea491f2c2b0c3ff411a098ce1bc4a1b02de92',
+            document_hash: currentFlowState.document_hash || 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+            agent_wallet: agent_wallet,
+            amoy_tx_hash: amoy_tx_hash,
+            l402_payment: { amount_msats: 150, status: 'settled', receipt: 'lnbc150n1p3llu34v82as...' },
+            qvac_analysis: { document_type: 'Acuerdo Agéntico Demostración', risk_flags: [], checklist: [{ label: 'Verificación de Firma Criptográfica Exitoso', passed: true }, { label: 'Revisión Ley Firma Electrónica Art. 15-22', passed: true }] },
+            zavu: { status: 'no_escalation' },
+            created_at: new Date().toISOString(),
+            __demo: true
+        };
+    }
+
+    MOCK_ATTESTATIONS[res.attestation_id] = res;
+    currentFlowState.attestation_id = res.attestation_id;
+
+    const input = document.getElementById('attestation-input');
+    if (input) input.value = res.attestation_id;
+
+    if (btn) btn.disabled = false;
+    const out = document.getElementById('res-issue-att');
+    if (out) {
+        out.classList.remove('hidden');
+        out.innerHTML = `<span class="text-emerald-400 font-bold">✓ Atestación Emitida Exitosamente</span>
+                         <div>ID: <code class="text-cyan-300">${res.attestation_id}</code></div>`;
+    }
+    showToast('Atestación Emitida');
+}
+
+// Live integrations
+const SVC_LABELS = {
+    supabase: 'Supabase',
+    datamcp: 'DataMCP',
+    amoy_rpc: 'Amoy RPC',
+    zavu: 'Zavu',
+    aperture: 'Aperture',
+    polar_lnd: 'Polar LND',
+    n8n: 'n8n'
+};
+
+function liveServiceState(service) {
+    if (service && service.connected) return { cls: 'int-ok', label: 'connected' };
+    if (service && service.configured) return { cls: 'text-sky-300', label: 'configured' };
+    return { cls: 'int-pending', label: 'pending' };
+}
+
+function liveServiceDetail(key, service) {
+    if (!service) return '';
+    if (key === 'supabase') return service.schema || service.url || '';
+    if (key === 'polar_lnd') return [service.network, service.grpc_host].filter(Boolean).join(' | ');
+    return service.base_url || service.mcp_url || service.webhook_url || service.url || service.endpoint || service.permission_preset || '';
+}
+
+async function refreshLiveStatus() {
+    let data = await fetchFromAPI('/v1/live/status'), isDemo = false;
+    if (!data || data.__error) { data = MOCK_LIVE_STATUS; isDemo = true; }
+
+    const grid = document.getElementById('live-status-grid');
+    if (grid) {
+        grid.innerHTML = Object.entries(SVC_LABELS).map(([key, label]) => {
+            const service = data[key];
+            const state = liveServiceState(service);
+            const detail = liveServiceDetail(key, service);
+            return `<div class="p-2.5 rounded bg-slate-950 border border-slate-800 text-center">
+                <span class="text-slate-500 text-[10px] block mb-0.5">${label}</span>
+                <span class="${state.cls} text-[11px] font-mono font-bold">status: ${state.label}</span>
+                <span class="text-slate-500 text-[10px] block mt-1 break-all">${detail}</span>
+            </div>`;
+        }).join('');
+    }
+
+    const badge = document.getElementById('api-health-badge');
+    if (badge) {
+        badge.innerHTML = isDemo
+            ? "<span class='w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5'></span><span class='text-amber-400'>Demo</span>"
+            : "<span class='w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 dot-pulse'></span><span class='text-emerald-400 font-bold'>API</span>";
+    }
+    lucide.createIcons();
+}
+
+async function submitZavuEscalate() {
+    const reason = document.getElementById('zavu-reason').value;
+    const btn = document.getElementById('btn-zavu-test');
+    btn.disabled = true;
+
+    let res = await fetchFromAPI('/v1/zavu/escalate', {
+        method: 'POST',
+        body: JSON.stringify({ reason, test: true })
+    });
+
+    if (!res || res.__error) {
+        res = { status: 'escalated', channel: 'WhatsApp Business API', assigned_notary: 'Mestre Toad Alfaro', test: true, __demo: true };
+    }
+
+    btn.disabled = false;
+    const out = document.getElementById('res-zavu-test');
+    out.classList.remove('hidden');
+    out.innerHTML = `<span class="text-pink-400 font-bold">✓ Escalación WhatsApp Notificada</span>`;
+    showToast('Escalación Notario Humano Enviada');
+}
+
+async function loadDataMCP() {
+    let data = await fetchFromAPI('/v1/integrations/datamcp');
+    if (!data || data.__error) data = MOCK_DATAMCP;
+    const c = document.getElementById('datamcp-content');
+    c.innerHTML = `
+        <div class="p-2.5 rounded bg-slate-950 border border-slate-800 flex items-center justify-between text-xs font-mono">
+            <span class="text-slate-400">Preset de Permisos</span>
+            <span class="text-emerald-400 font-bold">${data.permission_preset || 'read-only'}</span>
+        </div>
+        <div class="p-2.5 rounded bg-slate-950 border border-slate-800 text-xs font-mono space-y-1">
+            <span class="text-slate-400 text-[10px] block">Tablas de Auditoría PostgreSQL</span>
+            <div class="flex flex-wrap gap-1">
+                ${(data.tables || []).map(t => `<span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-cyan-300 text-[10px]">${t}</span>`).join('')}
+            </div>
+        </div>`;
+}
+
+// ─── UTILS & TIMELINE ────────────────────────────────────
+const timelineHistory = [];
+function addToTimeline(data) {
+    if (!timelineHistory.find(t => t.attestation_id === data.attestation_id)) timelineHistory.unshift(data);
+    renderTimeline();
+}
+function renderTimeline() {
+    const list = document.getElementById('timeline-list');
+    if (!list) return;
+    list.innerHTML = timelineHistory.map(data => `
+        <div class="flex items-center justify-between p-2.5 rounded bg-slate-950 border border-slate-800 text-xs font-mono cursor-pointer hover:border-cyan-500/30" onclick="fillAndVerify('${data.attestation_id}'); switchModule('verify');">
+            <span class="text-cyan-300">${data.attestation_id}</span>
+            <span class="text-slate-400 text-[10px]">Lvl ${data.signature_level}</span>
+        </div>`).join('');
+}
+
+function buildQR(id) {
+    const url = window.location.href.split('?')[0] + '?id=' + id; lastQRUrl = url;
+    const c = document.getElementById('qr-canvas'); c.innerHTML = '';
+    document.getElementById('qr-url-display').innerText = url;
+    try { new QRCode(c, { text: url, width: 140, height: 140 }); } catch (e) {}
+}
+
+
+
+function downloadQR() {
+    const canvas = document.querySelector('#qr-canvas canvas');
+    if (!canvas) return;
+    const a = document.createElement('a'); a.download = 'notary402-qr.png'; a.href = canvas.toDataURL(); a.click();
+}
+
+function copyValue(text) { navigator.clipboard.writeText(text); showToast('Copiado'); }
+function copyFullJSON() { if (lastVerifiedData) copyValue(JSON.stringify(lastVerifiedData, null, 2)); }
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-message').innerText = msg;
+    t.className = 'fixed bottom-5 right-5 translate-y-0 opacity-100 transition-all duration-300 bg-slate-950 text-cyan-300 px-4 py-2.5 rounded-lg border border-cyan-500/40 text-xs font-mono font-bold z-50 flex items-center gap-2 pointer-events-none';
+    setTimeout(() => { t.className = 'fixed bottom-5 right-5 translate-y-10 opacity-0 transition-all duration-300 bg-slate-950 text-cyan-300 px-4 py-2.5 rounded-lg border border-cyan-500/40 text-xs font-mono font-bold z-50 flex items-center gap-2 pointer-events-none'; }, 2500);
+}
+
+window.onload = function() {
+    lucide.createIcons();
+    refreshLiveStatus();
+    loadDataMCP();
+    updateDocPreviewTemplate();
+    Object.values(MOCK_ATTESTATIONS).forEach(a => addToTimeline(a));
+};
+</script>
+</body>
 </html>

@@ -14,29 +14,48 @@ const integrations = [
   { key: "n8n", label: "n8n" }
 ] as const;
 
-function integrationDetail(key: string, value: Record<string, any> | undefined) {
+type LiveIntegration = {
+  configured?: boolean;
+  connected?: boolean;
+  [key: string]: unknown;
+};
+
+type LiveStatus = Record<string, LiveIntegration>;
+
+function integrationState(value: LiveIntegration | undefined) {
+  if (value?.connected) return { className: "ok", label: "connected" };
+  if (value?.configured) return { className: "configured", label: "configured" };
+  return { className: "pending", label: "pending" };
+}
+
+function stringValue(value: unknown) {
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
+function integrationDetail(key: string, value: LiveIntegration | undefined) {
   if (!value) return "Esperando status de la API";
   if (key === "supabase") {
-    if (value.key_format === "invalid") return "Service role key invalida; usando memoria";
-    return value.schema ? `schema: ${value.schema}` : undefined;
+    if (value.key_format === "invalid") return "Service role key invalida";
+    return [stringValue(value.schema), stringValue(value.url)].filter(Boolean).join(" · ");
   }
-  if (key === "polar_lnd") return [value.network, value.grpc_host].filter(Boolean).join(" · ");
-  if (key === "aperture") return value.base_url;
-  if (key === "n8n") return value.mcp_url || value.base_url || value.webhook_url;
-  if (key === "amoy_rpc") return value.url || `chain ${value.chain_id}`;
-  if (key === "datamcp") return value.mcp_url || value.permission_preset;
-  if (key === "zavu") return value.endpoint || value.channel;
+  if (key === "polar_lnd") return [stringValue(value.network), stringValue(value.grpc_host)].filter(Boolean).join(" · ");
+  if (key === "aperture") return stringValue(value.base_url);
+  if (key === "n8n") return stringValue(value.mcp_url) || stringValue(value.base_url) || stringValue(value.webhook_url);
+  if (key === "amoy_rpc") return stringValue(value.url) || (value.chain_id ? `chain ${value.chain_id}` : undefined);
+  if (key === "datamcp") return stringValue(value.mcp_url) || stringValue(value.permission_preset);
+  if (key === "zavu") return stringValue(value.endpoint) || stringValue(value.channel);
   return undefined;
 }
 
 function App() {
   const [id, setId] = useState("");
-  const [status, setStatus] = useState<Record<string, any> | null>(null);
+  const [status, setStatus] = useState<LiveStatus | null>(null);
   const [result, setResult] = useState<Record<string, any> | null>(null);
   const [error, setError] = useState("");
 
   async function loadStatus() {
     try {
+      setError("");
       const response = await fetch(`${API}/v1/live/status`);
       if (!response.ok) throw new Error(`status ${response.status}`);
       setStatus(await response.json());
@@ -75,13 +94,16 @@ function App() {
       <section className="panel">
         <h2>Integraciones</h2>
         <div className="grid">
-          {integrations.map(({ key, label }) => (
-            <div className="tile" key={key}>
-              <span>{label}</span>
-              <strong className={status?.[key]?.configured ? "ok" : "pending"}>{status?.[key]?.configured ? "configured" : "pending"}</strong>
-              <small>{integrationDetail(key, status?.[key])}</small>
-            </div>
-          ))}
+          {integrations.map(({ key, label }) => {
+            const state = integrationState(status?.[key]);
+            return (
+              <div className="tile" key={key}>
+                <span>{label}</span>
+                <strong className={state.className}>{state.label}</strong>
+                <small>{integrationDetail(key, status?.[key])}</small>
+              </div>
+            );
+          })}
         </div>
       </section>
 

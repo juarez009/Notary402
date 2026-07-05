@@ -1,0 +1,204 @@
+{"kind":"deck","id":"pr/yuydtr","name":"Deck"}
+{"kind":"layout","layoutId":"03a96c78-e644-4c7a-a201-b357e07c6623","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"fd652e8b-be44-4148-9398-a98c5febf7e3","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/qh1vcp","slide":1,"title":"Notary402","textShapes":11}
+{"kind":"textbox","id":"sh/9w3m94fu","slide":1,"name":"text","text":"Notary402","textPreview":"Notary402","textChars":9,"textLines":1,"bbox":[42,40,360,60]}
+{"kind":"textbox","id":"sh/25kb6xkf","slide":1,"name":"text","text":"Confianza legal verificable para agentes IA y protocolos Web3","textPreview":"Confianza legal verificable para agentes IA y protocolos Web3","textChars":61,"textLines":1,"bbox":[42,184,755,236]}
+{"kind":"textbox","id":"sh/rqd4vmtw","slide":1,"name":"text","text":"MVP backend para convertir intención legal, firma, pago, análisis y atestación en un flujo auditable.","textPreview":"MVP backend para convertir intención legal, firma, pago, análisis y atestación en un flujo auditable.","textChars":101,"textLines":1,"bbox":[42,500,555,96]}
+{"kind":"shape","id":"sh/kzupwb2h","slide":1,"name":"proof-column","bbox":[862,40,376,590]}
+{"kind":"shape","id":"sh/9knih4by","slide":1,"name":"label-box","bbox":[900,104,142,34]}
+{"kind":"textbox","id":"sh/2t83itgf","slide":1,"name":"text","text":"REST + MCP","textPreview":"REST + MCP","textChars":10,"textLines":1,"bbox":[912,110,118,24]}
+{"kind":"shape","id":"sh/re1w7mp0","slide":1,"name":"label-box","bbox":[900,160,96,34]}
+{"kind":"textbox","id":"sh/gvy90je9","slide":1,"name":"text","text":"L402","textPreview":"L402","textChars":4,"textLines":1,"bbox":[912,166,72,24]}
+{"kind":"shape","id":"sh/9gr2p8nq","slide":1,"name":"label-box","bbox":[900,216,116,34]}
+{"kind":"textbox","id":"sh/dg7adsji","slide":1,"name":"text","text":"EIP-191","textPreview":"EIP-191","textChars":7,"textLines":1,"bbox":[912,222,92,24]}
+{"kind":"shape","id":"sh/ovahoza1","slide":1,"name":"label-box","bbox":[900,272,176,34]}
+{"kind":"textbox","id":"sh/vahoza1g","slide":1,"name":"text","text":"Supabase audit","textPreview":"Supabase audit","textChars":14,"textLines":1,"bbox":[912,278,152,24]}
+{"kind":"shape","id":"sh/6tovahoz","slide":1,"name":"label-box","bbox":[900,328,126,34]}
+{"kind":"textbox","id":"sh/d8v6psfi","slide":1,"name":"text","text":"QR verify","textPreview":"QR verify","textChars":9,"textLines":1,"bbox":[912,334,102,24]}
+{"kind":"textbox","id":"sh/onyd0z61","slide":1,"name":"text","text":"Un backend que permite a máquinas comprar confianza, demostrar identidad y dejar evidencia verificable.","textPreview":"Un backend que permite a máquinas comprar confianza, demostrar identidad y dejar evidencia verificable.","textChars":103,"textLines":1,"bbox":[900,432,276,122]}
+{"kind":"textbox","id":"sh/z25kb6xk","slide":1,"name":"text","text":"Notary402 MVP","textPreview":"Notary402 MVP","textChars":13,"textLines":1,"bbox":[42,660,300,24]}
+{"kind":"textbox","id":"sh/6hcrmhk3","slide":1,"name":"text","text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[1184,660,54,24]}
+{"kind":"notes","id":"nt/qh1vcp","slide":1,"text":""}
+{"kind":"slide","id":"sl/8b9bh0","slide":2,"title":"Problema","textShapes":13}
+{"kind":"textbox","id":"sh/xobm58z2","slide":2,"name":"text","text":"Problema","textPreview":"Problema","textChars":8,"textLines":1,"bbox":[42,36,420,28]}
+{"kind":"textbox","id":"sh/qxs72x4n","slide":2,"name":"text","text":"Notary402 MVP","textPreview":"Notary402 MVP","textChars":13,"textLines":1,"bbox":[42,660,300,24]}
+{"kind":"textbox","id":"sh/fil0rqd4","slide":2,"name":"text","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1184,660,54,24]}
+{"kind":"textbox","id":"sh/4fu18jqh","slide":2,"name":"text","text":"El problema ya no es solo firmar","textPreview":"El problema ya no es solo firmar","textChars":32,"textLines":1,"bbox":[42,92,780,76]}
+{"kind":"textbox","id":"sh/x0nuxc3y","slide":2,"name":"text","text":"Cuando el actor es un agente autónomo, la firma aislada no basta para generar confianza legal.","textPreview":"Cuando el actor es un agente autónomo, la firma aislada no basta para generar confianza legal.","textChars":94,"textLines":1,"bbox":[42,178,640,64]}
+{"kind":"shape","id":"sh/m94fu18j","slide":2,"name":"content-panel","bbox":[42,300,265,220]}
+{"kind":"textbox","id":"sh/fu18jqh0","slide":2,"name":"text","text":"Identidad","textPreview":"Identidad","textChars":9,"textLines":1,"bbox":[66,324,217,48]}
+{"kind":"textbox","id":"sh/4r65wjud","slide":2,"name":"text","text":"El agente debe probar control de una wallet real, no solo enviar un payload.","textPreview":"El agente debe probar control de una wallet real, no solo enviar un payload.","textChars":76,"textLines":1,"bbox":[66,388,217,108]}
+{"kind":"shape","id":"sh/xc3ylc7u","slide":2,"name":"content-panel","bbox":[342,300,265,220]}
+{"kind":"textbox","id":"sh/9cvixcze","slide":2,"name":"text","text":"Pago","textPreview":"Pago","textChars":4,"textLines":1,"bbox":[366,324,217,48]}
+{"kind":"textbox","id":"sh/gr2p8nqx","slide":2,"name":"text","text":"El acceso debe quedar condicionado a un recibo L402 verificable.","textPreview":"El acceso debe quedar condicionado a un recibo L402 verificable.","textChars":64,"textLines":1,"bbox":[366,388,217,108]}
+{"kind":"shape","id":"sh/r65wjudg","slide":2,"name":"content-panel","bbox":[642,300,265,220]}
+{"kind":"textbox","id":"sh/ylc7u54z","slide":2,"name":"text","text":"Jurisdicción","textPreview":"Jurisdicción","textChars":12,"textLines":1,"bbox":[666,324,217,48]}
+{"kind":"textbox","id":"sh/5o7qpg3e","slide":2,"name":"text","text":"El flujo debe razonar bajo reglas de El Salvador y reconocer casos de riesgo.","textPreview":"El flujo debe razonar bajo reglas de El Salvador y reconocer casos de riesgo.","textChars":77,"textLines":1,"bbox":[666,388,217,108]}
+{"kind":"shape","id":"sh/g3ex0nux","slide":2,"name":"content-panel","bbox":[942,300,265,220]}
+{"kind":"textbox","id":"sh/nih4byhg","slide":2,"name":"text","text":"Auditoría","textPreview":"Auditoría","textChars":9,"textLines":1,"bbox":[966,324,217,48]}
+{"kind":"textbox","id":"sh/yxobm58z","slide":2,"name":"text","text":"Cada paso necesita evidencia consultable y verificación pública.","textPreview":"Cada paso necesita evidencia consultable y verificación pública.","textChars":64,"textLines":1,"bbox":[966,388,217,108]}
+{"kind":"notes","id":"nt/8b9bh0","slide":2,"text":""}
+{"kind":"slide","id":"sl/b6dl6t","slide":3,"title":"Propuesta","textShapes":13}
+{"kind":"textbox","id":"sh/k3q5o7qp","slide":3,"name":"text","text":"Propuesta","textPreview":"Propuesta","textChars":9,"textLines":1,"bbox":[42,36,420,28]}
+{"kind":"textbox","id":"sh/vixczed8","slide":3,"name":"text","text":"Notary402 MVP","textPreview":"Notary402 MVP","textChars":13,"textLines":1,"bbox":[42,660,300,24]}
+{"kind":"textbox","id":"sh/2x4nap4r","slide":3,"name":"text","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1184,660,54,24]}
+{"kind":"textbox","id":"sh/dcbulwva","slide":3,"name":"text","text":"El MVP convierte una intención legal en una atestación verificable","textPreview":"El MVP convierte una intención legal en una atestación verificable","textChars":66,"textLines":1,"bbox":[42,90,1020,118]}
+{"kind":"shape","id":"sh/kre1w7mp","slide":3,"name":"main-claim","bbox":[42,250,1196,96]}
+{"kind":"textbox","id":"sh/val87ed8","slide":3,"name":"text","text":"Entrada: intención legal de un agente","textPreview":"Entrada: intención legal de un agente","textChars":37,"textLines":1,"bbox":[72,281,350,42]}
+{"kind":"textbox","id":"sh/6psfil0r","slide":3,"name":"text","text":"Proceso: firma, pago y análisis","textPreview":"Proceso: firma, pago y análisis","textChars":31,"textLines":1,"bbox":[472,281,340,42]}
+{"kind":"textbox","id":"sh/d8bat47y","slide":3,"name":"text","text":"Salida: atestación pública","textPreview":"Salida: atestación pública","textChars":26,"textLines":1,"bbox":[872,281,310,42]}
+{"kind":"shape","id":"sh/knih4byh","slide":3,"name":"content-panel","bbox":[42,405,360,170]}
+{"kind":"textbox","id":"sh/uxc3ylc7","slide":3,"name":"text","text":"Backend Fastify","textPreview":"Backend Fastify","textChars":15,"textLines":1,"bbox":[66,429,312,48]}
+{"kind":"textbox","id":"sh/ji5snelo","slide":3,"name":"text","text":"Expone contrato REST/OpenAPI para crear solicitudes, verificar pruebas y emitir resultados.","textPreview":"Expone contrato REST/OpenAPI para crear solicitudes, verificar pruebas y emitir resultados.","textChars":91,"textLines":1,"bbox":[66,493,312,58]}
+{"kind":"shape","id":"sh/c3ylc7u5","slide":3,"name":"content-panel","bbox":[462,405,360,170]}
+{"kind":"textbox","id":"sh/1kre1w7m","slide":3,"name":"text","text":"Store auditable","textPreview":"Store auditable","textChars":15,"textLines":1,"bbox":[486,429,312,48]}
+{"kind":"textbox","id":"sh/ulwval87","slide":3,"name":"text","text":"Usa Supabase cuando hay credenciales live y MemoryStore para pruebas/desarrollo.","textPreview":"Usa Supabase cuando hay credenciales live y MemoryStore para pruebas/desarrollo.","textChars":80,"textLines":1,"bbox":[486,493,312,58]}
+{"kind":"shape","id":"sh/j6tovaho","slide":3,"name":"content-panel","bbox":[882,405,356,170]}
+{"kind":"textbox","id":"sh/crmhk3q5","slide":3,"name":"text","text":"Verificación final","textPreview":"Verificación final","textChars":18,"textLines":1,"bbox":[906,429,308,48]}
+{"kind":"textbox","id":"sh/1cfa9w3m","slide":3,"name":"text","text":"Permite consultar la atestación y validar checks de documento, wallet, pago y firma notarial.","textPreview":"Permite consultar la atestación y validar checks de documento, wallet, pago y firma notarial.","textChars":93,"textLines":1,"bbox":[906,493,308,58]}
+{"kind":"notes","id":"nt/b6dl6t","slide":3,"text":""}
+{"kind":"slide","id":"sl/xma3hx","slide":4,"title":"Flujo backend","textShapes":26}
+{"kind":"textbox","id":"sh/z61032ls","slide":4,"name":"text","text":"Flujo backend","textPreview":"Flujo backend","textChars":13,"textLines":1,"bbox":[42,36,420,28]}
+{"kind":"textbox","id":"sh/orytsvu9","slide":4,"name":"text","text":"Notary402 MVP","textPreview":"Notary402 MVP","textChars":13,"textLines":1,"bbox":[42,660,300,24]}
+{"kind":"textbox","id":"sh/hcrmhk3q","slide":4,"name":"text","text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1184,660,54,24]}
+{"kind":"textbox","id":"sh/a9w3m94f","slide":4,"name":"text","text":"El flujo encadena pruebas técnicas antes de emitir confianza","textPreview":"El flujo encadena pruebas técnicas antes de emitir confianza","textChars":60,"textLines":1,"bbox":[42,86,1040,76]}
+{"kind":"shape","id":"sh/zupwb2hw","slide":4,"name":"workflow-step","bbox":[42,220,330,158]}
+{"kind":"textbox","id":"sh/sfil0rqd","slide":4,"name":"text","text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[58,236,48,28]}
+{"kind":"textbox","id":"sh/h0fepkzu","slide":4,"name":"text","text":"Legal intent","textPreview":"Legal intent","textChars":12,"textLines":1,"bbox":[58,278,298,34]}
+{"kind":"textbox","id":"sh/65wjudg7","slide":4,"name":"text","text":"El agente declara propósito, partes, obligaciones y riesgos.","textPreview":"El agente declara propósito, partes, obligaciones y riesgos.","textChars":60,"textLines":1,"bbox":[58,326,298,36]}
+{"kind":"textbox","id":"sh/zqtcj6to","slide":4,"name":"text","text":"->","textPreview":"->","textChars":2,"textLines":1,"bbox":[382,274,50,32]}
+{"kind":"shape","id":"sh/zupwb2hw","slide":4,"name":"workflow-step","bbox":[454,220,330,158]}
+{"kind":"textbox","id":"sh/a9w3m94f","slide":4,"name":"text","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[470,236,48,28]}
+{"kind":"textbox","id":"sh/h0fepkzu","slide":4,"name":"text","text":"Signature request","textPreview":"Signature request","textChars":17,"textLines":1,"bbox":[470,278,298,34]}
+{"kind":"textbox","id":"sh/sfil0rqd","slide":4,"name":"text","text":"El backend genera request_hash y estado awaiting_payment.","textPreview":"El backend genera request_hash y estado awaiting_payment.","textChars":57,"textLines":1,"bbox":[470,326,298,36]}
+{"kind":"textbox","id":"sh/z61032ls","slide":4,"name":"text","text":"->","textPreview":"->","textChars":2,"textLines":1,"bbox":[794,274,50,32]}
+{"kind":"shape","id":"sh/al87ed8b","slide":4,"name":"workflow-step","bbox":[866,220,330,158]}
+{"kind":"textbox","id":"sh/hcrmhk3q","slide":4,"name":"text","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[882,236,48,28]}
+{"kind":"textbox","id":"sh/orytsvu9","slide":4,"name":"text","text":"Wallet proof","textPreview":"Wallet proof","textChars":12,"textLines":1,"bbox":[882,278,298,34]}
+{"kind":"textbox","id":"sh/zed8v6ps","slide":4,"name":"text","text":"EIP-191 valida control de wallet en Polygon Amoy 80002.","textPreview":"EIP-191 valida control de wallet en Polygon Amoy 80002.","textChars":55,"textLines":1,"bbox":[882,326,298,36]}
+{"kind":"shape","id":"sh/6xkf6dcb","slide":4,"name":"workflow-step","bbox":[42,425,330,158]}
+{"kind":"textbox","id":"sh/e1w7mp0b","slide":4,"name":"text","text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[58,441,48,28]}
+{"kind":"textbox","id":"sh/7mp0bi9s","slide":4,"name":"text","text":"L402 receipt","textPreview":"L402 receipt","textChars":12,"textLines":1,"bbox":[58,483,298,34]}
+{"kind":"textbox","id":"sh/w7mp0bi9","slide":4,"name":"text","text":"Se registra comprobante macaroon:preimage de Aperture/Polar.","textPreview":"Se registra comprobante macaroon:preimage de Aperture/Polar.","textChars":60,"textLines":1,"bbox":[58,531,298,36]}
+{"kind":"textbox","id":"sh/psfil0rq","slide":4,"name":"text","text":"->","textPreview":"->","textChars":2,"textLines":1,"bbox":[382,479,50,32]}
+{"kind":"shape","id":"sh/epkzupwb","slide":4,"name":"workflow-step","bbox":[454,425,330,158]}
+{"kind":"textbox","id":"sh/7adsji5s","slide":4,"name":"text","text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[470,441,48,28]}
+{"kind":"textbox","id":"sh/wval87ed","slide":4,"name":"text","text":"Legal analysis","textPreview":"Legal analysis","textChars":14,"textLines":1,"bbox":[470,483,298,34]}
+{"kind":"textbox","id":"sh/pg3ex0nu","slide":4,"name":"text","text":"QVAC/Ollama calcula riesgo y necesidad de notario humano.","textPreview":"QVAC/Ollama calcula riesgo y necesidad de notario humano.","textChars":57,"textLines":1,"bbox":[470,531,298,36]}
+{"kind":"textbox","id":"sh/eloj2t83","slide":4,"name":"text","text":"->","textPreview":"->","textChars":2,"textLines":1,"bbox":[794,479,50,32]}
+{"kind":"shape","id":"sh/36hcrmhk","slide":4,"name":"workflow-step","bbox":[866,425,330,158]}
+{"kind":"textbox","id":"sh/t83itgfm","slide":4,"name":"text","text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[882,441,48,28]}
+{"kind":"textbox","id":"sh/4nap4r65","slide":4,"name":"text","text":"Attestation","textPreview":"Attestation","textChars":11,"textLines":1,"bbox":[882,483,298,34]}
+{"kind":"textbox","id":"sh/b2hwfyxo","slide":4,"name":"text","text":"Se emite, verifica y publica el resultado final.","textPreview":"Se emite, verifica y publica el resultado final.","textChars":48,"textLines":1,"bbox":[882,531,298,36]}
+{"kind":"notes","id":"nt/xma3hx","slide":4,"text":""}
+{"kind":"slide","id":"sl/747vs2","slide":5,"title":"API","textShapes":13}
+{"kind":"textbox","id":"sh/zupwb2hw","slide":5,"name":"text","text":"API","textPreview":"API","textChars":3,"textLines":1,"bbox":[42,36,420,28]}
+{"kind":"textbox","id":"sh/sfil0rqd","slide":5,"name":"text","text":"Notary402 MVP","textPreview":"Notary402 MVP","textChars":13,"textLines":1,"bbox":[42,660,300,24]}
+{"kind":"textbox","id":"sh/h0fepkzu","slide":5,"name":"text","text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1184,660,54,24]}
+{"kind":"textbox","id":"sh/al87ed8b","slide":5,"name":"text","text":"La API ya cubre el ciclo operativo del MVP","textPreview":"La API ya cubre el ciclo operativo del MVP","textChars":42,"textLines":1,"bbox":[42,88,850,70]}
+{"kind":"textbox","id":"sh/z61032ls","slide":5,"name":"text","text":"No es una maqueta de UI: hay endpoints para crear, probar, auditar y verificar.","textPreview":"No es una maqueta de UI: hay endpoints para crear, probar, auditar y verificar.","textChars":79,"textLines":1,"bbox":[42,166,760,44]}
+{"kind":"shape","id":"sh/orytsvu9","slide":5,"name":"api-column","bbox":[42,275,260,300]}
+{"kind":"textbox","id":"sh/hcrmhk3q","slide":5,"name":"text","text":"Entrada","textPreview":"Entrada","textChars":7,"textLines":1,"bbox":[64,302,210,34]}
+{"kind":"textbox","id":"sh/6xkf6dcb","slide":5,"name":"text","text":"/health\n/v1/live/status\n/v1/legal-intent\n/v1/documents/request","textPreview":"/health | /v1/live/status | /v1/legal-intent | /v1/documents/request","textChars":62,"textLines":4,"bbox":[64,360,220,175]}
+{"kind":"shape","id":"sh/zed8v6ps","slide":5,"name":"api-column","bbox":[342,275,260,300]}
+{"kind":"textbox","id":"sh/n29gr2p8","slide":5,"name":"text","text":"Pruebas","textPreview":"Pruebas","textChars":7,"textLines":1,"bbox":[364,302,210,34]}
+{"kind":"textbox","id":"sh/yhgn29gr","slide":5,"name":"text","text":"/v1/signature/request\n/v1/wallets/verify-signature\n/v1/payments/l402/verify\n/v1/payments/amoy/verify","textPreview":"/v1/signature/request | /v1/wallets/verify-signature | /v1/payments/l402/verify | /v1/payments/amoy/verify","textChars":100,"textLines":4,"bbox":[364,360,220,175]}
+{"kind":"shape","id":"sh/58z25kb6","slide":5,"name":"api-column","bbox":[642,275,260,300]}
+{"kind":"textbox","id":"sh/gn29gr2p","slide":5,"name":"text","text":"Decisión","textPreview":"Decisión","textChars":8,"textLines":1,"bbox":[664,302,210,34]}
+{"kind":"textbox","id":"sh/nuxc3ylc","slide":5,"name":"text","text":"/v1/signature/validate\n/v1/zavu/escalate\n/v1/integrations/datamcp","textPreview":"/v1/signature/validate | /v1/zavu/escalate | /v1/integrations/datamcp","textChars":65,"textLines":3,"bbox":[664,360,220,175]}
+{"kind":"shape","id":"sh/y90je9cv","slide":5,"name":"api-column","bbox":[942,275,260,300]}
+{"kind":"textbox","id":"sh/5wjudg7a","slide":5,"name":"text","text":"Salida","textPreview":"Salida","textChars":6,"textLines":1,"bbox":[964,302,210,34]}
+{"kind":"textbox","id":"sh/gbq1oryt","slide":5,"name":"text","text":"/v1/attestations\n/v1/attestations/:id\n/v1/attestations/:id/timeline\n/v1/verify","textPreview":"/v1/attestations | /v1/attestations/:id | /v1/attestations/:id/timeline | /v1/verify","textChars":78,"textLines":4,"bbox":[964,360,220,175]}
+{"kind":"notes","id":"nt/747vs2","slide":5,"text":""}
+{"kind":"slide","id":"sl/pdohsn","slide":6,"title":"Confianza por capas","textShapes":23}
+{"kind":"textbox","id":"sh/gvy90je9","slide":6,"name":"text","text":"Confianza por capas","textPreview":"Confianza por capas","textChars":19,"textLines":1,"bbox":[42,36,420,28]}
+{"kind":"textbox","id":"sh/ra5gbq1o","slide":6,"name":"text","text":"Notary402 MVP","textPreview":"Notary402 MVP","textChars":13,"textLines":1,"bbox":[42,660,300,24]}
+{"kind":"textbox","id":"sh/2p8nqxs7","slide":6,"name":"text","text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1184,660,54,24]}
+{"kind":"textbox","id":"sh/94fu18jq","slide":6,"name":"text","text":"Cada integración responde una pregunta de confianza distinta","textPreview":"Cada integración responde una pregunta de confianza distinta","textChars":60,"textLines":1,"bbox":[42,88,930,76]}
+{"kind":"textbox","id":"sh/kjm1cfa9","slide":6,"name":"text","text":"Aperture / Polar","textPreview":"Aperture / Polar","textChars":16,"textLines":1,"bbox":[80,210,250,30]}
+{"kind":"shape","id":"sh/r2p8nqxs","slide":6,"name":"rule","bbox":[360,225,260,2]}
+{"kind":"textbox","id":"sh/2hwfyxob","slide":6,"name":"text","text":"¿Pagó el agente?","textPreview":"¿Pagó el agente?","textChars":16,"textLines":1,"bbox":[660,206,300,34]}
+{"kind":"textbox","id":"sh/9w3m94fu","slide":6,"name":"text","text":"L402 + Lightning","textPreview":"L402 + Lightning","textChars":16,"textLines":1,"bbox":[980,208,220,32]}
+{"kind":"textbox","id":"sh/kb6xkf6d","slide":6,"name":"text","text":"Polygon Amoy","textPreview":"Polygon Amoy","textChars":12,"textLines":1,"bbox":[80,278,250,30]}
+{"kind":"shape","id":"sh/2p8nqxs7","slide":6,"name":"rule","bbox":[360,293,260,2]}
+{"kind":"textbox","id":"sh/ra5gbq1o","slide":6,"name":"text","text":"¿Controla la wallet?","textPreview":"¿Controla la wallet?","textChars":20,"textLines":1,"bbox":[660,274,300,34]}
+{"kind":"textbox","id":"sh/gvy90je9","slide":6,"name":"text","text":"EIP-191 + chain 80002","textPreview":"EIP-191 + chain 80002","textChars":21,"textLines":1,"bbox":[980,276,220,32]}
+{"kind":"textbox","id":"sh/9gr2p8nq","slide":6,"name":"text","text":"Supabase","textPreview":"Supabase","textChars":8,"textLines":1,"bbox":[80,346,250,30]}
+{"kind":"shape","id":"sh/2hwfyxob","slide":6,"name":"rule","bbox":[360,361,260,2]}
+{"kind":"textbox","id":"sh/r2p8nqxs","slide":6,"name":"text","text":"¿Quedó auditado?","textPreview":"¿Quedó auditado?","textChars":16,"textLines":1,"bbox":[660,342,300,34]}
+{"kind":"textbox","id":"sh/kjm1cfa9","slide":6,"name":"text","text":"Tablas de workflow","textPreview":"Tablas de workflow","textChars":18,"textLines":1,"bbox":[980,344,220,32]}
+{"kind":"textbox","id":"sh/94fu18jq","slide":6,"name":"text","text":"DataMCP","textPreview":"DataMCP","textChars":7,"textLines":1,"bbox":[80,414,250,30]}
+{"kind":"shape","id":"sh/25kb6xkf","slide":6,"name":"rule","bbox":[360,429,260,2]}
+{"kind":"textbox","id":"sh/rqd4vmtw","slide":6,"name":"text","text":"¿Puede consultarlo un agente?","textPreview":"¿Puede consultarlo un agente?","textChars":29,"textLines":1,"bbox":[660,410,300,34]}
+{"kind":"textbox","id":"sh/jm1cfa9w","slide":6,"name":"text","text":"Read-only MCP","textPreview":"Read-only MCP","textChars":13,"textLines":1,"bbox":[980,412,220,32]}
+{"kind":"textbox","id":"sh/u18jqh0f","slide":6,"name":"text","text":"QVAC / Ollama","textPreview":"QVAC / Ollama","textChars":13,"textLines":1,"bbox":[80,482,250,30]}
+{"kind":"shape","id":"sh/1orytsvu","slide":6,"name":"rule","bbox":[360,497,260,2]}
+{"kind":"textbox","id":"sh/c7u54zid","slide":6,"name":"text","text":"¿Hay riesgo legal?","textPreview":"¿Hay riesgo legal?","textChars":18,"textLines":1,"bbox":[660,478,300,34]}
+{"kind":"textbox","id":"sh/judg7ads","slide":6,"name":"text","text":"Análisis jurisdiccional","textPreview":"Análisis jurisdiccional","textChars":23,"textLines":1,"bbox":[980,480,220,32]}
+{"kind":"textbox","id":"sh/u9knih4b","slide":6,"name":"text","text":"Zavu","textPreview":"Zavu","textChars":4,"textLines":1,"bbox":[80,550,250,30]}
+{"kind":"shape","id":"sh/1032lszq","slide":6,"name":"rule","bbox":[360,565,260,2]}
+{"kind":"textbox","id":"sh/cfa9w3m9","slide":6,"name":"text","text":"¿Debe entrar un humano?","textPreview":"¿Debe entrar un humano?","textChars":23,"textLines":1,"bbox":[660,546,300,34]}
+{"kind":"textbox","id":"sh/nyd0z610","slide":6,"name":"text","text":"Escalación WhatsApp","textPreview":"Escalación WhatsApp","textChars":19,"textLines":1,"bbox":[980,548,220,32]}
+{"kind":"shape","id":"sh/udg7adsj","slide":6,"name":"bottom-rule","bbox":[42,600,1196,1.5]}
+{"kind":"textbox","id":"sh/4fu18jqh","slide":6,"name":"text","text":"Resultado: una atestación que no depende de una sola prueba, sino de una cadena de evidencia.","textPreview":"Resultado: una atestación que no depende de una sola prueba, sino de una cadena de evidencia.","textChars":93,"textLines":1,"bbox":[280,623,720,34]}
+{"kind":"notes","id":"nt/pdohsn","slide":6,"text":""}
+{"kind":"slide","id":"sl/gt5jpc","slide":7,"title":"Límite legal","textShapes":10}
+{"kind":"textbox","id":"sh/d4vmtwra","slide":7,"name":"text","text":"Límite legal","textPreview":"Límite legal","textChars":12,"textLines":1,"bbox":[42,36,420,28]}
+{"kind":"textbox","id":"sh/6dcbulwv","slide":7,"name":"text","text":"Notary402 MVP","textPreview":"Notary402 MVP","textChars":13,"textLines":1,"bbox":[42,660,300,24]}
+{"kind":"textbox","id":"sh/vy90je9c","slide":7,"name":"text","text":"07","textPreview":"07","textChars":2,"textLines":1,"bbox":[1184,660,54,24]}
+{"kind":"textbox","id":"sh/o7qpg3ex","slide":7,"name":"text","text":"El límite legal es parte del producto","textPreview":"El límite legal es parte del producto","textChars":37,"textLines":1,"bbox":[42,88,780,76]}
+{"kind":"textbox","id":"sh/dsji5sne","slide":7,"name":"text","text":"Notary402 automatiza evidencia y análisis. Cuando la ley exige intervención humana, el backend cambia el estado y escala.","textPreview":"Notary402 automatiza evidencia y análisis. Cuando la ley exige intervención humana, el backend cambia el estado y escala.","textChars":121,"textLines":1,"bbox":[42,176,720,70]}
+{"kind":"shape","id":"sh/61032lsz","slide":7,"name":"autonomous-zone","bbox":[42,305,544,220]}
+{"kind":"textbox","id":"sh/vmtwra5g","slide":7,"name":"text","text":"Autónomo","textPreview":"Autónomo","textChars":8,"textLines":1,"bbox":[72,340,220,40]}
+{"kind":"textbox","id":"sh/ovahoza1","slide":7,"name":"text","text":"Hash, wallet proof, pago, análisis de bajo riesgo y atestación issued.","textPreview":"Hash, wallet proof, pago, análisis de bajo riesgo y atestación issued.","textChars":70,"textLines":1,"bbox":[72,408,420,82]}
+{"kind":"shape","id":"sh/dg7adsji","slide":7,"name":"human-zone","bbox":[694,305,544,220]}
+{"kind":"textbox","id":"sh/1032lszq","slide":7,"name":"text","text":"Escalado","textPreview":"Escalado","textChars":8,"textLines":1,"bbox":[724,340,220,40]}
+{"kind":"textbox","id":"sh/cfa9w3m9","slide":7,"name":"text","text":"Poderes, instrumentos públicos o riesgo alto pasan a pending_human_review y Zavu.","textPreview":"Poderes, instrumentos públicos o riesgo alto pasan a pending_human_review y Zavu.","textChars":81,"textLines":1,"bbox":[724,408,430,82]}
+{"kind":"textbox","id":"sh/judg7ads","slide":7,"name":"text","text":"La promesa del MVP no es reemplazar al notario. Es saber cuándo no hacerlo.","textPreview":"La promesa del MVP no es reemplazar al notario. Es saber cuándo no hacerlo.","textChars":75,"textLines":1,"bbox":[214,585,850,42]}
+{"kind":"notes","id":"nt/gt5jpc","slide":7,"text":""}
+{"kind":"slide","id":"sl/bek41c","slide":8,"title":"Demo","textShapes":12}
+{"kind":"textbox","id":"sh/cbulwval","slide":8,"name":"text","text":"Demo","textPreview":"Demo","textChars":4,"textLines":1,"bbox":[42,36,420,28]}
+{"kind":"textbox","id":"sh/nqxs72x4","slide":8,"name":"text","text":"Notary402 MVP","textPreview":"Notary402 MVP","textChars":13,"textLines":1,"bbox":[42,660,300,24]}
+{"kind":"textbox","id":"sh/u54zidon","slide":8,"name":"text","text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[1184,660,54,24]}
+{"kind":"textbox","id":"sh/5kb6xkf6","slide":8,"name":"text","text":"La demo puede enseñarse como un recorrido verificable","textPreview":"La demo puede enseñarse como un recorrido verificable","textChars":53,"textLines":1,"bbox":[42,88,1000,128]}
+{"kind":"textbox","id":"sh/czed8v6p","slide":8,"name":"text","text":"El presentador no necesita vender promesas: puede mostrar estados, IDs, checks y timeline.","textPreview":"El presentador no necesita vender promesas: puede mostrar estados, IDs, checks y timeline.","textChars":90,"textLines":1,"bbox":[42,220,820,44]}
+{"kind":"shape","id":"sh/neloj2t8","slide":8,"name":"content-panel","bbox":[42,300,360,170]}
+{"kind":"textbox","id":"sh/ytsvu9kn","slide":8,"name":"text","text":"1. API local","textPreview":"1. API local","textChars":12,"textLines":1,"bbox":[66,324,312,48]}
+{"kind":"textbox","id":"sh/58z25kb6","slide":8,"name":"text","text":"Levantar backend en puerto 3001 y crear legal intent + signature request.","textPreview":"Levantar backend en puerto 3001 y crear legal intent + signature request.","textChars":73,"textLines":1,"bbox":[66,388,312,58]}
+{"kind":"shape","id":"sh/gn29gr2p","slide":8,"name":"content-panel","bbox":[462,300,360,170]}
+{"kind":"textbox","id":"sh/u54zidon","slide":8,"name":"text","text":"2. Pruebas","textPreview":"2. Pruebas","textChars":10,"textLines":1,"bbox":[486,324,312,48]}
+{"kind":"textbox","id":"sh/nqxs72x4","slide":8,"name":"text","text":"Firmar request_hash, registrar recibo L402 y ejecutar validación legal.","textPreview":"Firmar request_hash, registrar recibo L402 y ejecutar validación legal.","textChars":71,"textLines":1,"bbox":[486,388,312,58]}
+{"kind":"shape","id":"sh/cbulwval","slide":8,"name":"content-panel","bbox":[882,300,356,170]}
+{"kind":"textbox","id":"sh/5sneloj2","slide":8,"name":"text","text":"3. Verifier","textPreview":"3. Verifier","textChars":11,"textLines":1,"bbox":[906,324,308,48]}
+{"kind":"textbox","id":"sh/ytsvu9kn","slide":8,"name":"text","text":"Consultar attestation_id, checks, live status y timeline público.","textPreview":"Consultar attestation_id, checks, live status y timeline público.","textChars":65,"textLines":1,"bbox":[906,388,308,58]}
+{"kind":"shape","id":"sh/neloj2t8","slide":8,"name":"demo-line","bbox":[42,530,1196,66]}
+{"kind":"textbox","id":"sh/czed8v6p","slide":8,"name":"text","text":"Prueba narrativa: agente inicia -> backend valida -> atestación queda verificable -> riesgo alto escala a humano.","textPreview":"Prueba narrativa: agente inicia -> backend valida -> atestación queda verificable -> riesgo alto escala a humano.","textChars":113,"textLines":1,"bbox":[82,550,1110,34]}
+{"kind":"notes","id":"nt/bek41c","slide":8,"text":""}
+{"kind":"slide","id":"sl/vqensj","slide":9,"title":"Cierre live","textShapes":20}
+{"kind":"textbox","id":"sh/nuxc3ylc","slide":9,"name":"text","text":"Cierre live","textPreview":"Cierre live","textChars":11,"textLines":1,"bbox":[42,36,420,28]}
+{"kind":"textbox","id":"sh/gbq1oryt","slide":9,"name":"text","text":"Notary402 MVP","textPreview":"Notary402 MVP","textChars":13,"textLines":1,"bbox":[42,660,300,24]}
+{"kind":"textbox","id":"sh/5wjudg7a","slide":9,"name":"text","text":"09","textPreview":"09","textChars":2,"textLines":1,"bbox":[1184,660,54,24]}
+{"kind":"textbox","id":"sh/yhgn29gr","slide":9,"name":"text","text":"Para cerrar el MVP live, faltan integraciones operativas y una demo E2E real","textPreview":"Para cerrar el MVP live, faltan integraciones operativas y una demo E2E real","textChars":76,"textLines":1,"bbox":[42,86,1100,118]}
+{"kind":"textbox","id":"sh/n29gr2p8","slide":9,"name":"text","text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[60,235,34,34]}
+{"kind":"textbox","id":"sh/gn29gr2p","slide":9,"name":"text","text":"Credenciales live","textPreview":"Credenciales live","textChars":17,"textLines":1,"bbox":[126,233,260,34]}
+{"kind":"textbox","id":"sh/58z25kb6","slide":9,"name":"text","text":"Supabase, DataMCP, Amoy RPC, Aperture, n8n y Zavu sin exponer secretos.","textPreview":"Supabase, DataMCP, Amoy RPC, Aperture, n8n y Zavu sin exponer secretos.","textChars":71,"textLines":1,"bbox":[410,235,730,34]}
+{"kind":"shape","id":"sh/ytsvu9kn","slide":9,"name":"rule","bbox":[126,283,1010,1]}
+{"kind":"textbox","id":"sh/neloj2t8","slide":9,"name":"text","text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[60,307,34,34]}
+{"kind":"textbox","id":"sh/nap4r65w","slide":9,"name":"text","text":"Schema aplicado","textPreview":"Schema aplicado","textChars":15,"textLines":1,"bbox":[126,305,260,34]}
+{"kind":"textbox","id":"sh/upwb2hwf","slide":9,"name":"text","text":"Tablas de auditoría instaladas y verificadas en Supabase.","textPreview":"Tablas de auditoría instaladas y verificadas en Supabase.","textChars":57,"textLines":1,"bbox":[410,307,730,34]}
+{"kind":"shape","id":"sh/5gbq1ory","slide":9,"name":"rule","bbox":[126,355,1010,1]}
+{"kind":"textbox","id":"sh/cvixczed","slide":9,"name":"text","text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[60,379,34,34]}
+{"kind":"textbox","id":"sh/nyd0z610","slide":9,"name":"text","text":"Smoke tests","textPreview":"Smoke tests","textChars":11,"textLines":1,"bbox":[126,377,260,34]}
+{"kind":"textbox","id":"sh/udg7adsj","slide":9,"name":"text","text":"Config, Supabase, DataMCP, Amoy, Zavu, Aperture y E2E live.","textPreview":"Config, Supabase, DataMCP, Amoy, Zavu, Aperture y E2E live.","textChars":59,"textLines":1,"bbox":[410,379,730,34]}
+{"kind":"shape","id":"sh/54zidony","slide":9,"name":"rule","bbox":[126,427,1010,1]}
+{"kind":"textbox","id":"sh/cj6tovah","slide":9,"name":"text","text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[60,451,34,34]}
+{"kind":"textbox","id":"sh/judg7ads","slide":9,"name":"text","text":"Workflow n8n","textPreview":"Workflow n8n","textChars":12,"textLines":1,"bbox":[126,449,260,34]}
+{"kind":"textbox","id":"sh/u9knih4b","slide":9,"name":"text","text":"Importar y validar el flujo legal-signature con mappings reales.","textPreview":"Importar y validar el flujo legal-signature con mappings reales.","textChars":64,"textLines":1,"bbox":[410,451,730,34]}
+{"kind":"shape","id":"sh/2hwfyxob","slide":9,"name":"rule","bbox":[126,499,1010,1]}
+{"kind":"textbox","id":"sh/r2p8nqxs","slide":9,"name":"text","text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[60,523,34,34]}
+{"kind":"textbox","id":"sh/kjm1cfa9","slide":9,"name":"text","text":"Demo E2E","textPreview":"Demo E2E","textChars":8,"textLines":1,"bbox":[126,521,260,34]}
+{"kind":"textbox","id":"sh/94fu18jq","slide":9,"name":"text","text":"Legal intent -> attestation -> verify contra Supabase real.","textPreview":"Legal intent -> attestation -> verify contra Supabase real.","textChars":59,"textLines":1,"bbox":[410,523,730,34]}
+{"kind":"shape","id":"sh/2p8nqxs7","slide":9,"name":"rule","bbox":[126,571,1010,1]}
+{"kind":"textbox","id":"sh/ra5gbq1o","slide":9,"name":"text","text":"Ask del pitch: convertir el MVP local en prueba live auditable con integraciones reales.","textPreview":"Ask del pitch: convertir el MVP local en prueba live auditable con integraciones reales.","textChars":88,"textLines":1,"bbox":[168,640,920,34]}
+{"kind":"notes","id":"nt/vqensj","slide":9,"text":""}

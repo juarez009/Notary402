@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import net from "node:net";
 import { verifyMessage } from "viem";
 import { id, now, sha256Hex } from "../../../packages/core/src/hash.js";
 import { parseL402Receipt } from "../../../packages/integrations/src/l402.js";
@@ -22,6 +23,67 @@ function redactedUrl(raw?: string) {
     return url.toString();
   } catch {
     return "***";
+  }
+}
+
+function parseHostPort(hostPort?: string) {
+  if (!hostPort) return null;
+  const match = /^([^:]+):(\d+)$/.exec(hostPort.trim());
+  if (!match) return null;
+  return { host: match[1], port: Number(match[2]) };
+}
+
+async function tcpReachable(hostPort?: string, timeoutMs = 600) {
+  const target = parseHostPort(hostPort);
+  if (!target || !Number.isInteger(target.port)) return false;
+
+  return new Promise<boolean>((resolve) => {
+    const socket = net.createConnection(target);
+    const finish = (connected: boolean) => {
+      socket.removeAllListeners();
+      socket.destroy();
+      resolve(connected);
+    };
+    socket.setTimeout(timeoutMs);
+    socket.once("connect", () => finish(true));
+    socket.once("timeout", () => finish(false));
+    socket.once("error", () => finish(false));
+  });
+}
+
+async function httpReachable(raw?: string, timeoutMs = 900) {
+  if (!raw) return false;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(raw, { method: "GET", signal: controller.signal });
+    return response.status < 500;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function evmRpcReachable(raw?: string, expectedChainId?: number, timeoutMs = 1200) {
+  if (!raw) return false;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(raw, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_chainId", params: [] }),
+      signal: controller.signal
+    });
+    if (!response.ok) return false;
+    const body = await response.json() as { result?: string };
+    if (!body.result) return false;
+    return expectedChainId ? Number.parseInt(body.result, 16) === expectedChainId : true;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -187,30 +249,54 @@ export function buildApp(options: AppOptions = {}) {
   app.get("/health", async () => ({ status: "ok", service: "notary402-api", store: store.kind }));
   app.get("/openapi.json", async () => openApiDocument);
 
-  app.get("/v1/live/status", async () => ({
-    mode: "live",
-    supabase: {
-      configured: hasSupabaseRuntimeCredentials(env),
-      url: redactedUrl(normalizeSupabaseUrl(env.SUPABASE_URL) || undefined),
-      schema: env.SUPABASE_SCHEMA || "public",
-      key_format: env.SUPABASE_SERVICE_ROLE_KEY ? (hasSupabaseRuntimeCredentials(env) ? "jwt" : "invalid") : "missing"
-    },
-    datamcp: { configured: Boolean(env.DATAMCP_MCP_URL && env.DATAMCP_API_KEY), mcp_url: redactedUrl(env.DATAMCP_MCP_URL), permission_preset: env.DATAMCP_PERMISSION_PRESET || "read-only" },
-    amoy_rpc: { configured: Boolean(env.AMOY_RPC_URL), chain_id: Number(env.AMOY_CHAIN_ID || 80002), url: redactedUrl(env.AMOY_RPC_URL) },
-    zavu: { configured: Boolean(env.ZAVU_ESCALATE_URL || env.ZAVU_BASE_URL), endpoint: redactedUrl(env.ZAVU_ESCALATE_URL || env.ZAVU_BASE_URL), channel: "whatsapp" },
-    aperture: { configured: Boolean(env.APERTURE_BASE_URL), base_url: redactedUrl(env.APERTURE_BASE_URL) },
-    polar_lnd: {
-      configured: Boolean(env.LND_AGENT_GRPC_HOST && env.LND_AGENT_MACAROON && env.LND_AGENT_TLS_CERT),
-      network: env.POLAR_NETWORK_NAME || null,
-      grpc_host: env.LND_AGENT_GRPC_HOST ? redactedUrl(`lnd://${env.LND_AGENT_GRPC_HOST}`) : null
-    },
-    n8n: {
-      configured: Boolean(env.N8N_WEBHOOK_NOTARY402 || (env.N8N_BASE_URL && env.N8N_API_KEY) || env.N8N_MCP_URL),
-      base_url: redactedUrl(env.N8N_BASE_URL),
-      mcp_url: redactedUrl(env.N8N_MCP_URL),
-      webhook_url: redactedUrl(env.N8N_WEBHOOK_NOTARY402)
-    }
-  }));
+  app.get("/v1/live/status", async () => {
+    const supabaseConfigured = hasSupabaseRuntimeCredentials(env);
+    const datamcpConfigured = Boolean(env.DATAMCP_MCP_URL && env.DATAMCP_API_KEY);
+    const amoyConfigured = Boolean(env.AMOY_RPC_URL);
+    const zavuConfigured = Boolean(env.ZAVU_ESCALATE_URL || env.ZAVU_BASE_URL);
+    const apertureConfigured = Boolean(env.APERTURE_BASE_URL);
+    const polarConfigured = Boolean(env.LND_AGENT_GRPC_HOST && env.LND_AGENT_MACAROON && env.LND_AGENT_TLS_CERT);
+    const n8nConfigured = Boolean(env.N8N_WEBHOOK_NOTARY402 || (env.N8N_BASE_URL && env.N8N_API_KEY) || env.N8N_MCP_URL);
+
+    const amoyChainId = Number(env.AMOY_CHAIN_ID || 80002);
+    const [supabaseConnected, datamcpConnected, amoyConnected, zavuConnected, apertureConnected, polarConnected, n8nConnected] = await Promise.all([
+      supabaseConfigured && store.kind === "supabase" ? store.listAttestations().then(() => true, () => false) : false,
+      datamcpConfigured ? httpReachable(env.DATAMCP_MCP_URL) : false,
+      amoyConfigured ? evmRpcReachable(env.AMOY_RPC_URL, amoyChainId) : false,
+      zavuConfigured ? httpReachable(env.ZAVU_ESCALATE_URL || env.ZAVU_BASE_URL) : false,
+      apertureConfigured ? httpReachable(env.APERTURE_BASE_URL) : false,
+      polarConfigured ? tcpReachable(env.LND_AGENT_GRPC_HOST) : false,
+      n8nConfigured ? httpReachable(env.N8N_BASE_URL || env.N8N_MCP_URL || env.N8N_WEBHOOK_NOTARY402) : false
+    ]);
+
+    return {
+      mode: "live",
+      supabase: {
+        configured: supabaseConfigured,
+        connected: supabaseConnected,
+        url: redactedUrl(normalizeSupabaseUrl(env.SUPABASE_URL) || undefined),
+        schema: env.SUPABASE_SCHEMA || "public",
+        key_format: env.SUPABASE_SERVICE_ROLE_KEY ? (supabaseConfigured ? "jwt" : "invalid") : "missing"
+      },
+      datamcp: { configured: datamcpConfigured, connected: datamcpConnected, mcp_url: redactedUrl(env.DATAMCP_MCP_URL), permission_preset: env.DATAMCP_PERMISSION_PRESET || "read-only" },
+      amoy_rpc: { configured: amoyConfigured, connected: amoyConnected, chain_id: amoyChainId, url: redactedUrl(env.AMOY_RPC_URL) },
+      zavu: { configured: zavuConfigured, connected: zavuConnected, endpoint: redactedUrl(env.ZAVU_ESCALATE_URL || env.ZAVU_BASE_URL), channel: "whatsapp" },
+      aperture: { configured: apertureConfigured, connected: apertureConnected, base_url: redactedUrl(env.APERTURE_BASE_URL) },
+      polar_lnd: {
+        configured: polarConfigured,
+        connected: polarConnected,
+        network: env.POLAR_NETWORK_NAME || null,
+        grpc_host: env.LND_AGENT_GRPC_HOST ? redactedUrl(`lnd://${env.LND_AGENT_GRPC_HOST}`) : null
+      },
+      n8n: {
+        configured: n8nConfigured,
+        connected: n8nConnected,
+        base_url: redactedUrl(env.N8N_BASE_URL),
+        mcp_url: redactedUrl(env.N8N_MCP_URL),
+        webhook_url: redactedUrl(env.N8N_WEBHOOK_NOTARY402)
+      }
+    };
+  });
 
   app.post("/v1/legal-intent", { schema: { body: bodySchemas.legalIntent } }, async (request, reply) => {
     const body = request.body as Record<string, unknown>;
