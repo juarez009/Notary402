@@ -90,14 +90,37 @@ export function createSupabaseAuditStoreFromClient(client) {
     };
 }
 export function createSupabaseAuditStore(env = process.env) {
-    const client = createClient(env.SUPABASE_URL || "", env.SUPABASE_SERVICE_ROLE_KEY || "", {
+    const client = createClient(normalizeSupabaseUrl(env.SUPABASE_URL) || "", normalizeSupabaseServiceRoleKey(env.SUPABASE_SERVICE_ROLE_KEY) || "", {
         db: { schema: env.SUPABASE_SCHEMA || "public" },
         auth: { persistSession: false, autoRefreshToken: false }
     });
     return createSupabaseAuditStoreFromClient(client);
 }
+export function normalizeSupabaseUrl(raw) {
+    const trimmed = (raw || "").trim();
+    if (!trimmed)
+        return "";
+    try {
+        const url = new URL(trimmed);
+        url.pathname = url.pathname.replace(/\/rest\/v1\/?$/, "");
+        url.search = "";
+        url.hash = "";
+        return url.toString().replace(/\/$/, "");
+    }
+    catch {
+        return trimmed.replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "");
+    }
+}
+export function normalizeSupabaseServiceRoleKey(key) {
+    const trimmed = (key || "").trim();
+    return trimmed.replace(/^Bearer\s+/i, "").trim();
+}
+export function hasSupabaseRuntimeCredentials(env = process.env) {
+    const key = normalizeSupabaseServiceRoleKey(env.SUPABASE_SERVICE_ROLE_KEY);
+    return Boolean(normalizeSupabaseUrl(env.SUPABASE_URL) && /^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(key));
+}
 export function createAuditStoreFromEnv(env = process.env) {
-    if (env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY)
+    if (hasSupabaseRuntimeCredentials(env))
         return createSupabaseAuditStore(env);
     return createMemoryAuditStore();
 }

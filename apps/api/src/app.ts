@@ -5,7 +5,7 @@ import { parseL402Receipt } from "../../../packages/integrations/src/l402.js";
 import { verifyAmoyTransaction } from "../../../packages/integrations/src/amoy.js";
 import { escalateToZavu } from "../../../packages/integrations/src/zavu.js";
 import type { AuditStore } from "./audit-store.js";
-import { createAuditStoreFromEnv } from "./audit-store.js";
+import { createAuditStoreFromEnv, hasSupabaseRuntimeCredentials, normalizeSupabaseUrl } from "./audit-store.js";
 import { openApiDocument } from "./openapi.js";
 
 type AppOptions = { store?: AuditStore; env?: NodeJS.ProcessEnv };
@@ -190,9 +190,10 @@ export function buildApp(options: AppOptions = {}) {
   app.get("/v1/live/status", async () => ({
     mode: "live",
     supabase: {
-      configured: Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY),
-      url: redactedUrl(env.SUPABASE_URL || undefined),
-      schema: env.SUPABASE_SCHEMA || "public"
+      configured: hasSupabaseRuntimeCredentials(env),
+      url: redactedUrl(normalizeSupabaseUrl(env.SUPABASE_URL) || undefined),
+      schema: env.SUPABASE_SCHEMA || "public",
+      key_format: env.SUPABASE_SERVICE_ROLE_KEY ? (hasSupabaseRuntimeCredentials(env) ? "jwt" : "invalid") : "missing"
     },
     datamcp: { configured: Boolean(env.DATAMCP_MCP_URL && env.DATAMCP_API_KEY), mcp_url: redactedUrl(env.DATAMCP_MCP_URL), permission_preset: env.DATAMCP_PERMISSION_PRESET || "read-only" },
     amoy_rpc: { configured: Boolean(env.AMOY_RPC_URL), chain_id: Number(env.AMOY_CHAIN_ID || 80002), url: redactedUrl(env.AMOY_RPC_URL) },

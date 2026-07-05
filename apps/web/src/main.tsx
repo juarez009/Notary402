@@ -4,6 +4,31 @@ import "./styles.css";
 
 const API = "http://localhost:3001";
 
+const integrations = [
+  { key: "supabase", label: "Supabase" },
+  { key: "datamcp", label: "DataMCP" },
+  { key: "amoy_rpc", label: "Amoy RPC" },
+  { key: "zavu", label: "Zavu" },
+  { key: "aperture", label: "Aperture" },
+  { key: "polar_lnd", label: "Polar LND" },
+  { key: "n8n", label: "n8n" }
+] as const;
+
+function integrationDetail(key: string, value: Record<string, any> | undefined) {
+  if (!value) return "Esperando status de la API";
+  if (key === "supabase") {
+    if (value.key_format === "invalid") return "Service role key invalida; usando memoria";
+    return value.schema ? `schema: ${value.schema}` : undefined;
+  }
+  if (key === "polar_lnd") return [value.network, value.grpc_host].filter(Boolean).join(" · ");
+  if (key === "aperture") return value.base_url;
+  if (key === "n8n") return value.mcp_url || value.base_url || value.webhook_url;
+  if (key === "amoy_rpc") return value.url || `chain ${value.chain_id}`;
+  if (key === "datamcp") return value.mcp_url || value.permission_preset;
+  if (key === "zavu") return value.endpoint || value.channel;
+  return undefined;
+}
+
 function App() {
   const [id, setId] = useState("");
   const [status, setStatus] = useState<Record<string, any> | null>(null);
@@ -13,6 +38,7 @@ function App() {
   async function loadStatus() {
     try {
       const response = await fetch(`${API}/v1/live/status`);
+      if (!response.ok) throw new Error(`status ${response.status}`);
       setStatus(await response.json());
     } catch {
       setError("No se pudo conectar con la API en http://localhost:3001. Revisa CORS/API.");
@@ -49,10 +75,11 @@ function App() {
       <section className="panel">
         <h2>Integraciones</h2>
         <div className="grid">
-          {["supabase", "datamcp", "amoy_rpc", "zavu", "aperture", "n8n"].map((key) => (
+          {integrations.map(({ key, label }) => (
             <div className="tile" key={key}>
-              <span>{key}</span>
+              <span>{label}</span>
               <strong className={status?.[key]?.configured ? "ok" : "pending"}>{status?.[key]?.configured ? "configured" : "pending"}</strong>
+              <small>{integrationDetail(key, status?.[key])}</small>
             </div>
           ))}
         </div>

@@ -28,7 +28,7 @@ describe("Notary402 API", () => {
             store: createMemoryAuditStore(),
             env: {
                 SUPABASE_URL: "https://project.supabase.co",
-                SUPABASE_SERVICE_ROLE_KEY: "super-secret",
+                SUPABASE_SERVICE_ROLE_KEY: "eyJheader.eyJsuper-secret.signature",
                 DATAMCP_MCP_URL: "https://api.datamcp.app/api/mcp/conn_x?key=secret",
                 DATAMCP_API_KEY: "secret"
             }

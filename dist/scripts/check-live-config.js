@@ -1,4 +1,5 @@
 import { redact } from "./env.js";
+import { normalizeSupabaseServiceRoleKey } from "../apps/api/src/audit-store.js";
 const coreRequired = [
     "SUPABASE_URL",
     "SUPABASE_SERVICE_ROLE_KEY",
@@ -8,6 +9,10 @@ const coreRequired = [
     "LND_AGENT_TLS_CERT"
 ];
 const missing = coreRequired.filter((key) => !process.env[key]);
+const supabaseKey = normalizeSupabaseServiceRoleKey(process.env.SUPABASE_SERVICE_ROLE_KEY);
+const supabaseKeyIsJwt = /^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(supabaseKey);
+if (supabaseKey && !supabaseKeyIsJwt)
+    missing.push("SUPABASE_SERVICE_ROLE_KEY must be a Supabase service_role JWT");
 if (missing.length) {
     console.error("Missing core live configuration:");
     for (const key of missing)
@@ -23,6 +28,7 @@ const integrations = {
 console.log("Core live configuration present:");
 console.log(`- SUPABASE_URL=${redact(process.env.SUPABASE_URL)}`);
 console.log(`- SUPABASE_SCHEMA=${process.env.SUPABASE_SCHEMA || "public"}`);
+console.log(`- SUPABASE_SERVICE_ROLE_KEY_FORMAT=${supabaseKeyIsJwt ? "jwt" : "invalid"}`);
 console.log(`- APERTURE_BASE_URL=${redact(process.env.APERTURE_BASE_URL)}`);
 console.log(`- POLAR_NETWORK_NAME=${process.env.POLAR_NETWORK_NAME || "unknown"}`);
 console.log(`- LND_AGENT_GRPC_HOST=${redact(process.env.LND_AGENT_GRPC_HOST)}`);

@@ -29,11 +29,11 @@ describe("Notary402 API", () => {
   it("redacts live status secrets", async () => {
     const app = buildApp({
       store: createMemoryAuditStore(),
-      env: {
-        SUPABASE_URL: "https://project.supabase.co",
-        SUPABASE_SERVICE_ROLE_KEY: "super-secret",
-        DATAMCP_MCP_URL: "https://api.datamcp.app/api/mcp/conn_x?key=secret",
-        DATAMCP_API_KEY: "secret"
+        env: {
+          SUPABASE_URL: "https://project.supabase.co",
+          SUPABASE_SERVICE_ROLE_KEY: "eyJheader.eyJsuper-secret.signature",
+          DATAMCP_MCP_URL: "https://api.datamcp.app/api/mcp/conn_x?key=secret",
+          DATAMCP_API_KEY: "secret"
       } as NodeJS.ProcessEnv
     });
     await app.ready();
