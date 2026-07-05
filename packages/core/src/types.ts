@@ -98,8 +98,13 @@ export type AgentProfile = {
 
 export type DocumentRequest = {
   document_request_id: string;
-  signature_request_id: string;
-  document_hash: string;
+  signature_request_id?: string;
+  document_hash?: string;
+  tipo_documento?: string;
+  jurisdiccion?: Jurisdiction;
+  comparecientes?: unknown[];
+  detalles?: Record<string, unknown>;
+  status?: string;
   created_at: string;
 };
 

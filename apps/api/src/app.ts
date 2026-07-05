@@ -25,6 +25,113 @@ function redactedUrl(raw?: string) {
   }
 }
 
+// Strips URLs down to their origin so upstream errors (RPC providers, webhooks,
+// DataMCP) never leak path/query credentials into API responses.
+function sanitizeErrorMessage(message: string) {
+  return message.replace(/https?:\/\/[^\s"'<>]+/g, (raw) => {
+    try {
+      return `${new URL(raw).origin}/***`;
+    } catch {
+      return "***";
+    }
+  });
+}
+
+const requiredString = { type: "string", minLength: 1 };
+const stringArray = { type: "array", items: { type: "string" } };
+const hexAddress = { type: "string", pattern: "^0x[0-9a-fA-F]{40}$" };
+const hexData = { type: "string", pattern: "^0x[0-9a-fA-F]+$" };
+
+const bodySchemas = {
+  legalIntent: {
+    type: "object",
+    required: ["agent_id", "input"],
+    properties: {
+      agent_id: requiredString,
+      jurisdiction: { type: "string", enum: ["SV"] },
+      input: requiredString,
+      document_type: { type: "string" },
+      parties: stringArray,
+      obligations: stringArray,
+      risk_flags: stringArray
+    }
+  },
+  signatureRequest: {
+    type: "object",
+    required: ["agent_id", "document_hash"],
+    properties: {
+      agent_id: requiredString,
+      jurisdiction: { type: "string", enum: ["SV"] },
+      document_hash: requiredString,
+      legal_intent_id: { type: "string" },
+      requested_signature_level: { type: "integer", minimum: 1, maximum: 3 }
+    }
+  },
+  walletVerify: {
+    type: "object",
+    required: ["agent_id", "chain_id", "wallet_address", "message", "signature"],
+    properties: {
+      agent_id: requiredString,
+      chain_id: { type: "integer" },
+      wallet_address: hexAddress,
+      message: requiredString,
+      signature: hexData
+    }
+  },
+  l402Verify: {
+    type: "object",
+    required: ["signature_request_id", "receipt"],
+    properties: {
+      signature_request_id: requiredString,
+      receipt: requiredString
+    }
+  },
+  amoyVerify: {
+    type: "object",
+    required: ["chain_id", "tx_hash", "expected_sender", "expected_recipient"],
+    properties: {
+      chain_id: { type: "integer" },
+      tx_hash: { type: "string", pattern: "^0x[0-9a-fA-F]{64}$" },
+      expected_sender: hexAddress,
+      expected_recipient: hexAddress
+    }
+  },
+  signatureValidate: {
+    type: "object",
+    required: ["signature_request_id"],
+    properties: {
+      signature_request_id: requiredString,
+      jurisdiction: { type: "string", enum: ["SV"] },
+      legal_text: { type: "string" }
+    }
+  },
+  attestationCreate: {
+    type: "object",
+    required: ["signature_request_id", "wallet_proof_id", "payment_proof_id", "agent_wallet"],
+    properties: {
+      signature_request_id: requiredString,
+      wallet_proof_id: requiredString,
+      payment_proof_id: requiredString,
+      agent_wallet: hexAddress,
+      amoy_tx_hash: { type: "string", pattern: "^0x[0-9a-fA-F]{64}$" }
+    }
+  },
+  verify: {
+    type: "object",
+    required: ["attestation_id"],
+    properties: { attestation_id: requiredString }
+  },
+  zavuEscalate: {
+    type: "object",
+    required: ["signature_request_id", "reason"],
+    properties: {
+      signature_request_id: requiredString,
+      reason: requiredString,
+      test: { type: "boolean" }
+    }
+  }
+} as const;
+
 export function buildApp(options: AppOptions = {}) {
   const env = options.env || process.env;
   const store = options.store || createAuditStoreFromEnv(env);
@@ -40,9 +147,41 @@ export function buildApp(options: AppOptions = {}) {
   });
 
   app.setErrorHandler((error, _request, reply) => {
-    const typedError = error as Error & { statusCode?: number };
+    const typedError = error as Error & { statusCode?: number; validation?: unknown[] };
+
+    if (typedError.validation) {
+      return reply.code(400).send({ error: "VALIDATION_ERROR", message: typedError.message, statusCode: 400 });
+    }
+
+    const supabaseMatch = /^SUPABASE_(.+)_([^_:]+):/.exec(typedError.message || "");
+    if (supabaseMatch) {
+      const table = supabaseMatch[1].toLowerCase();
+      const code = supabaseMatch[2];
+      const missingTable = code === "PGRST205" || code === "42P01";
+      return reply.code(502).send({
+        error: "AUDIT_STORE_ERROR",
+        message: missingTable
+          ? `Supabase table '${table}' is missing. Apply docs/postgres-audit-schema.sql in the Supabase SQL Editor.`
+          : `Supabase request failed for table '${table}' (code ${code}). Check the applied schema and service role permissions.`,
+        statusCode: 502
+      });
+    }
+
+    const zavuMatch = /^ZAVU_ESCALATION_FAILED_(\d+)$/.exec(typedError.message || "");
+    if (zavuMatch) {
+      return reply.code(502).send({
+        error: "ZAVU_ESCALATION_FAILED",
+        message: `Zavu escalation endpoint returned HTTP ${zavuMatch[1]}. Check ZAVU_ESCALATE_URL/ZAVU_BASE_URL and ZAVU_API_KEY.`,
+        statusCode: 502
+      });
+    }
+
     const statusCode = typedError.statusCode || 500;
-    reply.code(statusCode).send({ error: typedError.name || "InternalError", message: typedError.message, statusCode });
+    reply.code(statusCode).send({
+      error: typedError.name || "InternalError",
+      message: sanitizeErrorMessage(typedError.message || "Unexpected error"),
+      statusCode
+    });
   });
 
   app.get("/health", async () => ({ status: "ok", service: "notary402-api", store: store.kind }));
@@ -62,7 +201,7 @@ export function buildApp(options: AppOptions = {}) {
     n8n: { configured: Boolean(env.N8N_WEBHOOK_NOTARY402), webhook_url: redactedUrl(env.N8N_WEBHOOK_NOTARY402) }
   }));
 
-  app.post("/v1/legal-intent", async (request, reply) => {
+  app.post("/v1/legal-intent", { schema: { body: bodySchemas.legalIntent } }, async (request, reply) => {
     const body = request.body as Record<string, unknown>;
     const intent = {
       legal_intent_id: id("lintent"),
@@ -79,7 +218,22 @@ export function buildApp(options: AppOptions = {}) {
     return store.createLegalIntent(intent);
   });
 
-  app.post("/v1/signature/request", async (request, reply) => {
+  app.post("/v1/documents/request", async (request, reply) => {
+    const body = (request.body || {}) as Record<string, unknown>;
+    const docReq = {
+      document_request_id: id("docreq"),
+      tipo_documento: String(body.tipo_documento || "COMPRAVENTA"),
+      jurisdiccion: "SV" as const,
+      comparecientes: Array.isArray(body.comparecientes) ? body.comparecientes : [],
+      detalles: typeof body.detalles === "object" && body.detalles ? (body.detalles as Record<string, unknown>) : {},
+      status: "created" as const,
+      created_at: now()
+    };
+    reply.code(201);
+    return store.createDocumentRequest(docReq);
+  });
+
+  app.post("/v1/signature/request", { schema: { body: bodySchemas.signatureRequest } }, async (request, reply) => {
     const body = request.body as Record<string, unknown>;
     const signatureRequest = {
       signature_request_id: id("sigreq"),
@@ -96,7 +250,7 @@ export function buildApp(options: AppOptions = {}) {
     return store.createSignatureRequest(signatureRequest);
   });
 
-  app.post("/v1/wallets/verify-signature", async (request, reply) => {
+  app.post("/v1/wallets/verify-signature", { schema: { body: bodySchemas.walletVerify } }, async (request, reply) => {
     const body = request.body as Record<string, unknown>;
     const chain_id = Number(body.chain_id);
     if (chain_id !== 80002) return reply.code(400).send({ error: "CHAIN_ID_MISMATCH", message: "Expected Polygon Amoy chain_id 80002", statusCode: 400 });
@@ -115,7 +269,7 @@ export function buildApp(options: AppOptions = {}) {
     return store.createWalletProof(proof);
   });
 
-  app.post("/v1/payments/l402/verify", async (request, reply) => {
+  app.post("/v1/payments/l402/verify", { schema: { body: bodySchemas.l402Verify } }, async (request, reply) => {
     const body = request.body as Record<string, unknown>;
     const parsed = parseL402Receipt(String(body.receipt || ""));
     if (!parsed.valid) return reply.code(400).send({ error: "INVALID_L402_RECEIPT", message: "Receipt must include macaroon:preimage", statusCode: 400 });
@@ -124,7 +278,7 @@ export function buildApp(options: AppOptions = {}) {
     return store.createPaymentProof(proof);
   });
 
-  app.post("/v1/payments/amoy/verify", async (request, reply) => {
+  app.post("/v1/payments/amoy/verify", { schema: { body: bodySchemas.amoyVerify } }, async (request, reply) => {
     try {
       return await verifyAmoyTransaction(request.body as Parameters<typeof verifyAmoyTransaction>[0], env);
     } catch (error) {
@@ -133,7 +287,7 @@ export function buildApp(options: AppOptions = {}) {
     }
   });
 
-  app.post("/v1/signature/validate", async (request) => {
+  app.post("/v1/signature/validate", { schema: { body: bodySchemas.signatureValidate } }, async (request) => {
     const body = request.body as Record<string, unknown>;
     const legalText = String(body.legal_text || "");
     const risk_flags = legalText.toLowerCase().includes("poder") ? ["power_of_attorney_review"] : [];
@@ -151,7 +305,7 @@ export function buildApp(options: AppOptions = {}) {
     return store.createLegalAnalysis(analysis);
   });
 
-  app.post("/v1/attestations", async (request, reply) => {
+  app.post("/v1/attestations", { schema: { body: bodySchemas.attestationCreate } }, async (request, reply) => {
     const body = request.body as Record<string, unknown>;
     const signatureRequest = await store.getSignatureRequest(String(body.signature_request_id));
     if (!signatureRequest) return reply.code(404).send({ error: "NotFound", message: "Signature request not found", statusCode: 404 });
@@ -191,7 +345,82 @@ export function buildApp(options: AppOptions = {}) {
 
   app.get("/v1/attestations", async () => ({ attestations: await store.listAttestations() }));
 
-  app.post("/v1/verify", async (request, reply) => {
+  app.get("/v1/attestations/:id/timeline", async (request, reply) => {
+    const params = request.params as { id: string };
+    const attestation = await store.getAttestation(params.id);
+    if (!attestation) return reply.code(404).send({ error: "NotFound", message: "Attestation not found", statusCode: 404 });
+
+    const signatureRequest = await store.getSignatureRequest(attestation.signature_request_id);
+    const legalIntent = signatureRequest?.legal_intent_id ? await store.getLegalIntent(signatureRequest.legal_intent_id) : null;
+    const walletProof = await store.getWalletProof(attestation.wallet_proof_id);
+    const paymentProof = await store.getPaymentProof(attestation.payment_proof_id);
+    const legalAnalysis = await store.getLegalAnalysisByRequest(attestation.signature_request_id);
+    const escalations = await store.findHumanEscalationsByRequest(attestation.signature_request_id);
+
+    const events = [
+      legalIntent && {
+        step: "legal_intent",
+        ref_id: legalIntent.legal_intent_id,
+        at: legalIntent.created_at,
+        summary: legalIntent.document_type ? `Legal intent (${legalIntent.document_type})` : "Legal intent registered",
+        data: legalIntent
+      },
+      signatureRequest && {
+        step: "signature_request",
+        ref_id: signatureRequest.signature_request_id,
+        at: signatureRequest.created_at,
+        summary: `Signature request level ${signatureRequest.requested_signature_level}`,
+        data: signatureRequest
+      },
+      walletProof && {
+        step: "wallet_proof",
+        ref_id: walletProof.wallet_proof_id,
+        at: walletProof.created_at,
+        summary: `Wallet ${walletProof.wallet_address} verified on chain ${walletProof.chain_id}`,
+        data: walletProof
+      },
+      paymentProof && {
+        step: "payment_proof",
+        ref_id: paymentProof.payment_proof_id,
+        at: paymentProof.created_at,
+        summary: `L402 payment ${paymentProof.status} via ${paymentProof.provider}`,
+        data: paymentProof
+      },
+      legalAnalysis && {
+        step: "legal_analysis",
+        ref_id: legalAnalysis.legal_analysis_id,
+        at: legalAnalysis.created_at,
+        summary: `Risk score ${legalAnalysis.risk_score}${legalAnalysis.requires_human_notary ? " — requires human notary" : ""}`,
+        data: legalAnalysis
+      },
+      {
+        step: "attestation",
+        ref_id: attestation.attestation_id,
+        at: attestation.created_at,
+        summary: `Attestation ${attestation.status}`,
+        data: attestation
+      },
+      ...escalations.map((escalation) => ({
+        step: "human_escalation",
+        ref_id: escalation.human_escalation_id,
+        at: escalation.created_at,
+        summary: `Escalated to human notary (${escalation.channel}, ${escalation.provider_mode})`,
+        data: escalation
+      }))
+    ].filter(Boolean) as Array<{ step: string; ref_id: string; at: string; summary: string; data: unknown }>;
+
+    events.sort((a, b) => a.at.localeCompare(b.at));
+
+    return {
+      attestation_id: attestation.attestation_id,
+      status: attestation.status,
+      valid: attestation.valid,
+      verification_url: `/verify?id=${attestation.attestation_id}`,
+      events
+    };
+  });
+
+  app.post("/v1/verify", { schema: { body: bodySchemas.verify } }, async (request, reply) => {
     const body = request.body as { attestation_id?: string };
     const attestation = await store.getAttestation(String(body.attestation_id));
     if (!attestation) return reply.code(404).send({ error: "NotFound", message: "Attestation not found", statusCode: 404 });
@@ -202,7 +431,7 @@ export function buildApp(options: AppOptions = {}) {
     };
   });
 
-  app.post("/v1/zavu/escalate", async (request) => {
+  app.post("/v1/zavu/escalate", { schema: { body: bodySchemas.zavuEscalate } }, async (request) => {
     const body = request.body as Record<string, unknown>;
     const result = await escalateToZavu({ signature_request_id: String(body.signature_request_id), jurisdiction: "SV", reason: String(body.reason || ""), test: Boolean(body.test) }, env);
     await store.createHumanEscalation({ human_escalation_id: id("esc"), signature_request_id: String(body.signature_request_id), jurisdiction: "SV", reason: String(body.reason || ""), status: result.status, channel: result.channel, zavu_message_id: result.zavu_message_id, provider_mode: result.provider_mode, created_at: now() });
