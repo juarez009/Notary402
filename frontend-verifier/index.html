@@ -280,7 +280,7 @@
     <section id="module-verify" class="space-y-6">
         <div class="v-card p-5 space-y-3">
             <div class="flex flex-col sm:flex-row gap-3">
-                <input type="text" id="attestation-input" value="att_402_9921_sv" placeholder="att_402_9921_sv" onkeydown="if(event.key==='Enter') verifyAttestation()" class="input-field flex-1 font-mono">
+                <input type="text" id="attestation-input" value="att_402_9921_sv" placeholder="att_402_9921_sv" onchange="verifyAttestation()" onkeydown="if(event.key==='Enter') verifyAttestation()" class="input-field flex-1 font-mono">
                 <button onclick="verifyAttestation()" id="verify-btn" class="btn-primary flex items-center justify-center gap-2">
                     <i data-lucide="search" class="w-4 h-4"></i> <span id="t-verify-btn">Verificar</span>
                 </button>
@@ -1016,6 +1016,9 @@ async function verifyAttestation() {
         btn.disabled = true;
         btn.innerHTML = `<span class="animate-spin inline-block w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full"></span> ${t.verifyingBtn}`;
     }
+
+    // Pequeña pausa deliberada para dar feedback visual claro al cambiar de archivo/atestación
+    await new Promise(r => setTimeout(r, 250));
     
     let data = await fetchFromAPI('/v1/verify', { method: 'POST', body: JSON.stringify({ attestation_id: id }) });
     if (!data || data.__error) data = await fetchFromAPI('/v1/attestations/' + id);
@@ -1034,13 +1037,17 @@ async function verifyAttestation() {
 }
 
 function fillAndVerify(id) {
-    document.getElementById('attestation-input').value = id;
+    const input = document.getElementById('attestation-input');
+    if (input) input.value = id;
     verifyAttestation();
 }
 
 function renderVerificationResult(data) {
     const t = I18N[currentLang];
-    document.getElementById('verification-result').classList.remove('hidden');
+    const resContainer = document.getElementById('verification-result');
+    resContainer.classList.remove('hidden');
+    resContainer.classList.add('transition-all', 'duration-300', 'opacity-90');
+    setTimeout(() => resContainer.classList.remove('opacity-90'), 250);
 
     const vEl = document.getElementById('val-validity'), vCard = document.getElementById('badge-validity');
     if (data.status === 'issued' && data.valid) {
