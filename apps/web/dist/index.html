@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notary402 — Agentic Attestation Verifier</title>
+    <meta name="description" content="Verificador público de atestaciones legales agénticas. Notary402 El Salvador — L402 Lightning Native.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { fontFamily: { mono: ['JetBrains Mono','Fira Code','monospace'], sans: ['Space Grotesk','Inter','sans-serif'] } } }
+        };
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+        body {
+            background-color:#05070d;
+            background-image:radial-gradient(circle at 50% 0%,rgba(139,92,246,.08) 0%,transparent 50%),radial-gradient(circle at 80% 80%,rgba(0,240,255,.05) 0%,transparent 40%);
+            color:#cbd5e1; font-family:'Inter',sans-serif;
+        }
+        .v-card { background:rgba(10,14,26,.85); backdrop-filter:blur(16px); border:1px solid rgba(0,240,255,.12); border-radius:14px; transition:border-color .2s; }
+        .v-card:hover { border-color:rgba(0,240,255,.3); }
+        .verify-input:focus { border-color:#00f0ff; box-shadow:0 0 20px rgba(0,240,255,.15); }
+        .verify-btn { background:linear-gradient(135deg,#00f0ff 0%,#7c3aed 100%); box-shadow:0 0 15px rgba(0,240,255,.3); transition:all .2s; }
+        .verify-btn:hover  { box-shadow:0 0 25px rgba(0,240,255,.5); transform:translateY(-1px); }
+        .verify-btn:active { transform:scale(.98); }
+        .verify-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; box-shadow:none; }
+        .tab-btn { transition:all .15s; }
+        .tab-btn.active { background:rgba(0,240,255,.08); border-color:rgba(0,240,255,.4); color:#00f0ff; }
+        .timeline-item { transition:background .15s; }
+        .timeline-item:hover { background:rgba(0,240,255,.04); }
+        @keyframes pulse-slow { 0%,100%{opacity:.4;transform:scale(.9)} 50%{opacity:1;transform:scale(1.1)} }
+        .dot-pulse { animation:pulse-slow 2s infinite ease-in-out; }
+        @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+        .skeleton { background:linear-gradient(90deg,rgba(30,40,60,.5) 25%,rgba(50,60,80,.5) 50%,rgba(30,40,60,.5) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:6px; }
+        .int-ok { color:#34d399; }
+        .int-pending { color:#fbbf24; }
+        .int-error { color:#f87171; }
+        .int-demo { color:#475569; }
+        *:focus-visible { outline:2px solid #00f0ff !important; outline-offset:2px; }
+    </style>
+</head>
+<body class="min-h-screen antialiased flex flex-col">
+
+<header class="bg-slate-950/90 border-b border-cyan-500/15 sticky top-0 z-40 backdrop-blur-md">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between font-mono">
+        <div class="flex items-center space-x-3">
+            <div class="bg-cyan-500/10 text-cyan-400 p-1.5 rounded-lg border border-cyan-500/30"><i data-lucide="shield-check" class="w-5 h-5"></i></div>
+            <div class="flex items-center space-x-2">
+                <span class="text-base font-bold text-white font-sans tracking-wide">NOTARY402</span>
+                <span class="text-[10px] bg-purple-950 text-purple-300 px-2 py-0.5 rounded border border-purple-500/30 hidden sm:inline">AGENTIC VERIFIER</span>
+            </div>
+        </div>
+        <div class="flex items-center space-x-2 text-[11px]">
+            <span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400">SV — El Salvador</span>
+            <span class="hidden md:inline-flex items-center px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400">⚡ L402 Lightning</span>
+            <span id="api-health-badge" class="inline-flex items-center px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-500">
+                <span class="w-1.5 h-1.5 rounded-full bg-slate-600 mr-1.5"></span> API
+            </span>
+            <!-- Language Switcher -->
+            <button onclick="toggleLanguage()" class="px-2 py-1 rounded bg-slate-900 border border-cyan-500/30 text-cyan-400 hover:text-white font-bold cursor-pointer transition flex items-center gap-1">
+                <i data-lucide="languages" class="w-3.5 h-3.5"></i> <span id="lang-indicator">EN</span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 space-y-6">
+
+    <section class="text-center space-y-2 pt-2 pb-1">
+        <h1 id="t-hero-title" class="text-2xl sm:text-3xl font-bold text-white font-sans tracking-tight">Verificar Atestación Notarial</h1>
+        <p id="t-hero-desc" class="text-sm text-slate-400 max-w-xl mx-auto">Ingresa un <code class="text-cyan-400 bg-cyan-950/50 px-1.5 py-0.5 rounded text-xs font-mono">attestation_id</code> para validar autenticidad, prueba L402 y evaluación legal QVAC.</p>
+    </section>
+
+    <section class="v-card p-5 space-y-3">
+        <div class="flex flex-col sm:flex-row gap-3">
+            <input type="text" id="attestation-input" placeholder="att_402_9921_sv"
+                class="verify-input flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm font-mono text-slate-100 focus:outline-none transition"
+                aria-label="ID de Atestación">
+            <button onclick="verifyAttestation()" id="verify-btn"
+                class="verify-btn text-slate-950 font-bold px-6 py-3 rounded-xl font-sans text-sm uppercase tracking-wider cursor-pointer flex items-center justify-center gap-2 min-w-[160px]">
+                <i data-lucide="search" class="w-4 h-4"></i> <span id="t-verify-btn">Verificar</span>
+            </button>
+        </div>
+        <div class="flex flex-wrap gap-2 text-[11px] font-mono items-center">
+            <span id="t-demo-label" class="text-slate-500">Demo:</span>
+            <button onclick="fillAndVerify('att_402_9921_sv')" class="text-cyan-400 hover:text-cyan-300 cursor-pointer underline underline-offset-2 decoration-cyan-800">att_402_9921_sv</button>
+            <button onclick="fillAndVerify('att_402_5401_sv')" class="text-pink-400 hover:text-pink-300 cursor-pointer underline underline-offset-2 decoration-pink-800">att_402_5401_sv</button>
+            <button onclick="fillAndVerify('att_402_0044_sv')" class="text-cyan-400 hover:text-cyan-300 cursor-pointer underline underline-offset-2 decoration-cyan-800">att_402_0044_sv</button>
+        </div>
+    </section>
+
+    <section id="loading-skeleton" class="hidden v-card p-5 space-y-4">
+        <div class="flex gap-3"><div class="skeleton h-16 flex-1"></div><div class="skeleton h-16 flex-1"></div><div class="skeleton h-16 flex-1"></div></div>
+        <div class="skeleton h-4 w-3/4"></div><div class="skeleton h-4 w-1/2"></div><div class="skeleton h-4 w-2/3"></div>
+    </section>
+
+    <section id="verification-result" class="hidden space-y-4">
+        <div class="grid grid-cols-3 gap-3">
+            <div id="badge-validity"  class="v-card p-4 text-center space-y-1"><span id="t-badge-val-label" class="text-[10px] font-mono uppercase text-slate-400 tracking-wider block">Validez</span><div id="val-validity" class="text-lg font-bold">—</div></div>
+            <div id="badge-sig-level" class="v-card p-4 text-center space-y-1"><span id="t-badge-sig-label" class="text-[10px] font-mono uppercase text-slate-400 tracking-wider block">Nivel de Firma</span><div id="val-sig-level" class="text-lg font-bold">—</div></div>
+            <div id="badge-human"     class="v-card p-4 text-center space-y-1"><span id="t-badge-hum-label" class="text-[10px] font-mono uppercase text-slate-400 tracking-wider block">Intervención Humana</span><div id="val-human" class="text-lg font-bold">—</div></div>
+        </div>
+
+        <div class="v-card overflow-hidden">
+            <div class="flex border-b border-slate-800 px-2 pt-2 gap-1 flex-wrap">
+                <button id="tab-proofs" onclick="switchTab('proofs')" class="tab-btn active text-[11px] font-mono px-3 py-1.5 rounded-t border border-transparent text-slate-400"><span class="flex items-center gap-1.5"><i data-lucide="lock" class="w-3 h-3"></i> <span id="t-tab-proofs">Pruebas</span></span></button>
+                <button id="tab-qvac"   onclick="switchTab('qvac')"   class="tab-btn text-[11px] font-mono px-3 py-1.5 rounded-t border border-transparent text-slate-400"><span class="flex items-center gap-1.5"><i data-lucide="scale" class="w-3 h-3"></i> <span id="t-tab-qvac">QVAC Legal</span></span></button>
+                <button id="tab-qr"     onclick="switchTab('qr')"     class="tab-btn text-[11px] font-mono px-3 py-1.5 rounded-t border border-transparent text-slate-400"><span class="flex items-center gap-1.5"><i data-lucide="qr-code" class="w-3 h-3"></i> QR</span></button>
+                <button id="tab-zavu"   onclick="switchTab('zavu')"   class="tab-btn hidden text-[11px] font-mono px-3 py-1.5 rounded-t border border-transparent text-slate-400"><span class="flex items-center gap-1.5"><i data-lucide="message-square" class="w-3 h-3"></i> Zavu <span id="zavu-tab-dot" class="w-1.5 h-1.5 rounded-full bg-pink-400 dot-pulse hidden"></span></span></button>
+            </div>
+
+            <div id="pane-proofs" class="p-5 space-y-2">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[10px] font-mono text-slate-500" id="val-attestation-id">—</span>
+                    <button onclick="copyFullJSON()" class="text-[10px] font-mono text-amber-400 hover:text-white flex items-center gap-1 cursor-pointer"><i data-lucide="copy" class="w-3 h-3"></i> <span id="t-copy-json">Copiar JSON</span></button>
+                </div>
+                <div id="crypto-proofs" class="space-y-1.5 text-xs font-mono"></div>
+            </div>
+
+            <div id="pane-qvac" class="p-5 space-y-3 hidden">
+                <div class="grid grid-cols-2 gap-3 text-xs font-mono">
+                    <div class="p-2.5 rounded bg-slate-950 border border-slate-800"><span id="t-doc-type-label" class="text-slate-400 text-[10px] block">Tipo de Documento</span><span class="text-slate-200 font-bold" id="val-doc-type">—</span></div>
+                    <div class="p-2.5 rounded bg-slate-950 border border-slate-800"><span id="t-jurisdiction-label" class="text-slate-400 text-[10px] block">Jurisdicción</span><span class="text-slate-200 font-bold" id="val-jurisdiction">SV</span></div>
+                </div>
+                <div class="p-2.5 rounded bg-slate-950 border border-slate-800 text-xs font-mono flex items-center justify-between">
+                    <span id="t-risk-flags-label" class="text-slate-400">Banderas de Riesgo</span><span id="val-risk-flags" class="font-bold">—</span>
+                </div>
+                <div id="qvac-checklist" class="space-y-1.5"></div>
+                <div class="p-2.5 rounded bg-amber-950/30 border border-amber-500/20 text-[11px] text-amber-300/80 flex items-start gap-2">
+                    <i data-lucide="info" class="w-4 h-4 shrink-0 mt-0.5 text-amber-400"></i>
+                    <span id="t-qvac-disclaimer">La evaluación QVAC es <strong>asesora</strong>, no constituye dictamen legal vinculante.</span>
+                </div>
+            </div>
+
+            <div id="pane-qr" class="p-5 hidden">
+                <div class="flex flex-col sm:flex-row items-center gap-6">
+                    <div class="flex flex-col items-center gap-3">
+                        <div id="qr-canvas" class="p-3 bg-white rounded-xl inline-block min-w-[160px] min-h-[160px]"></div>
+                        <button onclick="downloadQR()" class="text-[11px] font-mono text-cyan-400 hover:text-white flex items-center gap-1.5 cursor-pointer px-3 py-1.5 rounded bg-slate-900 border border-slate-800"><i data-lucide="download" class="w-3.5 h-3.5"></i> <span id="t-download-qr">Descargar QR</span></button>
+                    </div>
+                    <div class="space-y-3 flex-1">
+                        <div class="space-y-1">
+                            <span id="t-qr-url-label" class="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">URL de Verificación</span>
+                            <div class="flex items-center gap-2">
+                                <span id="qr-url-display" class="text-xs font-mono text-cyan-300 break-all"></span>
+                                <button onclick="copyQRUrl()" class="text-amber-400/60 hover:text-amber-300 cursor-pointer shrink-0"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                            </div>
+                        </div>
+                        <div class="p-3 rounded bg-slate-950 border border-slate-800 text-[11px] font-mono text-slate-400 space-y-1">
+                            <div id="t-qr-instructions-title" class="text-cyan-400 font-bold mb-1">¿Cómo verificar?</div>
+                            <div id="t-qr-step1">1. Escanea el QR con tu teléfono</div>
+                            <div id="t-qr-step2">2. El ID de atestación se carga automáticamente</div>
+                            <div id="t-qr-step3">3. Toca "Verificar" para validar la prueba L402</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="pane-zavu" class="p-5 space-y-3 hidden">
+                <div class="flex items-center justify-between">
+                    <span id="t-zavu-title" class="text-xs font-mono font-bold text-pink-400 flex items-center gap-1.5"><i data-lucide="message-square" class="w-4 h-4"></i> Escalación Humana</span>
+                    <span id="val-zavu-status-badge" class="text-[10px] font-mono font-bold">—</span>
+                </div>
+                <div id="zavu-details" class="space-y-1.5 text-xs font-mono"></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="v-card overflow-hidden">
+        <div class="flex border-b border-slate-800 px-2 pt-2 gap-1 flex-wrap">
+            <button id="sec-tab-timeline"     onclick="switchSecTab('timeline')"     class="tab-btn active text-[11px] font-mono px-3 py-1.5 rounded-t border border-transparent text-slate-400"><span class="flex items-center gap-1.5"><i data-lucide="clock" class="w-3 h-3"></i> <span id="t-sec-tab-timeline">Timeline</span></span></button>
+            <button id="sec-tab-integrations" onclick="switchSecTab('integrations')" class="tab-btn text-[11px] font-mono px-3 py-1.5 rounded-t border border-transparent text-slate-400"><span class="flex items-center gap-1.5"><i data-lucide="activity" class="w-3 h-3"></i> <span id="t-sec-tab-integrations">Integraciones</span></span></button>
+            <button id="sec-tab-datamcp"      onclick="switchSecTab('datamcp')"      class="tab-btn text-[11px] font-mono px-3 py-1.5 rounded-t border border-transparent text-slate-400"><span class="flex items-center gap-1.5"><i data-lucide="database" class="w-3 h-3"></i> DataMCP</span></button>
+        </div>
+
+        <div id="sec-pane-timeline" class="p-4 space-y-2">
+            <div class="flex items-center justify-between mb-1">
+                <span id="t-timeline-title" class="text-[10px] font-mono uppercase text-slate-500 tracking-wider">Atestaciones recientes</span>
+                <button onclick="loadTimeline()" class="text-[10px] font-mono text-cyan-400 hover:text-white cursor-pointer flex items-center gap-1"><i data-lucide="refresh-cw" class="w-3 h-3"></i> <span id="t-refresh-btn-1">Actualizar</span></button>
+            </div>
+            <div id="timeline-list" class="space-y-1.5"></div>
+        </div>
+
+        <div id="sec-pane-integrations" class="p-4 space-y-3 hidden">
+            <div class="flex items-center justify-between">
+                <span id="t-integrations-title" class="text-[10px] font-mono uppercase text-slate-500 tracking-wider">Estado — GET /v1/live/status</span>
+                <button onclick="refreshLiveStatus()" class="text-[10px] font-mono text-cyan-400 hover:text-white cursor-pointer flex items-center gap-1"><i data-lucide="refresh-cw" class="w-3 h-3"></i> <span id="t-refresh-btn-2">Actualizar</span></button>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-mono" id="live-status-grid"></div>
+            <div id="integration-error-banner" class="hidden p-2.5 rounded bg-red-950/30 border border-red-500/20 text-[11px] text-red-300 flex items-start gap-2">
+                <i data-lucide="alert-circle" class="w-4 h-4 shrink-0 mt-0.5 text-red-400"></i>
+                <span id="integration-error-msg"></span>
+            </div>
+        </div>
+
+        <div id="sec-pane-datamcp" class="p-4 space-y-3 hidden">
+            <div class="flex items-center justify-between">
+                <span id="t-datamcp-title" class="text-[10px] font-mono uppercase text-slate-500 tracking-wider">GET /v1/integrations/datamcp</span>
+                <button onclick="loadDataMCP()" class="text-[10px] font-mono text-cyan-400 hover:text-white cursor-pointer flex items-center gap-1"><i data-lucide="refresh-cw" class="w-3 h-3"></i> <span id="t-refresh-btn-3">Actualizar</span></button>
+            </div>
+            <div id="datamcp-content" class="space-y-2"></div>
+        </div>
+    </div>
+
+</main>
+
+<footer class="bg-slate-950 border-t border-slate-900 py-4 mt-auto">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 space-y-1.5">
+        <p id="t-footer-disclaimer" class="text-[11px] text-slate-500 leading-relaxed font-mono">Notary402 demonstrates jurisdiction-aware legal workflow automation and cryptographic attestations. When local law requires a licensed notary or human legal professional, the system escalates rather than replacing that role.</p>
+        <div class="flex items-center justify-between text-[10px] text-slate-600 font-mono">
+            <span>Notary402 v0.5.0 — Agentic Verifier</span>
+            <span>El Salvador • L402 Lightning • Bitcoin Native</span>
+        </div>
+    </div>
+</footer>
+
+<div id="toast" class="fixed bottom-5 right-5 translate-y-10 opacity-0 transition-all duration-300 bg-slate-950 text-cyan-300 px-4 py-2.5 rounded-lg border border-cyan-500/40 text-xs font-mono font-bold z-50 flex items-center gap-2 pointer-events-none">
+    <i data-lucide="check-circle" class="w-3.5 h-3.5 text-cyan-400"></i>
+    <span id="toast-message"></span>
+</div>
+
+<script>
+const API_BASE = 'http://localhost:3001';
+let currentLang = 'es';
+let lastVerifiedData = null, lastQRUrl = '', qrInstance = null;
+
+// ─── TRANSLATIONS ───────────────────────────────────────
+const I18N = {
+    es: {
+        heroTitle: "Verificar Atestación Notarial",
+        heroDesc: "Ingresa un <code class=\"text-cyan-400 bg-cyan-950/50 px-1.5 py-0.5 rounded text-xs font-mono\">attestation_id</code> para validar autenticidad, prueba L402 y evaluación legal QVAC.",
+        verifyBtn: "Verificar",
+        verifyingBtn: "Verificando...",
+        demoLabel: "Demo:",
+        badgeValLabel: "Validez",
+        badgeSigLabel: "Nivel de Firma",
+        badgeHumLabel: "Intervención Humana",
+        valValid: "Válida",
+        valPending: "Pendiente",
+        valInvalid: "Inválida",
+        humRequired: "Requerido",
+        humAutonomous: "Autónomo",
+        tabProofs: "Pruebas",
+        tabQvac: "QVAC Legal",
+        tabQr: "QR",
+        copyJson: "Copiar JSON",
+        docTypeLabel: "Tipo de Documento",
+        jurisdictionLabel: "Jurisdicción",
+        riskFlagsLabel: "Banderas de Riesgo",
+        riskDetected: "Detectadas",
+        riskDetectedSingular: "Detectada",
+        qvacDisclaimer: "La evaluación QVAC es <strong>asesora</strong>, no constituye dictamen legal vinculante.",
+        downloadQr: "Descargar QR",
+        qrUrlLabel: "URL de Verificación",
+        qrInstructionsTitle: "¿Cómo verificar?",
+        qrStep1: "1. Escanea el QR con tu teléfono",
+        qrStep2: "2. El ID de atestación se carga automáticamente",
+        qrStep3: "3. Toca \"Verificar\" para validar la prueba L402",
+        zavuTitle: "Escalación Humana",
+        zavuPending: "PENDIENTE DE REVISIÓN HUMANA",
+        zavuApproved: "APROBADO POR NOTARIO",
+        secTabTimeline: "Timeline",
+        secTabIntegrations: "Integraciones",
+        secTabDatamcp: "DataMCP",
+        timelineTitle: "Atestaciones recientes",
+        integrationsTitle: "Estado — GET /v1/live/status",
+        datamcpTitle: "GET /v1/integrations/datamcp",
+        refreshBtn: "Actualizar",
+        footerDisclaimer: "Notary402 demuestra la automatización de flujos de trabajo legales con conciencia de jurisdicción y atestaciones criptográficas. Cuando la ley local requiere un notario autorizado o profesional legal humano, el sistema escala en lugar de reemplazar ese rol.",
+        toastCopied: "Copiado",
+        toastJsonCopied: "JSON copiado",
+        toastQrDownloaded: "QR descargado",
+        notFound: "Atestación no encontrada: ",
+        datamcpState: "Estado DataMCP",
+        datamcpTables: "Tablas de Auditoría Supabase",
+        datamcpTools: "MCP Tools",
+        datamcpPerm: "Permiso",
+        timelineEmpty: "Sin atestaciones aún. Verifica un ID para empezar.",
+        proofLabels: {
+            reqHash: "Request Hash",
+            docHash: "Document Hash",
+            wallet: "Agent Wallet",
+            l402Tx: "L402 Proof Tx",
+            l402Mac: "L402 Macaroon",
+            l402Pay: "L402 Payment",
+            timestamp: "Fecha y hora"
+        },
+        zavuLabels: {
+            trigger: "Motivo",
+            notary: "Notario",
+            channel: "Canal",
+            date: "Escalado"
+        }
+    },
+    en: {
+        heroTitle: "Verify Notarial Attestation",
+        heroDesc: "Enter an <code class=\"text-cyan-400 bg-cyan-950/50 px-1.5 py-0.5 rounded text-xs font-mono\">attestation_id</code> to validate authenticity, L402 proof, and QVAC legal evaluation.",
+        verifyBtn: "Verify",
+        verifyingBtn: "Verifying...",
+        demoLabel: "Demo:",
+        badgeValLabel: "Validity",
+        badgeSigLabel: "Signature Level",
+        badgeHumLabel: "Human Intervention",
+        valValid: "Valid",
+        valPending: "Pending",
+        valInvalid: "Invalid",
+        humRequired: "Required",
+        humAutonomous: "Autonomous",
+        tabProofs: "Proofs",
+        tabQvac: "QVAC Legal",
+        tabQr: "QR Code",
+        copyJson: "Copy JSON",
+        docTypeLabel: "Document Type",
+        jurisdictionLabel: "Jurisdiction",
+        riskFlagsLabel: "Risk Flags",
+        riskDetected: "Detected",
+        riskDetectedSingular: "Detected",
+        qvacDisclaimer: "QVAC evaluation is <strong>advisory</strong> and does not constitute a binding legal opinion.",
+        downloadQr: "Download QR",
+        qrUrlLabel: "Verification URL",
+        qrInstructionsTitle: "How to verify?",
+        qrStep1: "1. Scan the QR code with your phone",
+        qrStep2: "2. The attestation ID is automatically loaded",
+        qrStep3: "3. Tap \"Verify\" to validate the L402 proof",
+        zavuTitle: "Human Escalation",
+        zavuPending: "PENDING HUMAN REVIEW",
+        zavuApproved: "NOTARY APPROVED",
+        secTabTimeline: "Timeline",
+        secTabIntegrations: "Integrations",
+        secTabDatamcp: "DataMCP",
+        timelineTitle: "Recent Attestations",
+        integrationsTitle: "Status — GET /v1/live/status",
+        datamcpTitle: "GET /v1/integrations/datamcp",
+        refreshBtn: "Refresh",
+        footerDisclaimer: "Notary402 demonstrates jurisdiction-aware legal workflow automation and cryptographic attestations. When local law requires a licensed notary or human legal professional, the system escalates rather than replacing that role.",
+        toastCopied: "Copied",
+        toastJsonCopied: "JSON Copied",
+        toastQrDownloaded: "QR Downloaded",
+        notFound: "Attestation not found: ",
+        datamcpState: "DataMCP State",
+        datamcpTables: "Supabase Audit Tables",
+        datamcpTools: "MCP Tools",
+        datamcpPerm: "Permission",
+        timelineEmpty: "No attestations verified yet. Verify an ID to get started.",
+        proofLabels: {
+            reqHash: "Request Hash",
+            docHash: "Document Hash",
+            wallet: "Agent Wallet",
+            l402Tx: "L402 Proof Tx",
+            l402Mac: "L402 Macaroon",
+            l402Pay: "L402 Payment",
+            timestamp: "Timestamp"
+        },
+        zavuLabels: {
+            trigger: "Reason",
+            notary: "Notary",
+            channel: "Channel",
+            date: "Escalated At"
+        }
+    }
+};
+
+const SIG_LEVELS = {
+    0:{name:'Hash Attestation',icon:'hash',color:'text-slate-400',bg:'bg-slate-900',border:'border-slate-700'},
+    1:{name:'Agent Signature',icon:'bot',color:'text-cyan-400',bg:'bg-cyan-950',border:'border-cyan-500/40'},
+    2:{name:'Authorized Representative',icon:'user-check',color:'text-purple-400',bg:'bg-purple-950',border:'border-purple-500/40'},
+    3:{name:'Jurisdiction E-Signature',icon:'scale',color:'text-amber-400',bg:'bg-amber-950',border:'border-amber-500/40'},
+    4:{name:'Human Notary Countersignature',icon:'pen-tool',color:'text-pink-400',bg:'bg-pink-950',border:'border-pink-500/40'},
+    5:{name:'Public Instrument Workflow',icon:'landmark',color:'text-red-400',bg:'bg-red-950',border:'border-red-500/40'},
+};
+
+const MOCK_ATTESTATIONS = {
+    'att_402_9921_sv':{attestation_id:'att_402_9921_sv',valid:true,status:'issued',signature_level:3,requires_human_notary:false,jurisdiction:'SV',request_hash:'f10a8b9cd2ea491f2c2b0c3ff411a098ce1bc4a1b02de92',document_hash:'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',agent_wallet:'0x71C9415843E0774040951c45ac1A3BA037543a86',amoy_tx_hash:'0x3c99a2fe7ebd10cb8cf83a213e4b774619ba88bc',l402_payment:{amount_msats:150,status:'settled',receipt:'lnbc150n1p3llu34v82as...'},qvac_analysis:{document_type:'Arrendamiento Comercial',document_type_en:'Commercial Lease Agreement',risk_flags:[],checklist:[{label:'Capacidad legal de las partes identificada',label_en:'Legal capacity of parties identified',passed:true},{label:'Cumplimiento Ley de Firma Electrónica (Art. 15-22)',label_en:'Compliance with E-Signature Law (Art. 15-22)',passed:true},{label:'Contraprestación y obligaciones definidas',label_en:'Consideration and obligations defined',passed:true},{label:'Sin cláusulas prohibidas o nulas detectadas',label_en:'No prohibited or void clauses detected',passed:true},{label:'Jurisdicción El Salvador alineada',label_en:'El Salvador jurisdiction aligned',passed:true}]},zavu:{status:'no_escalation'},created_at:'2026-07-04T15:30:00Z'},
+    'att_402_5401_sv':{attestation_id:'att_402_5401_sv',valid:true,status:'pending_human_review',signature_level:4,requires_human_notary:true,jurisdiction:'SV',request_hash:'c018a3ef201c10d32bb4a80ce0fbc140fa39a8203f19e21',document_hash:'9a01e0d3bc891f240fa08b9cd2ea491f2c2b0c3ff411a098ce1bc4a1b02de92',agent_wallet:'0x40951c45ac1A3BA037543a8671C9415843E07740',amoy_tx_hash:'0xa12048cf7e8b10cb8cf83a213e4b774619ba88bc27ef',l402_payment:{amount_msats:500,status:'settled',receipt:'lnbc1000n98df71la0fbc...'},qvac_analysis:{document_type:'Consolidación de Activos Tokenizados',document_type_en:'Tokenized Asset Consolidation',risk_flags:['Monto excede límite de firma autónoma','Requiere verificación de identidad adicional'],risk_flags_en:['Amount exceeds autonomous signature threshold','Requires additional identity verification'],checklist:[{label:'Capacidad legal de las partes identificada',label_en:'Legal capacity of parties identified',passed:true},{label:'Cumplimiento Ley de Firma Electrónica (Art. 15-22)',label_en:'Compliance with E-Signature Law (Art. 15-22)',passed:true},{label:'Contraprestación y obligaciones definidas',label_en:'Consideration and obligations defined',passed:true},{label:'Monto dentro de límite autónomo agéntico',label_en:'Amount within autonomous agent limit',passed:false}]},zavu:{status:'pending_human_review',trigger:'High risk score',trigger_en:'High risk score',assigned_notary:'Mestre Toad Alfaro (San Salvador)',channel:'WhatsApp Business API',escalated_at:'2026-07-04T15:45:00Z'},created_at:'2026-07-04T15:40:00Z'},
+    'att_402_0044_sv':{attestation_id:'att_402_0044_sv',valid:true,status:'issued',signature_level:1,requires_human_notary:false,jurisdiction:'SV',request_hash:'e3bc01e4a8109bfcd8b103cb0c19df2ea491f2c2b0c3ff41',document_hash:'a1a098ce1bc4a1b02de92e3b0c44298fc1c149afbf4c8996fb92427ae41e464',agent_wallet:'0x37543a8671C9415843E0774040951c45ac1A3BA',amoy_tx_hash:'0x543a86c01e4a8fc7e8b10cb8cf83a213e4b774619ba',l402_payment:{amount_msats:100,status:'settled',receipt:'lnbc50n1p3f19e248b10c...'},qvac_analysis:{document_type:'Pacto SLA de API',document_type_en:'API Service Level Agreement',risk_flags:[],checklist:[{label:'Tipo de documento compatible con firma agéntica',label_en:'Document type compatible with agent signature',passed:true},{label:'Contraprestación definida (SLA uptime 99.9%)',label_en:'Consideration defined (99.9% SLA uptime)',passed:true},{label:'Ejecución autónoma aprobada',label_en:'Autonomous execution approved',passed:true}]},zavu:{status:'no_escalation'},created_at:'2026-07-04T14:20:00Z'},
+};
+
+const MOCK_LIVE_STATUS = {supabase:{status:'pending',note:'Not configured'},datamcp:{status:'pending',note:'MCP URL not set'},amoy:{status:'pending',note:'RPC not set'},qvac:{status:'pending',note:'Ollama offline'},zavu:{status:'pending',note:'Zavu URL not set'},aperture:{status:'pending',note:'Not running'},n8n:{status:'pending',note:'Not running'}};
+const MOCK_DATAMCP = {status:'integration_pending',provider:'datamcp',reason:'DATAMCP_MCP_URL not configured',tables:['agent_profiles','legal_intents','signature_requests','wallet_proofs','payment_proofs','legal_analyses','attestations','human_escalations'],permission_preset:'read-only',mcp_tools:['query','get_schema','get_table_details','get_permissions','get_schema_changes','resync_schema'],note:'Notary402 is the write authority. DataMCP exposes audit tables as read-only MCP context for agents and n8n.',note_en:'Notary402 is the write authority. DataMCP exposes audit tables as read-only MCP context for agents and n8n.'};
+
+function toggleLanguage() {
+    currentLang = currentLang === 'es' ? 'en' : 'es';
+    document.getElementById('lang-indicator').innerText = currentLang === 'es' ? 'EN' : 'ES';
+    applyTranslations();
+    if (lastVerifiedData) renderVerificationResult(lastVerifiedData);
+    renderTimeline();
+    loadDataMCP();
+}
+
+function applyTranslations() {
+    const t = I18N[currentLang];
+    document.getElementById('t-hero-title').innerText = t.heroTitle;
+    document.getElementById('t-hero-desc').innerHTML = t.heroDesc;
+    document.getElementById('t-verify-btn').innerText = t.verifyBtn;
+    document.getElementById('t-demo-label').innerText = t.demoLabel;
+    document.getElementById('t-badge-val-label').innerText = t.badgeValLabel;
+    document.getElementById('t-badge-sig-label').innerText = t.badgeSigLabel;
+    document.getElementById('t-badge-hum-label').innerText = t.badgeHumLabel;
+    document.getElementById('t-tab-proofs').innerText = t.tabProofs;
+    document.getElementById('t-tab-qvac').innerText = t.tabQvac;
+    document.getElementById('t-copy-json').innerText = t.copyJson;
+    document.getElementById('t-doc-type-label').innerText = t.docTypeLabel;
+    document.getElementById('t-jurisdiction-label').innerText = t.jurisdictionLabel;
+    document.getElementById('t-risk-flags-label').innerText = t.riskFlagsLabel;
+    document.getElementById('t-qvac-disclaimer').innerHTML = t.qvacDisclaimer;
+    document.getElementById('t-download-qr').innerText = t.downloadQr;
+    document.getElementById('t-qr-url-label').innerText = t.qrUrlLabel;
+    document.getElementById('t-qr-instructions-title').innerText = t.qrInstructionsTitle;
+    document.getElementById('t-qr-step1').innerText = t.qrStep1;
+    document.getElementById('t-qr-step2').innerText = t.qrStep2;
+    document.getElementById('t-qr-step3').innerText = t.qrStep3;
+    document.getElementById('t-zavu-title').innerHTML = `<i data-lucide="message-square" class="w-4 h-4"></i> ${t.zavuTitle}`;
+    document.getElementById('t-sec-tab-timeline').innerText = t.secTabTimeline;
+    document.getElementById('t-sec-tab-integrations').innerText = t.secTabIntegrations;
+    document.getElementById('t-sec-tab-datamcp').innerText = t.secTabDatamcp;
+    document.getElementById('t-timeline-title').innerText = t.timelineTitle;
+    document.getElementById('t-integrations-title').innerText = t.integrationsTitle;
+    document.getElementById('t-datamcp-title').innerText = t.datamcpTitle;
+    document.getElementById('t-refresh-btn-1').innerText = t.refreshBtn;
+    document.getElementById('t-refresh-btn-2').innerText = t.refreshBtn;
+    document.getElementById('t-refresh-btn-3').innerText = t.refreshBtn;
+    document.getElementById('t-footer-disclaimer').innerText = t.footerDisclaimer;
+    lucide.createIcons();
+}
+
+async function fetchFromAPI(path,options={}) {
+    try {
+        const res = await fetch(`${API_BASE}${path}`,{headers:{'Content-Type':'application/json'},...options});
+        if(!res.ok){if(res.status===503)return{__error:'integration_pending',status:503};throw new Error();}
+        return await res.json();
+    } catch(e){return null;}
+}
+
+async function verifyAttestation() {
+    const input = document.getElementById('attestation-input');
+    const id = input.value.trim();
+    if(!id){input.focus();return;}
+    const btn = document.getElementById('verify-btn');
+    const t = I18N[currentLang];
+    btn.disabled=true;
+    btn.innerHTML=`<span class="animate-spin inline-block w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full"></span> ${t.verifyingBtn}`;
+    document.getElementById('verification-result').classList.add('hidden');
+    document.getElementById('loading-skeleton').classList.remove('hidden');
+    let data = await fetchFromAPI('/v1/verify',{method:'POST',body:JSON.stringify({attestation_id:id})});
+    if(!data) data = await fetchFromAPI('/v1/attestations/'+id);
+    if(!data) data = MOCK_ATTESTATIONS[id]||null;
+    await new Promise(r=>setTimeout(r,550));
+    document.getElementById('loading-skeleton').classList.add('hidden');
+    btn.disabled=false;
+    btn.innerHTML=`<i data-lucide="search" class="w-4 h-4"></i> <span id="t-verify-btn">${t.verifyBtn}</span>`;
+    lucide.createIcons();
+    if(!data){showToast(t.notFound + id);return;}
+    lastVerifiedData=data;
+    renderVerificationResult(data);
+    addToTimeline(data);
+}
+
+function fillAndVerify(id){document.getElementById('attestation-input').value=id;verifyAttestation();}
+
+function renderVerificationResult(data) {
+    const t = I18N[currentLang];
+    document.getElementById('verification-result').classList.remove('hidden');
+    const vEl=document.getElementById('val-validity'),vCard=document.getElementById('badge-validity');
+    if(data.status==='issued'&&data.valid){vEl.innerHTML=`<span class="text-emerald-400 flex items-center justify-center gap-1.5"><i data-lucide="check-circle" class="w-5 h-5"></i> ${t.valValid}</span>`;vCard.style.borderColor='rgba(0,255,157,.3)';}
+    else if(data.status==='pending_human_review'){vEl.innerHTML=`<span class="text-amber-400 flex items-center justify-center gap-1.5"><i data-lucide="clock" class="w-5 h-5"></i> ${t.valPending}</span>`;vCard.style.borderColor='rgba(255,215,0,.3)';}
+    else{vEl.innerHTML=`<span class="text-red-400 flex items-center justify-center gap-1.5"><i data-lucide="x-circle" class="w-5 h-5"></i> ${t.valInvalid}</span>`;vCard.style.borderColor='rgba(255,42,133,.3)';}
+    
+    const lv=data.signature_level??0,sl=SIG_LEVELS[lv]||SIG_LEVELS[0];
+    document.getElementById('val-sig-level').innerHTML=`<span class="${sl.color} flex items-center justify-center gap-1.5 text-sm"><i data-lucide="${sl.icon}" class="w-5 h-5"></i> Level ${lv}</span><div class="text-[10px] text-slate-400 font-mono mt-0.5">${sl.name}</div>`;
+    document.getElementById('badge-sig-level').className=`v-card p-4 text-center space-y-1 ${sl.bg} ${sl.border}`;
+    
+    const hEl=document.getElementById('val-human'),hCard=document.getElementById('badge-human');
+    if(data.requires_human_notary){hEl.innerHTML=`<span class="text-pink-400 flex items-center justify-center gap-1.5"><i data-lucide="user-check" class="w-5 h-5"></i> ${t.humRequired}</span>`;hCard.style.borderColor='rgba(255,42,133,.3)';}
+    else{hEl.innerHTML=`<span class="text-emerald-400 flex items-center justify-center gap-1.5"><i data-lucide="bot" class="w-5 h-5"></i> ${t.humAutonomous}</span>`;hCard.style.borderColor='rgba(0,255,157,.15)';}
+    
+    document.getElementById('val-attestation-id').innerText=data.attestation_id;
+    
+    const rows=[
+        {label: t.proofLabels.reqHash, value:data.request_hash, color:'text-slate-200'},
+        {label: t.proofLabels.docHash, value:data.document_hash, color:'text-slate-200'},
+        {label: t.proofLabels.wallet, value:data.agent_wallet, color:'text-cyan-300'},
+        {label: t.proofLabels.l402Tx, value:data.amoy_tx_hash, color:'text-amber-300'},
+        {label: t.proofLabels.l402Mac, value:data.l402_payment?.receipt||'—', color:'text-amber-300'},
+        {label: t.proofLabels.l402Pay, value:`${data.l402_payment?.amount_msats||'—'} mSats (${data.l402_payment?.status||'—'})`, color:data.l402_payment?.status==='settled'?'text-emerald-400':'text-slate-400'},
+        {label: t.proofLabels.timestamp, value:data.created_at?new Date(data.created_at).toLocaleString(currentLang==='es'?'es-SV':'en-US'):'—', color:'text-slate-300'},
+    ];
+    document.getElementById('crypto-proofs').innerHTML=rows.map(r=>`<div class="flex items-center justify-between p-2.5 rounded bg-slate-950 border border-slate-800"><div class="truncate mr-3 flex-1"><span class="text-[10px] text-slate-400 block">${r.label}</span><span class="${r.color} text-[11px] truncate block">${r.value}</span></div><button onclick="copyValue('${r.value}')" class="text-amber-400/60 hover:text-amber-300 p-1 shrink-0 cursor-pointer" title="Copiar"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button></div>`).join('');
+    
+    const qa=data.qvac_analysis||{};
+    document.getElementById('val-doc-type').innerText=(currentLang==='en'&&qa.document_type_en)?qa.document_type_en:(qa.document_type||'—');
+    document.getElementById('val-jurisdiction').innerText=data.jurisdiction||'SV';
+    
+    const flags=(currentLang==='en'&&qa.risk_flags_en)?qa.risk_flags_en:(qa.risk_flags||[]);
+    document.getElementById('val-risk-flags').innerHTML=flags.length===0?`<span class="text-emerald-400">0 ${t.riskDetected}</span>`:`<span class="text-pink-400">${flags.length} ${flags.length>1?t.riskDetected:t.riskDetectedSingular}</span>`;
+    
+    const cl=document.getElementById('qvac-checklist');cl.innerHTML='';
+    flags.forEach(f=>{cl.innerHTML+=`<div class="flex items-center gap-2 text-xs p-2 rounded bg-pink-950/30 border border-pink-500/20"><i data-lucide="alert-triangle" class="w-4 h-4 text-pink-400 shrink-0"></i><span class="text-pink-300">${f}</span></div>`;});
+    (qa.checklist||[]).forEach(item=>{
+        const ic=item.passed?'check-circle':'x-circle',col=item.passed?'text-emerald-400':'text-pink-400';
+        const labelText = (currentLang==='en'&&item.label_en)?item.label_en:item.label;
+        cl.innerHTML+=`<div class="flex items-center gap-2 text-xs"><i data-lucide="${ic}" class="w-4 h-4 ${col} shrink-0"></i><span class="text-slate-300">${labelText}</span></div>`;
+    });
+    
+    const zavu=data.zavu||{},zavuBtn=document.getElementById('tab-zavu'),zavuDot=document.getElementById('zavu-tab-dot');
+    if(zavu.status&&zavu.status!=='no_escalation'){
+        zavuBtn.classList.remove('hidden');zavuDot.classList.remove('hidden');
+        const sb=document.getElementById('val-zavu-status-badge');
+        if(zavu.status==='pending_human_review')sb.innerHTML=`<span class="px-2 py-0.5 bg-pink-500/20 text-pink-300 rounded border border-pink-500/40 animate-pulse">${t.zavuPending}</span>`;
+        else if(zavu.status==='human_approved')sb.innerHTML=`<span class="px-2 py-0.5 bg-emerald-950 text-emerald-400 rounded border border-emerald-500/40">${t.zavuApproved}</span>`;
+        const det=document.getElementById('zavu-details');det.innerHTML='';
+        const trig = (currentLang==='en'&&zavu.trigger_en)?zavu.trigger_en:zavu.trigger;
+        if(trig)det.innerHTML+=row(t.zavuLabels.trigger,trig,'text-pink-300');
+        if(zavu.assigned_notary)det.innerHTML+=row(t.zavuLabels.notary,zavu.assigned_notary);
+        if(zavu.channel)det.innerHTML+=row(t.zavuLabels.channel,zavu.channel);
+        if(zavu.escalated_at)det.innerHTML+=row(t.zavuLabels.date,new Date(zavu.escalated_at).toLocaleString(currentLang==='es'?'es-SV':'en-US'));
+    } else {zavuBtn.classList.add('hidden');zavuDot.classList.add('hidden');}
+    
+    buildQR(data.attestation_id);
+    lucide.createIcons();
+    document.getElementById('verification-result').scrollIntoView({behavior:'smooth',block:'start'});
+    switchTab('proofs');
+}
+
+function row(label,value,valClass='text-slate-200'){return`<div class="flex justify-between p-2 rounded bg-slate-950 border border-slate-800"><span class="text-slate-400">${label}:</span><span class="${valClass}">${value}</span></div>`;}
+
+function buildQR(id) {
+    const url=window.location.href.split('?')[0]+'?id='+id;lastQRUrl=url;
+    const c=document.getElementById('qr-canvas');c.innerHTML='';
+    document.getElementById('qr-url-display').innerText=url;
+    try{qrInstance=new QRCode(c,{text:url,width:160,height:160,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});}
+    catch(e){c.innerHTML='<div class="w-40 h-40 flex items-center justify-center text-[10px] font-mono text-slate-500 bg-slate-900 rounded-lg border border-slate-800">QR lib loading...</div>';}
+}
+function downloadQR(){const canvas=document.querySelector('#qr-canvas canvas');if(!canvas){showToast('QR no generado');return;}const a=document.createElement('a');a.download='notary402-'+(lastVerifiedData?.attestation_id||'att')+'.png';a.href=canvas.toDataURL('image/png');a.click();showToast(I18N[currentLang].toastQrDownloaded);}
+function copyQRUrl(){copyValue(lastQRUrl);}
+
+const timelineHistory=[];
+function addToTimeline(data){if(!timelineHistory.find(t=>t.attestation_id===data.attestation_id))timelineHistory.unshift(data);renderTimeline();}
+function loadTimeline(){if(timelineHistory.length===0){Object.values(MOCK_ATTESTATIONS).forEach(a=>timelineHistory.push(a));timelineHistory.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));}renderTimeline();}
+function renderTimeline(){
+    const list=document.getElementById('timeline-list');
+    const t = I18N[currentLang];
+    if(timelineHistory.length===0){list.innerHTML=`<div class="text-center text-slate-600 text-xs font-mono py-6">${t.timelineEmpty}</div>`;return;}
+    list.innerHTML=timelineHistory.map(data=>{
+        const sl=SIG_LEVELS[data.signature_level??0];
+        const sc=data.status==='issued'?'text-emerald-400':data.status==='pending_human_review'?'text-amber-400':'text-red-400';
+        const slb=data.status==='issued'?`✓ ${t.valValid}`:data.status==='pending_human_review'?`⏳ ${t.valPending}`:`✗ ${t.valInvalid}`;
+        const dt=data.created_at?new Date(data.created_at).toLocaleString(currentLang==='es'?'es-SV':'en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+        const docType = (currentLang==='en'&&data.qvac_analysis?.document_type_en)?data.qvac_analysis.document_type_en:(data.qvac_analysis?.document_type||'—');
+        return`<div class="timeline-item flex items-center gap-3 p-2.5 rounded-lg cursor-pointer border border-transparent hover:border-cyan-500/20" onclick="fillAndVerify('${data.attestation_id}')"><div class="w-1 self-stretch rounded-full ${sl.color.replace('text-','bg-')} opacity-60 shrink-0"></div><div class="flex-1 min-w-0"><div class="flex items-center justify-between gap-2"><span class="text-[11px] font-mono text-cyan-300 truncate">${data.attestation_id}</span><span class="text-[10px] font-mono ${sc} shrink-0">${slb}</span></div><div class="flex items-center gap-3 mt-0.5"><span class="text-[10px] text-slate-500 font-mono">${docType}</span><span class="text-[10px] ${sl.color} font-mono">Lvl ${data.signature_level}</span><span class="text-[10px] text-slate-600 font-mono">${dt}</span></div></div></div>`;
+    }).join('');
+}
+
+const SVC_LABELS={supabase:'Supabase',datamcp:'DataMCP',amoy:'L402 Gateway',qvac:'QVAC',zavu:'Zavu',aperture:'Aperture',n8n:'n8n'};
+async function refreshLiveStatus(){
+    const banner=document.getElementById('integration-error-banner');banner.classList.add('hidden');
+    let data=await fetchFromAPI('/v1/live/status'),isDemo=false;
+    if(!data||data.__error){
+        if(data?.__error==='integration_pending'){banner.classList.remove('hidden');document.getElementById('integration-error-msg').textContent='API devolvió 503 — algunos servicios están en integration_pending. Configura .env.live para conectarlos.';}
+        data=MOCK_LIVE_STATUS;isDemo=true;
+    }
+    document.getElementById('live-status-grid').innerHTML=Object.entries(SVC_LABELS).map(([k,l])=>{
+        const s=data[k];let dot='●',cls,note;
+        if(!s||s.status==='pending'||s.status==='integration_pending'){cls='int-pending';note=s?.note||'Pending';}
+        else if(['connected','ok','ready','active'].includes(s.status)){cls='int-ok';note='Online';}
+        else if(['error','down'].includes(s.status)){cls='int-error';note=s?.note||'Error';}
+        else{cls='int-demo';note=isDemo?'Demo':'—';}
+        return`<div class="p-2.5 rounded bg-slate-950 border border-slate-800 text-center"><span class="text-slate-500 text-[10px] block mb-0.5">${l}</span><span class="${cls} text-[11px] font-mono font-bold">${dot} ${note}</span></div>`;
+    }).join('');
+    document.getElementById('api-health-badge').innerHTML=isDemo?'<span class="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5"></span><span class="text-amber-400">Demo</span>':'<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 dot-pulse"></span><span class="text-emerald-400 font-bold">API</span>';
+    lucide.createIcons();
+}
+
+async function loadDataMCP(){
+    let data=await fetchFromAPI('/v1/integrations/datamcp'),isDemo=!data;
+    if(!data)data=MOCK_DATAMCP;
+    const c=document.getElementById('datamcp-content');
+    const t = I18N[currentLang];
+    const sc=data.status==='integration_pending'?'text-amber-400':'text-emerald-400';
+    const sl=data.status==='integration_pending'?'⏳ Pending Config':'✓ Connected';
+    const noteText = (currentLang==='en'&&data.note_en)?data.note_en:data.note;
+    c.innerHTML=`<div class="p-2.5 rounded bg-slate-950 border border-slate-800 flex items-center justify-between text-xs font-mono"><span class="text-slate-400">${t.datamcpState}</span><span class="${sc} font-bold">${sl}</span></div>${data.reason?`<div class="p-2.5 rounded bg-amber-950/20 border border-amber-500/20 text-[11px] text-amber-300 font-mono">${data.reason}</div>`:''}<div class="p-2.5 rounded bg-slate-950 border border-slate-800 text-xs font-mono"><span class="text-slate-400 text-[10px] block mb-1.5">${t.datamcpTables}</span><div class="flex flex-wrap gap-1.5">${(data.tables||[]).map(t=>`<span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-cyan-300 text-[10px]">${t}</span>`).join('')}</div></div><div class="p-2.5 rounded bg-slate-950 border border-slate-800 text-xs font-mono"><span class="text-slate-400 text-[10px] block mb-1.5">${t.datamcpTools}</span><div class="flex flex-wrap gap-1.5">${(data.mcp_tools||[]).map(t=>`<span class="px-1.5 py-0.5 rounded bg-purple-950 border border-purple-700/40 text-purple-300 text-[10px]">${t}</span>`).join('')}</div></div><div class="p-2.5 rounded bg-slate-950 border border-slate-800 flex items-center justify-between text-xs font-mono"><span class="text-slate-400">${t.datamcpPerm}</span><span class="text-emerald-400">${data.permission_preset||'read-only'}</span></div>${noteText?`<div class="p-2.5 rounded bg-cyan-950/20 border border-cyan-500/20 text-[11px] text-cyan-300/80 font-mono">${noteText}</div>`:''}${isDemo?`<div class="text-[10px] font-mono text-slate-600 text-right">${currentLang==='es'?'Modo Demo — configura DATAMCP_MCP_URL en .env.live':'Demo Mode — set DATAMCP_MCP_URL in .env.live'}</div>`:''}`;
+}
+
+const TABS=['proofs','qvac','qr','zavu'];
+const SEC_TABS=['timeline','integrations','datamcp'];
+function switchTab(n){TABS.forEach(t=>{document.getElementById('tab-'+t)?.classList.toggle('active',t===n);document.getElementById('pane-'+t)?.classList.toggle('hidden',t!==n);});}
+function switchSecTab(n){SEC_TABS.forEach(t=>{document.getElementById('sec-tab-'+t)?.classList.toggle('active',t===n);document.getElementById('sec-pane-'+t)?.classList.toggle('hidden',t!==n);});}
+
+function copyValue(text){
+    navigator.clipboard.writeText(text).catch(()=>{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);});
+    showToast(I18N[currentLang].toastCopied);
+}
+function copyFullJSON(){if(!lastVerifiedData)return;copyValue(JSON.stringify(lastVerifiedData,null,2));showToast(I18N[currentLang].toastJsonCopied);}
+function showToast(msg){
+    const t=document.getElementById('toast');document.getElementById('toast-message').innerText=msg;
+    t.className='fixed bottom-5 right-5 translate-y-0 opacity-100 transition-all duration-300 bg-slate-950 text-cyan-300 px-4 py-2.5 rounded-lg border border-cyan-500/40 text-xs font-mono font-bold z-50 flex items-center gap-2 pointer-events-none';
+    setTimeout(()=>{t.className='fixed bottom-5 right-5 translate-y-10 opacity-0 transition-all duration-300 bg-slate-950 text-cyan-300 px-4 py-2.5 rounded-lg border border-cyan-500/40 text-xs font-mono font-bold z-50 flex items-center gap-2 pointer-events-none';},2500);
+}
+
+function checkDeepLink(){const p=new URLSearchParams(window.location.search),id=p.get('id');if(id){document.getElementById('attestation-input').value=id;verifyAttestation();}}
+
+window.onload=function(){
+    lucide.createIcons();
+    refreshLiveStatus();
+    loadTimeline();
+    loadDataMCP();
+    checkDeepLink();
+    document.getElementById('attestation-input').addEventListener('keydown',e=>{if(e.key==='Enter')verifyAttestation();});
+};
+</script>
+</body>
+</html>
