@@ -22,7 +22,8 @@
     "smoke:amoy": "node scripts/smoke-amoy.ts",
     "smoke:zavu": "node scripts/smoke-zavu.ts",
     "smoke:aperture": "node scripts/smoke-aperture.ts",
-    "smoke:e2e-live": "node scripts/smoke-e2e-live.ts"
+    "smoke:e2e-live": "node scripts/smoke-e2e-live.ts",
+    "demo:agent": "node scripts/agent-hackathon-demo.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.4",
