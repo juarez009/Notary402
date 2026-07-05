@@ -30,6 +30,7 @@ export type AuditStore = {
   getAttestation(id: string): Promise<Attestation | null>;
   listAttestations(): Promise<Attestation[]>;
   createHumanEscalation(escalation: HumanEscalation): Promise<HumanEscalation>;
+  findHumanEscalationsByRequest(signatureRequestId: string): Promise<HumanEscalation[]>;
   createDocumentRequest(request: DocumentRequest): Promise<DocumentRequest>;
 };
 
@@ -65,6 +66,9 @@ export function createMemoryAuditStore(): AuditStore {
     async getAttestation(id) { return attestations.get(id) || null; },
     async listAttestations() { return [...attestations.values()].sort((a, b) => b.created_at.localeCompare(a.created_at)); },
     async createHumanEscalation(escalation) { humanEscalations.set(escalation.human_escalation_id, escalation); return escalation; },
+    async findHumanEscalationsByRequest(signatureRequestId) {
+      return [...humanEscalations.values()].filter((escalation) => escalation.signature_request_id === signatureRequestId);
+    },
     async createDocumentRequest(request) { documentRequests.set(request.document_request_id, request); return request; }
   };
 }
@@ -111,6 +115,11 @@ export function createSupabaseAuditStoreFromClient(client: SupabaseClient<any, a
       return data as Attestation[];
     },
     createHumanEscalation: (row) => upsert("human_escalations", row),
+    async findHumanEscalationsByRequest(signatureRequestId) {
+      const { data, error } = await client.from("human_escalations").select("*").eq("signature_request_id", signatureRequestId).order("created_at", { ascending: true });
+      if (error) throw supabaseError("human_escalations", error);
+      return data as HumanEscalation[];
+    },
     createDocumentRequest: (row) => upsert("document_requests", row)
   };
 }

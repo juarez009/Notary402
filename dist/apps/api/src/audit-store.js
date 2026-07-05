@@ -30,6 +30,9 @@ export function createMemoryAuditStore() {
         async getAttestation(id) { return attestations.get(id) || null; },
         async listAttestations() { return [...attestations.values()].sort((a, b) => b.created_at.localeCompare(a.created_at)); },
         async createHumanEscalation(escalation) { humanEscalations.set(escalation.human_escalation_id, escalation); return escalation; },
+        async findHumanEscalationsByRequest(signatureRequestId) {
+            return [...humanEscalations.values()].filter((escalation) => escalation.signature_request_id === signatureRequestId);
+        },
         async createDocumentRequest(request) { documentRequests.set(request.document_request_id, request); return request; }
     };
 }
@@ -77,6 +80,12 @@ export function createSupabaseAuditStoreFromClient(client) {
             return data;
         },
         createHumanEscalation: (row) => upsert("human_escalations", row),
+        async findHumanEscalationsByRequest(signatureRequestId) {
+            const { data, error } = await client.from("human_escalations").select("*").eq("signature_request_id", signatureRequestId).order("created_at", { ascending: true });
+            if (error)
+                throw supabaseError("human_escalations", error);
+            return data;
+        },
         createDocumentRequest: (row) => upsert("document_requests", row)
     };
 }
