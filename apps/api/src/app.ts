@@ -198,7 +198,12 @@ export function buildApp(options: AppOptions = {}) {
     amoy_rpc: { configured: Boolean(env.AMOY_RPC_URL), chain_id: Number(env.AMOY_CHAIN_ID || 80002), url: redactedUrl(env.AMOY_RPC_URL) },
     zavu: { configured: Boolean(env.ZAVU_ESCALATE_URL || env.ZAVU_BASE_URL), endpoint: redactedUrl(env.ZAVU_ESCALATE_URL || env.ZAVU_BASE_URL), channel: "whatsapp" },
     aperture: { configured: Boolean(env.APERTURE_BASE_URL), base_url: redactedUrl(env.APERTURE_BASE_URL) },
-    n8n: { configured: Boolean(env.N8N_WEBHOOK_NOTARY402), webhook_url: redactedUrl(env.N8N_WEBHOOK_NOTARY402) }
+    n8n: {
+      configured: Boolean(env.N8N_WEBHOOK_NOTARY402 || (env.N8N_BASE_URL && env.N8N_API_KEY) || env.N8N_MCP_URL),
+      base_url: redactedUrl(env.N8N_BASE_URL),
+      mcp_url: redactedUrl(env.N8N_MCP_URL),
+      webhook_url: redactedUrl(env.N8N_WEBHOOK_NOTARY402)
+    }
   }));
 
   app.post("/v1/legal-intent", { schema: { body: bodySchemas.legalIntent } }, async (request, reply) => {

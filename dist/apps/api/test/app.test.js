@@ -50,6 +50,31 @@ describe("Notary402 API", () => {
         assert.equal(response.json().openapi, "3.0.3");
         await app.close();
     });
+    it("creates Salvadoran document request (POST /v1/documents/request)", async () => {
+        const app = buildApp({ store: createMemoryAuditStore() });
+        await app.ready();
+        const response = await app.inject({
+            method: "POST",
+            url: "/v1/documents/request",
+            payload: {
+                tipo_documento: "COMPRAVENTA",
+                jurisdiccion: "SV",
+                comparecientes: [{
+                        nombre_completo: "Ing. Carlos Eduardo Mendoza",
+                        edad: 38,
+                        profesion: "Ingeniero",
+                        domicilio: "San Salvador",
+                        nacionalidad: "Salvadoreña",
+                        dui: "04589201-4",
+                        nit: "0614-120586-101-2"
+                    }],
+                detalles: { notas: "Compraventa inmueble CNR" }
+            }
+        });
+        assert.equal(response.statusCode, 201);
+        assert.match(response.json().document_request_id, /^docreq_/);
+        await app.close();
+    });
     it("runs a minimal attestation flow", async () => {
         const store = createMemoryAuditStore();
         const app = buildApp({ store });
