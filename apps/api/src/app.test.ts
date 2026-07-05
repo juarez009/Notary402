@@ -151,7 +151,9 @@ test("GET /v1/live/status reports redacted live configuration and never leaks se
       permissionPreset: "read-only",
     },
     env: {
-      POSTGRES_URL: "postgres://user:pass@localhost:5432/notary402",
+      SUPABASE_URL: "https://notary402.supabase.co",
+      SUPABASE_SERVICE_ROLE_KEY: "service_role_secret",
+      SUPABASE_SCHEMA: "public",
       AMOY_RPC_URL: "https://polygon-amoy.example/rpc/secret",
       ZAVU_ESCALATE_URL: "https://zavu.example/escalate",
       APERTURE_BASE_URL: "http://localhost:8080",
@@ -164,13 +166,15 @@ test("GET /v1/live/status reports redacted live configuration and never leaks se
   assert.equal(response.statusCode, 200);
   const bodyText = response.body;
   const body = response.json();
-  assert.equal(body.postgres.configured, true);
+  assert.equal(body.supabase.configured, true);
+  assert.equal(body.supabase.url, "https://notary402.supabase.co/");
+  assert.equal(body.supabase.schema, "public");
   assert.equal(body.datamcp.configured, true);
   assert.equal(body.amoy_rpc.configured, true);
   assert.equal(body.aperture.base_url, "http://localhost:8080");
   assert.equal(bodyText.includes("sk_live_secret"), false);
   assert.equal(bodyText.includes("secret_key"), false);
-  assert.equal(bodyText.includes("user:pass"), false);
+  assert.equal(bodyText.includes("service_role_secret"), false);
   await app.close();
 });
 

@@ -79,7 +79,7 @@ export const notary402OpenApi = {
     },
     "/v1/live/status": {
       get: {
-        summary: "Report redacted live integration configuration status",
+        summary: "Report redacted live integration configuration status, including Supabase audit runtime",
         responses: { "200": { description: "Live status" } },
       },
     },

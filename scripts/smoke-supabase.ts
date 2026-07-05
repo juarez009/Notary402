@@ -1,11 +1,15 @@
 import { createLegalIntent, createSignatureRequest } from "../packages/core/src/index.ts";
-import { createPostgresAuditStore } from "../apps/api/src/audit-store.ts";
-import { loadEnvFiles, requireEnv } from "./live-env.ts";
+import { createAuditStoreFromEnv } from "../apps/api/src/audit-store.ts";
+import { loadEnvFiles, requireEnv, redact } from "./live-env.ts";
 
 const env = loadEnvFiles();
-requireEnv(env, ["POSTGRES_URL"]);
+requireEnv(env, ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]);
 
-const store = createPostgresAuditStore(env.POSTGRES_URL!);
+const store = createAuditStoreFromEnv(env);
+if (store.kind !== "supabase") {
+  throw new Error("Supabase smoke expected SupabaseAuditStore. Check SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.");
+}
+
 try {
   const legalIntent = createLegalIntent({
     agent_id: "smoke-agent",
@@ -32,11 +36,13 @@ try {
   const savedIntent = await store.getLegalIntent(legalIntent.legal_intent_id);
   const savedRequest = await store.getSignatureRequest(signatureRequest.signature_request_id);
   if (!savedIntent || !savedRequest) {
-    throw new Error("Postgres smoke failed to read back audit records.");
+    throw new Error("Supabase smoke failed to read back audit records.");
   }
 
   console.log(JSON.stringify({
     ok: true,
+    supabase_url: redact(env.SUPABASE_URL),
+    schema: env.SUPABASE_SCHEMA ?? "public",
     legal_intent_id: savedIntent.legal_intent_id,
     signature_request_id: savedRequest.signature_request_id,
   }, null, 2));

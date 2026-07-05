@@ -3,7 +3,7 @@ import { buildApp } from "../apps/api/src/app.ts";
 import { loadEnvFiles, requireEnv } from "./live-env.ts";
 
 const env = loadEnvFiles();
-requireEnv(env, ["POSTGRES_URL", "AMOY_AGENT_PRIVATE_KEY", "L402_SMOKE_RECEIPT"]);
+requireEnv(env, ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "AMOY_AGENT_PRIVATE_KEY", "L402_SMOKE_RECEIPT"]);
 
 const account = privateKeyToAccount(env.AMOY_AGENT_PRIVATE_KEY as `0x${string}`);
 const app = buildApp({ logger: false, env });

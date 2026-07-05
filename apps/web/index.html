@@ -273,7 +273,7 @@ const I18N = {
         toastQrDownloaded: "QR descargado",
         notFound: "Atestación no encontrada: ",
         datamcpState: "Estado DataMCP",
-        datamcpTables: "Tablas de Auditoría PostgreSQL",
+        datamcpTables: "Tablas de Auditoría Supabase",
         datamcpTools: "MCP Tools",
         datamcpPerm: "Permiso",
         timelineEmpty: "Sin atestaciones aún. Verifica un ID para empezar.",
@@ -339,7 +339,7 @@ const I18N = {
         toastQrDownloaded: "QR Downloaded",
         notFound: "Attestation not found: ",
         datamcpState: "DataMCP State",
-        datamcpTables: "PostgreSQL Audit Tables",
+        datamcpTables: "Supabase Audit Tables",
         datamcpTools: "MCP Tools",
         datamcpPerm: "Permission",
         timelineEmpty: "No attestations verified yet. Verify an ID to get started.",
@@ -376,7 +376,7 @@ const MOCK_ATTESTATIONS = {
     'att_402_0044_sv':{attestation_id:'att_402_0044_sv',valid:true,status:'issued',signature_level:1,requires_human_notary:false,jurisdiction:'SV',request_hash:'e3bc01e4a8109bfcd8b103cb0c19df2ea491f2c2b0c3ff41',document_hash:'a1a098ce1bc4a1b02de92e3b0c44298fc1c149afbf4c8996fb92427ae41e464',agent_wallet:'0x37543a8671C9415843E0774040951c45ac1A3BA',amoy_tx_hash:'0x543a86c01e4a8fc7e8b10cb8cf83a213e4b774619ba',l402_payment:{amount_msats:100,status:'settled',receipt:'lnbc50n1p3f19e248b10c...'},qvac_analysis:{document_type:'Pacto SLA de API',document_type_en:'API Service Level Agreement',risk_flags:[],checklist:[{label:'Tipo de documento compatible con firma agéntica',label_en:'Document type compatible with agent signature',passed:true},{label:'Contraprestación definida (SLA uptime 99.9%)',label_en:'Consideration defined (99.9% SLA uptime)',passed:true},{label:'Ejecución autónoma aprobada',label_en:'Autonomous execution approved',passed:true}]},zavu:{status:'no_escalation'},created_at:'2026-07-04T14:20:00Z'},
 };
 
-const MOCK_LIVE_STATUS = {postgres:{status:'pending',note:'Not configured'},datamcp:{status:'pending',note:'MCP URL not set'},amoy:{status:'pending',note:'RPC not set'},qvac:{status:'pending',note:'Ollama offline'},zavu:{status:'pending',note:'Zavu URL not set'},aperture:{status:'pending',note:'Not running'},n8n:{status:'pending',note:'Not running'}};
+const MOCK_LIVE_STATUS = {supabase:{status:'pending',note:'Not configured'},datamcp:{status:'pending',note:'MCP URL not set'},amoy:{status:'pending',note:'RPC not set'},qvac:{status:'pending',note:'Ollama offline'},zavu:{status:'pending',note:'Zavu URL not set'},aperture:{status:'pending',note:'Not running'},n8n:{status:'pending',note:'Not running'}};
 const MOCK_DATAMCP = {status:'integration_pending',provider:'datamcp',reason:'DATAMCP_MCP_URL not configured',tables:['agent_profiles','legal_intents','signature_requests','wallet_proofs','payment_proofs','legal_analyses','attestations','human_escalations'],permission_preset:'read-only',mcp_tools:['query','get_schema','get_table_details','get_permissions','get_schema_changes','resync_schema'],note:'Notary402 is the write authority. DataMCP exposes audit tables as read-only MCP context for agents and n8n.',note_en:'Notary402 is the write authority. DataMCP exposes audit tables as read-only MCP context for agents and n8n.'};
 
 function toggleLanguage() {
@@ -551,7 +551,7 @@ function renderTimeline(){
     }).join('');
 }
 
-const SVC_LABELS={postgres:'PostgreSQL',datamcp:'DataMCP',amoy:'L402 Gateway',qvac:'QVAC',zavu:'Zavu',aperture:'Aperture',n8n:'n8n'};
+const SVC_LABELS={supabase:'Supabase',datamcp:'DataMCP',amoy:'L402 Gateway',qvac:'QVAC',zavu:'Zavu',aperture:'Aperture',n8n:'n8n'};
 async function refreshLiveStatus(){
     const banner=document.getElementById('integration-error-banner');banner.classList.add('hidden');
     let data=await fetchFromAPI('/v1/live/status'),isDemo=false;

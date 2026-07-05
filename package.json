@@ -17,7 +17,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "check:live-config": "node scripts/check-live-config.ts",
     "db:migrate": "node scripts/db-migrate.ts",
-    "smoke:postgres": "node scripts/smoke-postgres.ts",
+    "smoke:supabase": "node scripts/smoke-supabase.ts",
     "smoke:datamcp": "node scripts/smoke-datamcp.ts",
     "smoke:amoy": "node scripts/smoke-amoy.ts",
     "smoke:zavu": "node scripts/smoke-zavu.ts",
@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.4",
+    "@supabase/supabase-js": "^2.110.0",
     "@types/pg": "^8.20.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

@@ -1,3 +1,6 @@
+-- Notary402 audit schema for Supabase PostgreSQL.
+-- Apply in Supabase SQL Editor/CLI, or run npm run db:migrate with optional POSTGRES_URL.
+
 create table if not exists agent_profiles (
   agent_id text primary key,
   runtime text not null,

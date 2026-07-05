@@ -1,9 +1,11 @@
 import { readFileSync } from "node:fs";
 import { Pool } from "pg";
-import { loadEnvFiles, requireEnv } from "./live-env.ts";
+import { loadEnvFiles } from "./live-env.ts";
 
 const env = loadEnvFiles();
-requireEnv(env, ["POSTGRES_URL"]);
+if (!env.POSTGRES_URL) {
+  throw new Error("POSTGRES_URL is optional runtime-wise but required for automated SQL migrations. For Supabase JS API runtime, apply docs/postgres-audit-schema.sql in the Supabase SQL Editor or set POSTGRES_URL to a Supabase direct/pooler connection string for this admin script.");
+}
 
 const pool = new Pool({ connectionString: env.POSTGRES_URL });
 try {

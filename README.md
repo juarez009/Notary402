@@ -1,218 +1,108 @@
-# ⚡ Notary402 — Protocolo Notarial Agéntico Web3 & Bitcoin Native (L402)
+# Notary402
 
-> **Jurisdicción:** El Salvador 🇸🇻 (Ley de Firma Electrónica, Art. 15-22)  
-> **Arquitectura:** Agent-First Legal Trust Layer (L402 + Polygon Amoy + QVAC LLM + Zavu + DataMCP)
+Notary402 is an agent-first legal trust layer for El Salvador MVP workflows. It lets autonomous agents create legal intents, request signatures, prove wallet control on Polygon Amoy, register L402 receipts validated by Aperture/Polar, run legal analysis, issue attestations, and escalate to a human notary through Zavu when needed.
 
----
+## Architecture
 
-## 📌 ¿Qué es Notary402?
-
-**Notary402** es una infraestructura notarial impulsada por Inteligencia Artificial y protocolos Web3/Bitcoin diseñada para **Agentes Autónomos (AI Agents)**. Permite a sistemas de IA (como Claude Code, Cursor, Codex, Hermes, OpenClaw, etc.) crear compromisos jurídicos, validar capacidades legales, autenticarse y pagar servicios notariales vía Lightning Network (L402), certificar huellas criptográficas y escalar a notarios humanos colegiados cuando la ley local lo requiere.
-
----
-
-## 🏗️ Arquitectura del Sistema
-
-```
-Agentes de IA (Claude / Cursor / Codex / Hermes / OpenClaw)
-       │
-       ▼ (MCP Protocol / REST API)
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                             n8n Orchestrator                                │
-└──────┬──────────────────┬─────────────────┬──────────────────┬──────────────┘
-       │                  │                 │                  │
-       ▼                  ▼                 ▼                  ▼
-┌──────────────┐   ┌─────────────┐   ┌────────────┐     ┌──────────────┐
-│   Aperture   │   │Polygon Amoy │   │  QVAC LLM  │     │ Zavu Bridge  │
-│(L402 Gateway)│   │ (EVM Proof) │   │ (Ollama)   │     │  (WhatsApp)  │
-└──────────────┘   └─────────────┘   └────────────┘     └──────────────┘
-       │                  │                 │                  │
-       └──────────────────┴────────┬────────┴──────────────────┘
-                                   │
-                                   ▼
-                       ┌───────────────────────┐
-                       │    Notary402 API      │
-                       └───────────┬───────────┘
-                                   │
-                         (Escritura de Auditoría)
-                                   │
-                                   ▼
-                       ┌───────────────────────┐
-                       │  PostgreSQL Audit DB  │
-                       └───────────┬───────────┘
-                                   │
-                         (Lectura Read-Only MCP)
-                                   │
-                                   ▼
-                       ┌───────────────────────┐
-                       │        DataMCP        │
-                       └───────────┬───────────┘
-                                   │
-                                   ▼
-                  ┌─────────────────────────────────┐
-                  │  frontend-verifier/index.html   │
-                  │   (Agentic Verifier Portal)     │
-                  └─────────────────────────────────┘
+```text
+Agents / n8n / MCP
+  -> Notary402 REST API
+  -> Supabase audit tables through backend service role
+  -> DataMCP read-only schema/query context
+  -> Aperture/Polar L402 payment boundary
+  -> Polygon Amoy wallet and tx proof
+  -> QVAC/OpenAI-compatible legal analysis
+  -> Zavu human notary escalation
+  -> Web verifier
 ```
 
----
+Supabase is the runtime audit database. The backend writes with `SUPABASE_SERVICE_ROLE_KEY`; the frontend never receives that key. DataMCP remains read-only.
 
-## 🎚️ Niveles de Firma Legales (Signature Levels 0 - 5)
-
-Notary402 clasifica la firmeza jurídica según los límites definidos en `LEGAL_BOUNDARIES.md`:
-
-| Nivel | Nombre | Descripción | Ejecución |
-|---|---|---|---|
-| **Level 0** | *Hash Attestation* | Prueba técnica de existencia e integridad de archivo (SHA-256). | Autónomo por IA |
-| **Level 1** | *Agent Signature* | Firma criptográfica generada por la billetera Web3 del agente. | Autónomo por IA |
-| **Level 2** | *Authorized Rep* | Firma del agente bajo poder/delegación explicita de una persona o empresa. | Autónomo por IA |
-| **Level 3** | *Jurisdiction E-Signature* | Firma electrónica ajustada a la Ley de Firma Electrónica de El Salvador. | Autónomo por IA |
-| **Level 4** | *Human Notary Countersig* | Firma de IA con refrenda y visto bueno obligatorio de Notario Humano Colegiado. | **Escalado a Zavu** |
-| **Level 5** | *Public Instrument* | Trámite reservado para protocolo o escritura pública formal. | **Escalado a Zavu** |
-
----
-
-## 🚀 Guía de Instalación y Despliegue Local
-
-### 1. Requisitos Previos
-
-- **Node.js** (v18 o superior) y `npm`
-- **Docker** & Docker Compose (para PostgreSQL, Aperture y n8n)
-- **Ollama** con el modelo `llama-3-8b` descargado (Motor QVAC):
-  ```bash
-  ollama pull llama3:8b
-  ```
-
----
-
-### 2. Configuración de Variables de Entorno
-
-Copia el archivo `.env.example` a `.env.live` y configura tus credenciales:
-
-```bash
-cp .env.example .env.live
-```
-
-Variables clave en `.env.live`:
-```env
-# API & Servidores
-PORT=3001
-API_BASE_URL=http://localhost:3001
-
-# PostgreSQL & DataMCP
-POSTGRES_URL=postgresql://user:password@localhost:5432/notary402
-DATAMCP_MCP_URL=https://api.datamcp.app/api/mcp/conn_xxxx
-DATAMCP_PERMISSION_PRESET=read-only
-
-# Polygon Amoy (Testnet Chain ID 80002)
-AMOY_RPC_URL=https://rpc-amoy.polygon.technology
-AMOY_CHAIN_ID=80002
-AMOY_AGENT_PRIVATE_KEY=0x...
-
-# L402 / Aperture / Lightning
-APERTURE_BASE_URL=http://localhost:8080
-L402_SMOKE_RECEIPT=macaroon:preimage
-
-# QVAC (Ollama Local)
-QVAC_BASE_URL=http://localhost:11434/v1
-
-# Zavu (Escalación WhatsApp)
-ZAVU_BASE_URL=https://api.zavu.empress.eco
-ZAVU_API_KEY=zavu_sk_...
-
-# n8n
-N8N_WEBHOOK_NOTARY402=http://localhost:5678/webhook/notary402
-```
-
----
-
-### 3. Instalación de Dependencias
+## Install
 
 ```bash
 npm install
 ```
 
----
-
-### 4. Inicializar Base de Datos de Auditoría
-
-Aplica el esquema de migración de auditoría de PostgreSQL:
+## Local Development
 
 ```bash
-npm run db:migrate
+npm run dev:api
+npm run dev:web
+npm run dev:mcp
 ```
 
----
+Default local URLs:
 
-### 5. Verificar Conexiones e Integraciones en Vivo
+- API: `http://localhost:3001`
+- Web verifier: `http://localhost:3000`
+- MCP server: stdio-style `apps/mcp/src/index.ts`
 
-Ejecuta el script de verificación para validar que los 7 servicios estén listos:
+## Environment
+
+Copy `.env.example` to `.env.live` and fill live credentials.
+
+Required live database variables:
+
+```env
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=...
+SUPABASE_SCHEMA=public
+```
+
+Optional migration-only variable:
+
+```env
+POSTGRES_URL=postgres://...
+```
+
+`POSTGRES_URL` is not used by runtime. It is only for `npm run db:migrate` if you want to apply `docs/postgres-audit-schema.sql` automatically. Otherwise apply the SQL in Supabase SQL Editor or Supabase CLI.
+
+See `ENV_SETUP.md` for the full live contract.
+
+## Live Checks
 
 ```bash
 npm run check:live-config
+npm run smoke:supabase
+npm run smoke:datamcp
+npm run smoke:amoy
+npm run smoke:zavu
+npm run smoke:aperture
+npm run smoke:e2e-live
 ```
 
-Pruebas individuales disponibles:
-```bash
-npm run smoke:postgres    # Test base de datos PostgreSQL
-npm run smoke:datamcp     # Test pasarela DataMCP
-npm run smoke:amoy        # Test billeteras y firmas EVM
-npm run smoke:aperture    # Test gateway L402 Lightning
-npm run smoke:qvac        # Test evaluador LLM local
-npm run smoke:zavu        # Test canal WhatsApp Zavu
-npm run smoke:e2e-live    # Test de flujo end-to-end completo
-```
+`check:live-config` and `GET /v1/live/status` redact secrets.
 
----
+## Core API Endpoints
 
-### 6. Levantar el Backend (API & MCP Server)
-
-Ejecuta el servidor REST API en puerto `3001` y el servidor MCP en puerto `3002`:
-
-```bash
-npm run dev
-```
-
----
-
-### 7. Levantar el Verificador Frontend (UI)
-
-El frontend se encuentra en la carpeta `/frontend-verifier/` como una SPA independiente (HTML/JS/Tailwind con i18n Español/Inglés).
-
-Puedes servirlo utilizando Python:
-```bash
-python3 -m http.server 8080 --directory frontend-verifier
-```
-
-Abre en tu navegador:
-👉 **http://localhost:8080**
-
----
-
-## 📡 Endpoints Principales de la API (REST & MCP)
-
-| Método | Endpoint | Descripción |
+| Method | Endpoint | Purpose |
 |---|---|---|
-| `GET` | `/health` | Estado de salud básico del servidor. |
-| `GET` | `/v1/live/status` | Estado en vivo de los 7 componentes integrados. |
-| `POST` | `/v1/legal-intent` | Registro de intención legal enviado por el agente. |
-| `POST` | `/v1/signature/request` | Solicitud de firma (Gated por L402 HTTP 402). |
-| `POST` | `/v1/wallets/verify-signature` | Verificación de firma EIP-191 en Polygon Amoy. |
-| `POST` | `/v1/payments/l402/verify` | Registro de comprobante de pago Lightning (macaroon/preimage). |
-| `POST` | `/v1/signature/validate` | Ejecución de evaluación legal QVAC con Ollama. |
-| `POST` | `/v1/attestations` | Emisión de la atestación final en formato JSON. |
-| `POST` | `/v1/verify` | Endpoint público de verificación utilizado por el Frontend. |
-| `POST` | `/v1/zavu/escalate` | Escalación a notario humano vía WhatsApp Zavu. |
-| `GET` | `/v1/integrations/datamcp` | Consulta del plan de auditoría DataMCP `read-only`. |
+| `GET` | `/health` | API health |
+| `GET` | `/v1/live/status` | Redacted live integration status |
+| `POST` | `/v1/legal-intent` | Create legal intent |
+| `POST` | `/v1/signature/request` | Create signature request |
+| `POST` | `/v1/wallets/verify-signature` | Verify EIP-191 wallet proof |
+| `POST` | `/v1/payments/l402/verify` | Register Aperture L402 receipt |
+| `POST` | `/v1/payments/amoy/verify` | Verify Polygon Amoy tx proof |
+| `POST` | `/v1/signature/validate` | Run legal analysis |
+| `POST` | `/v1/attestations` | Issue attestation |
+| `GET` | `/v1/attestations/:id` | Fetch attestation |
+| `POST` | `/v1/verify` | Verify attestation checks |
+| `POST` | `/v1/zavu/escalate` | Escalate to human notary |
+| `GET` | `/v1/integrations/datamcp` | Show DataMCP read-only plan |
+| `GET` | `/openapi.json` | OpenAPI contract |
 
----
+Frontend-focused API docs are in `API_SPEC.md`.
 
-## ⚖️ Legal Boundary & Disclaimer
+## Verification
 
-> **Importante:** Notary402 demuestra automatización de flujos de trabajo legales con conciencia de jurisdicción y atestaciones criptográficas. Cuando la ley local requiere un notario autorizado o profesional legal humano, el sistema escala en lugar de reemplazar ese rol. Los análisis generados por el modelo QVAC son de carácter asesor y consultivo.
+```bash
+npm test
+npm run typecheck
+npm run build:web
+```
 
----
+## Legal Boundary
 
-## 📄 Licencia
-
-MIT License — Desarrollado para la Hackathon Notary402 El Salvador 2026.
+Notary402 is an MVP workflow for legal trust automation. It does not replace human notaries where local law requires a licensed professional; those cases should escalate through Zavu or another human review channel.

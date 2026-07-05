@@ -40,6 +40,13 @@ export interface BuildAppOptions extends FastifyServerOptions {
   env?: NodeJS.ProcessEnv;
 }
 
+interface DocumentRequestBody {
+  tipo_documento: "COMPRAVENTA" | "PODER_GENERAL" | "AUTENTICA";
+  comparecientes: any[];
+  detalles: Record<string, any>;
+  jurisdiccion: "SV";
+}
+
 export function buildApp(options: BuildAppOptions = {}) {
   const { datamcp, legalAnalyzer, zavuClient, amoyVerifier, auditStore, env, ...fastifyOptions } = options;
   const appEnv = env ?? process.env;
@@ -98,7 +105,7 @@ export function buildApp(options: BuildAppOptions = {}) {
 
   app.get("/v1/live/status", async () => createLiveStatus(appEnv, dataMcpConfig));
 
-  app.post<{ Body: any }>("/v1/documents/request", {
+  app.post<{ Body: DocumentRequestBody }>("/v1/documents/request", {
     schema: {
       body: documentRequestBodySchema,
       response: { 400: errorResponseSchema },
@@ -379,9 +386,10 @@ function createLiveStatus(env: NodeJS.ProcessEnv, dataMcpConfig: DataMcpConfig) 
   const zavuUrl = env.ZAVU_ESCALATE_URL ?? env.ZAVU_BASE_URL;
   return {
     mode: "live",
-    postgres: {
-      configured: Boolean(env.POSTGRES_URL),
-      url: redactUrl(env.POSTGRES_URL),
+    supabase: {
+      configured: Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY),
+      url: redactUrl(env.SUPABASE_URL),
+      schema: env.SUPABASE_SCHEMA ?? "public",
     },
     datamcp: {
       configured: Boolean(dataMcpConfig.mcpUrl && dataMcpConfig.apiKey),

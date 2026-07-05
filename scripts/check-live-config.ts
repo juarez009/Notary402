@@ -2,7 +2,8 @@ import { loadEnvFiles, redact } from "./live-env.ts";
 
 const env = loadEnvFiles();
 const required = [
-  "POSTGRES_URL",
+  "SUPABASE_URL",
+  "SUPABASE_SERVICE_ROLE_KEY",
   "DATAMCP_MCP_URL",
   "DATAMCP_API_KEY",
   "AMOY_RPC_URL",
@@ -22,7 +23,9 @@ if (missing.length > 0) {
 }
 
 const summary = {
-  POSTGRES_URL: redact(env.POSTGRES_URL),
+  SUPABASE_URL: redact(env.SUPABASE_URL),
+  SUPABASE_SERVICE_ROLE_KEY: redact(env.SUPABASE_SERVICE_ROLE_KEY),
+  SUPABASE_SCHEMA: env.SUPABASE_SCHEMA ?? "public",
   DATAMCP_MCP_URL: redact(env.DATAMCP_MCP_URL),
   DATAMCP_API_KEY: redact(env.DATAMCP_API_KEY),
   AMOY_RPC_URL: redact(env.AMOY_RPC_URL),

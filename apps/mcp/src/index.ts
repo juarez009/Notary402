@@ -46,7 +46,7 @@ server.registerTool(
   "notary402_get_datamcp_flow_plan",
   {
     title: "Get Notary402 DataMCP Flow Plan",
-    description: "Return the recommended DataMCP integration plan for using a PostgreSQL audit database as schema-aware MCP context in the Notary402 workflow.",
+    description: "Return the recommended DataMCP integration plan for using Supabase PostgreSQL audit tables as schema-aware MCP context in the Notary402 workflow.",
     inputSchema: z.object({}).strict(),
     annotations: {
       readOnlyHint: true,

@@ -13,7 +13,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -37,7 +38,6 @@ input {
   color: #6b4f2a;
   font-size: 0.78rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -59,7 +59,6 @@ h1 {
 h2 {
   font-size: 1rem;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 .status-pill,
@@ -74,13 +73,20 @@ button {
   padding: 10px 14px;
 }
 
+.tabs {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 24px 0;
+}
+
 .search-panel {
   padding: 24px 0;
 }
 
 label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   font-weight: 800;
 }
 
@@ -90,7 +96,9 @@ label {
   gap: 12px;
 }
 
-input {
+input,
+select {
+  width: 100%;
   min-width: 0;
   border: 2px solid #26372f;
   background: #fffdf6;
@@ -102,20 +110,19 @@ button {
   padding: 14px 18px;
 }
 
-.secondary {
-  margin-top: 12px;
-  background: #fffdf6;
-}
-
 button:disabled {
   cursor: not-allowed;
-  opacity: 0.5;
+  opacity: 0.55;
+}
+
+.secondary {
+  background: #fffdf6;
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  gap: 16px;
 }
 
 .panel {
@@ -134,9 +141,9 @@ dl {
 }
 
 dt {
-  margin-top: 14px;
-  color: #65716b;
-  font-size: 0.8rem;
+  margin-top: 12px;
+  color: #59625b;
+  font-size: 0.82rem;
   font-weight: 800;
   text-transform: uppercase;
 }
@@ -151,7 +158,7 @@ dd {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border-top: 1px solid #d9ded9;
+  border-top: 1px solid #d6ddd7;
   padding: 10px 0;
 }
 
@@ -162,22 +169,22 @@ dd {
 
 .bad,
 .error {
-  color: #a5352b;
+  color: #a22d2d;
   font-weight: 800;
 }
 
 .muted {
-  color: #65716b;
+  color: #59625b;
 }
 
 .mono {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  font-size: 0.88rem;
+  font-size: 0.82rem;
 }
 
 .analysis {
   display: grid;
-  grid-template-columns: 120px 1fr;
+  grid-template-columns: auto 1fr;
   gap: 18px;
   align-items: start;
 }
