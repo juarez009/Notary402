@@ -42,48 +42,49 @@ La secuencia muestra cuatro etapas claras:
 | 2026-07-04 20:08:16 -0600 | RicardoFv2 | `86464212` | style/ui | Se agregan Executive Summary Cards al preview documental y se simplifica el copy del hero para mayor legibilidad. | `apps/web/index.html`, `apps/web/public/index.html`, `frontend-verifier/index.html` |
 | 2026-07-04 20:10:17 -0600 | RicardoFv2 | `291d2549` | docs | Se unifica `README.md` con arquitectura completa, niveles de firma, setup live, endpoints y runner de demo. | `README.md` |
 | 2026-07-04 20:14:44 -0600 | Juarez009 | `bb1ebfd3` | docs | Se agrega documentacion acumulada sobre el desarrollo del proyecto hasta ese momento. | `MOVIMIENTOS_PROYECTO.md` |
+| 2026-07-04 20:28:22 -0600 | Juarez009 | `4cf85cf6` | docs | Se actualiza la documentacion acumulada del desarrollo del proyecto en una segunda version. | `MOVIMIENTOS_PROYECTO.md` |
 
 ## Human explanations by hour
 
 ### Around 12 PM
 
-Before the first commit, the project already had direction. The design brief and execution plan show that the team was defining what Notary402 should become: a legal trust layer for agent-driven workflows, with a clear product idea before the codebase became active.
+Before the first commit, the project already had direction. The design brief and execution plan show that the team was shaping Notary402 as a legal trust layer for agent-driven workflows. Codex's value here was strategic: it helped keep the early idea organized enough to become executable instead of staying as a vague concept.
 
 ### Around 1 PM
 
-The repository was initialized and the development environment started taking shape. The first Git commit created the baseline, while local skill and agent files show the workspace being prepared for fast implementation, debugging, frontend work, testing, and verification.
+The repository was initialized and the development environment started taking shape. The first Git commit created the baseline, while local skill and agent files prepared the workspace for fast implementation, debugging, frontend work, testing, and verification. Codex acted like a disciplined technical co-founder here, setting up the conditions for speed without losing structure.
 
 ### Around 2 PM
 
-This hour was about turning the idea into a technical blueprint. The project gained early backend and core files, plus product and architecture documents such as the PRD, architecture notes, integration plan, legal boundaries, and implementation plan. In plain English, the team was deciding what the system should do and where each responsibility should live.
+This hour turned the idea into a technical blueprint. The project gained early backend and core files, plus product and architecture documents such as the PRD, architecture notes, integration plan, legal boundaries, and implementation plan. Codex helped translate ambition into system responsibilities: what the product should do, what the API should own, and where the legal and integration boundaries should be respected.
 
 ### Around 3 PM
 
-Around 3:00 PM, the project moved from planning and isolated building blocks into a real working foundation. The team was no longer only describing Notary402; they were assembling the actual MVP structure that the rest of the day would build on.
+Around 3:00 PM, the project moved from planning and isolated building blocks into a real working foundation. The team was no longer only describing Notary402; they were assembling the MVP structure that the rest of the day would build on.
 
-Between 3:11 PM and 3:24 PM, the local file timeline shows work around integrations and app setup. This included Web3/legal integration files, tests for external services, Vite and TypeScript configuration for the web app, and early documentation for DataMCP and Aperture. In human terms, this was the moment where the project started connecting its technical pieces: blockchain verification, payment boundaries, legal analysis, audit context, and the frontend shell.
+Between 3:11 PM and 3:24 PM, the local file timeline shows work around integrations and app setup. This included Web3/legal integration files, tests for external services, Vite and TypeScript configuration for the web app, and early documentation for DataMCP and Aperture. Codex helped connect the technical pieces into one coherent direction: blockchain verification, payment boundaries, legal analysis, audit context, and the frontend shell.
 
-At 3:35 PM, commit `2cc486c0` captured the main foundation of the MVP. It added the API application, the core package, integration modules, MCP server, initial web app, database/audit documentation, environment examples, package configuration, and test coverage. This commit is important because it turned the repository into a full product workspace instead of a loose collection of ideas.
+At 3:35 PM, commit `2cc486c0` captured the main foundation of the MVP. It added the API application, the core package, integration modules, MCP server, initial web app, database/audit documentation, environment examples, package configuration, and test coverage. This is where Codex's contribution becomes especially visible: the repository stopped being a loose collection of ideas and became a full product workspace.
 
 ### Around 4 PM
 
-The 4 PM hour moved the MVP from structure into real product behavior. The team added live-environment helpers, smoke scripts, OpenAPI work, stronger core logic, and the Salvadoran notarial analysis flow. By the end of this block, Notary402 was not just a code skeleton; it had legal workflow behavior, external validation paths, and a clearer contract for how the API should be used.
+The 4 PM hour moved the MVP from structure into real product behavior. The team added live-environment helpers, smoke scripts, OpenAPI work, stronger core logic, and the Salvadoran notarial analysis flow. Codex helped keep the system practical: not just "we have code," but "we have flows, contracts, validations, and a way to prove the pieces are connected."
 
 ### Around 5 PM
 
-This was the productization hour. The frontend became a real verifier and then evolved into an operations console. Documentation also became much stronger: the README, API spec, environment setup, demo script, and task list made the project easier to explain and present. The work at 5 PM turned technical progress into something a judge, teammate, or demo audience could understand.
+This was the productization hour. The frontend became a real verifier and then evolved into an operations console. Documentation also became much stronger: the README, API spec, environment setup, demo script, and task list made the project easier to explain and present. Codex helped turn raw technical progress into a story a teammate, judge, or demo audience could actually follow.
 
 ### Around 6 PM
 
-At 6 PM, the team integrated Supabase and stabilized the demo experience. The API, audit store, MCP server, OpenAPI contract, database schema, live scripts, and frontend were updated together. Several UI fixes followed, including restoring button behavior, improving verification transitions, adding the document request endpoint, and removing conflict markers that had broken JavaScript handlers.
+At 6 PM, the team integrated Supabase and stabilized the demo experience. The API, audit store, MCP server, OpenAPI contract, database schema, live scripts, and frontend were updated together. Codex was valuable here because it could hold many moving parts in view at once: database, API, UI, documentation, and demo reliability, all moving without losing the thread.
 
 ### Around 7 PM
 
-The 7 PM block focused on making the project demo-ready for an autonomous agent story. The key movement was the addition of the Web3 AI Agent CLI runner through `npm run demo:agent`. That gave the project a way to present Notary402 as an agent-first legal trust workflow instead of only a manual web/API demo.
+The 7 PM block focused on making the project demo-ready for an autonomous agent story. The key movement was the Web3 AI Agent CLI runner through `npm run demo:agent`. Codex helped make the project feel agent-first in practice, not only in language: the demo could now show an autonomous workflow moving through legal trust, payment, verification, and attestation.
 
 ### Around 8 PM
 
-The final hour was about polish, clarity, and documentation. The UI was cleaned up with better spacing, tabbed flows, SVG icons, stronger contrast, executive summary cards, and simpler hero copy. The README was unified, and the project movement document itself was added so the full development story could be explained chronologically.
+The final hour was about polish, clarity, and documentation. The UI was cleaned up with better spacing, tabbed flows, SVG icons, stronger contrast, executive summary cards, and simpler hero copy. Codex helped bring the work into presentation shape: the product looked cleaner, the README became easier to trust, and this movement document made the full development story understandable hour by hour.
 
 ## Movimientos por area
 
