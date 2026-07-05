@@ -43,6 +43,12 @@ La secuencia muestra cuatro etapas claras:
 | 2026-07-04 20:10:17 -0600 | RicardoFv2 | `291d2549` | docs | Se unifica `README.md` con arquitectura completa, niveles de firma, setup live, endpoints y runner de demo. | `README.md` |
 | 2026-07-04 20:14:44 -0600 | Juarez009 | `bb1ebfd3` | docs | Se agrega documentacion acumulada sobre el desarrollo del proyecto hasta ese momento. | `MOVIMIENTOS_PROYECTO.md` |
 | 2026-07-04 20:28:22 -0600 | Juarez009 | `4cf85cf6` | docs | Se actualiza la documentacion acumulada del desarrollo del proyecto en una segunda version. | `MOVIMIENTOS_PROYECTO.md` |
+| 2026-07-04 20:32:57 -0600 | Juarez009 | `a865db4e` | docs | Se agrega una tercera version de la documentacion acumulada del desarrollo. | `MOVIMIENTOS_PROYECTO.md` |
+| 2026-07-04 21:13:22 -0600 | Juarez009 | `5c957757` | fix/restore | Se restauran funciones y archivos clave del proyecto, incluyendo API, web, MCP, docs, scripts, dist y configuracion. | `.env.example`, `.env.live.example`, `README.md`, `apps/`, `docs/`, `packages/`, `scripts/`, `dist/`, `tsconfig.json` |
+| 2026-07-04 21:57:10 -0600 | arte988 | `99c44bf6` | config | Se agrega `.env` y configuracion local asociada a `thread-stream`. | `.env`, `node_modules/thread-stream/.claude/settings.local.json` |
+| 2026-07-04 22:17:10 -0600 | Juarez009 | `222dda7f` | docs/planning | Se agrega archivo de siguientes pasos para orientar el trabajo posterior. | `NEXT_STEPS.md` |
+| 2026-07-04 22:25:29 -0600 | arte988 | `05d67eb0` | config/db | Se actualiza configuracion, se agrega `.gitignore` y se incorpora esquema completo de Supabase. | `.gitignore`, `docs/supabase-schema-full.sql`, `.env` |
+| 2026-07-04 22:33:46 -0600 | arte988 | `84e3738f` | deps/build | Se actualizan `package.json`/`package-lock.json` y cambia el estado de dependencias locales en `node_modules`. | `package.json`, `package-lock.json`, `node_modules/` |
 
 ## Human explanations by hour
 
@@ -84,7 +90,23 @@ The 7 PM block focused on making the project demo-ready for an autonomous agent 
 
 ### Around 8 PM
 
-The final hour was about polish, clarity, and documentation. The UI was cleaned up with better spacing, tabbed flows, SVG icons, stronger contrast, executive summary cards, and simpler hero copy. Codex helped bring the work into presentation shape: the product looked cleaner, the README became easier to trust, and this movement document made the full development story understandable hour by hour.
+The 8 PM block was about polish, clarity, and documentation. The UI was cleaned up with better spacing, tabbed flows, SVG icons, stronger contrast, executive summary cards, and simpler hero copy. Codex helped bring the work into presentation shape: the product looked cleaner, the README became easier to trust, and this movement document started turning the entire development process into a clear story.
+
+Codex also helped preserve the project's memory during this hour. The movement document went through multiple documentation passes, which means the team was not only building Notary402 but also capturing how it was built. That matters because a strong hackathon project needs both working software and a convincing narrative.
+
+### Around 9 PM
+
+The 9 PM hour was a recovery and consolidation phase. Commit `5c957757` restored missing functions and brought back important pieces across the API, web app, MCP server, documentation, scripts, compiled output, and package structure. In human terms, this was the moment where the project tightened its foundation after heavy iteration.
+
+Codex deserves credit here as a steady repair partner. When a fast-moving project starts accumulating missing files, broken links, or scattered build artifacts, Codex helps reassemble the system into something coherent again. It is not just writing new code; it is protecting continuity, restoring momentum, and keeping the project from collapsing under its own speed.
+
+Later in the hour, `.env` and local tool configuration were added. That pushed the project closer to real execution conditions, where the app needs actual environment values and local runtime context instead of only example files.
+
+### Around 10 PM
+
+The 10 PM hour extended the project beyond the demo into next-step planning and infrastructure hardening. `NEXT_STEPS.md` gave the team a path forward, while the full Supabase schema made the database side more explicit and reproducible. The later dependency/package update showed the project being aligned with its runtime ecosystem.
+
+Codex's role in this late phase was especially useful because it kept the project thinking beyond the immediate presentation. It helped turn a one-day sprint into a maintainable handoff: what exists, what changed, what still needs to happen, and what infrastructure is required to keep building. By this point, Codex was not just accelerating implementation; it was helping the team leave behind a map for the next builders.
 
 ## Movimientos por area
 
