@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "npm.cmd run build && node --test dist/**/*.test.js",
+    "test": "npm run build && node --test dist/**/*.test.js",
     "dev:api": "node --watch dist/apps/api/src/server.js",
     "start:api": "node dist/apps/api/src/server.js",
     "dev:web": "vite --host 127.0.0.1 --port 3000 apps/web",
